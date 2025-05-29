@@ -11,6 +11,7 @@
 *.sln.docstates
 
 note.txt
+tabledata.xlsx
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
