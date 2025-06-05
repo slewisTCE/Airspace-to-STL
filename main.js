@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -6,12 +5,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from "three/addons/loaders/SVGLoader";
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 
-
 THREE.Cache.enabled = true;
 
 let container;
 let camera, scene, renderer, controls;
-let group, materials, bbox;
+let group, bbox, materials;
 let svgMesh, svgGeometry, exporter;
 let shapes = [];
 let material = new THREE.MeshPhongMaterial({ color: 0x0094aa, flatShading: true });
@@ -19,10 +17,15 @@ let material = new THREE.MeshPhongMaterial({ color: 0x0094aa, flatShading: true 
 let content = '';
 let blocks = [];
 
-let panel, airspaceClassController, airspaceNameController;
+const link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link );
+
 const settings = {
     airspaceClass: null,
     airspaceName: null,
+    altitudeFloor: 0,
+    altitudeCeiling: 2500,
     'Download STL': exportBinary,
     'Test Drop': 'None'
 };
@@ -122,22 +125,28 @@ function onWindowResize() {
 
 function loadSVG() {
 
-    const svgMarkup  = `<svg viewBox="100 -20 420 320" xmlns="http://www.w3.org/2000/svg">
-                            <g id="LWPOLYLINE">
-                                <path d="
-                                    M 139.9163599	195.9916708
-                                    L 222.5671548	7.663962821
-                                    A 529.1913639	595.3459271
-                                    0 0 1 478.742263	125.1521297
-                                    L 489.8863223	157.201366
-                                    L 313.1045957	280.677387
-                                    A 369.5982691	323.5254546
-                                    1 0 0 139.9163599	195.9916708
-                                " stroke="red" stroke-width="1" fill="none"
-                                />
-                            </g>
-                        </svg>`
+    // const svgMarkup  = `<svg viewBox="100 -20 420 320" xmlns="http://www.w3.org/2000/svg">
+    //                         <g id="LWPOLYLINE">
+                                // <path d="
+                                //     M 139.9163599	195.9916708
+                                //     L 222.5671548	7.663962821
+                                //     A 529.1913639	595.3459271
+                                //     0 0 1 478.742263	125.1521297
+                                //     L 489.8863223	157.201366
+                                //     L 313.1045957	280.677387
+                                //     A 369.5982691	323.5254546
+                                //     1 0 0 139.9163599	195.9916708
+                                // " stroke="red" stroke-width="1" fill="none"
+                                // />
+    //                         </g>
+    //                     </svg>`
 
+
+    const svgMarkup  = `<svg viewBox="100 -20 420 320" xmlns="http://www.w3.org/2000/svg">
+                        <g id="LWPOLYLINE">
+                            <path d="M 461.33 194.28 L 470.46 0.00 A 686.54 686.54 0 0 1 498.77 121.20 L 500.00 154.27 L 480.47 281.65 A 527.76 527.76 0 0 0 461.33 194.28" fill="none" stroke="red" stroke-width="1"/>
+                        </g>
+                    </svg>`
         
     const loader_svg = new SVGLoader();
     const svgData = loader_svg.parse(svgMarkup);
@@ -188,10 +197,6 @@ function exportBinary() {
     saveArrayBuffer( result, text + ' DAH-Vol.stl' );
 }
 
-const link = document.createElement( 'a' );
-link.style.display = 'none';
-document.body.appendChild( link );
-
 function save( blob, filename ) {
     link.href = URL.createObjectURL( blob );
     link.download = filename;
@@ -241,20 +246,25 @@ function createGUI() {
 
     const panel = new GUI();
 
-    const folder1 = panel.addFolder('Airspace Details');
-    const folder2 = panel.addFolder('Downloader');
-    const folder3 = panel.addFolder('Test Area');
+    const folder1 = panel.addFolder('Airspace Selection');
+    const folder2 = panel.addFolder('Airspace Options')
+    const folder3 = panel.addFolder('Downloader');
+    const folder4 = panel.addFolder('Test Area');
 
     const settings = {
         'Airspace Class': defaultClass,
         'Airspace Name': airspaceNameOptions[0] || 'None',
+        'Altitude Floor' : 0,
+        'Altitude Ceiling' : 2500,
         'Download STL': exportBinary,
-        'Test Drop': defaultClass
+        'Test Drop': 'bop'
     };
 
     // Controllers (needed for dynamic updating)
     const airspaceClassController = folder1.add(settings, 'Airspace Class', airspaceClassOptions).name('Class');
     let airspaceNameController = folder1.add(settings, 'Airspace Name', airspaceNameOptions).name('Name');
+    let altitudeFloor = folder2.add(settings, 'Altitude Floor', 0, 10000).name('Altitude Floor');
+    let altitudeCeiling = folder2.add(settings, 'Altitude Ceiling', 0, 10000).name('Altitude Ceiling');
 
     // Update "Airspace Name" when "Airspace Class" changes
     airspaceClassController.onChange(function (newClass) {
@@ -264,13 +274,18 @@ function createGUI() {
         airspaceNameController.destroy(); 
         airspaceNameController = folder1.add(settings, 'Airspace Name', names).name('Name');
     });
+
+    altitudeCeiling.onChange(function (newCeiling) {
+        console.log(newCeiling);
+    });
     
 
     folder1.open();
-    folder2.add(settings, 'Download STL');
     folder2.open();
-    folder3.add(settings, 'Test Drop', airspaceClassOptions).name('Test Drop');
+    folder3.add(settings, 'Download STL');
     folder3.open();
+    folder4.add(settings, 'Bop');
+    folder4.open();
 }
 
 
