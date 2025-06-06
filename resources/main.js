@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+import { extractAirspaceClasses, extractAirspaceNames, createSVGPath } from './handler.js';
+import { state } from './state.js';
+
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from "three/addons/loaders/SVGLoader";
@@ -14,28 +17,15 @@ let svgMesh, svgGeometry, exporter;
 let shapes = [];
 let material = new THREE.MeshPhongMaterial({ color: 0x0094aa, flatShading: true });
 
-let content = '';
-let blocks = [];
-
 const link = document.createElement( 'a' );
 link.style.display = 'none';
 document.body.appendChild( link );
 
-const settings = {
-    airspaceClass: null,
-    airspaceName: null,
-    altitudeFloor: 0,
-    altitudeCeiling: 2500,
-    'Download STL': exportBinary,
-    'Test Drop': 'None'
-};
-
-
-fetch("Australian Airspace 28 November 2024_v1.txt")
+fetch(state.datasource)
     .then(response => response.text())
     .then(data => {
-        content = data;
-        blocks = content.split(/\n\s*\n/);
+        state.content = data;
+        state.blocks = state.content.split(/\n\s*\n/);
         init(); // call only after content is ready
         loadSVG();
         animate();
@@ -63,7 +53,6 @@ function init() {
 
     // LIGHTS
     const dirLight = new THREE.DirectionalLight( 0xffffff, 1.0);
-    // dirLight.position.set( -20, 400, 0 ).normalize();
     dirLight.position.set( 0, -250, 250 ).normalize();
     dirLight.castShadow = true;
     scene.add( dirLight );
@@ -89,7 +78,6 @@ function init() {
 
     scene.add( group );
 
-    // loadFont();
     const helper = new THREE.GridHelper( 200, 20 );
     helper.position.y = 0;
     helper.material.opacity = 0.8;
@@ -125,26 +113,13 @@ function onWindowResize() {
 
 function loadSVG() {
 
-    // const svgMarkup  = `<svg viewBox="100 -20 420 320" xmlns="http://www.w3.org/2000/svg">
-    //                         <g id="LWPOLYLINE">
-                                // <path d="
-                                //     M 139.9163599	195.9916708
-                                //     L 222.5671548	7.663962821
-                                //     A 529.1913639	595.3459271
-                                //     0 0 1 478.742263	125.1521297
-                                //     L 489.8863223	157.201366
-                                //     L 313.1045957	280.677387
-                                //     A 369.5982691	323.5254546
-                                //     1 0 0 139.9163599	195.9916708
-                                // " stroke="red" stroke-width="1" fill="none"
-                                // />
-    //                         </g>
-    //                     </svg>`
+    const svgPath = `M 7.128082664089547 100.13452117603453 L 32.65018264286217 103.05054851309251 L 268.71025470207576 7.128082664089561 L 321.63498542806116 28.278957229934292 A 145.0370157383549 145.08564804004394 0 0 0 303.5961604725298 41.862801801241005 L 162.64074933826495 160.1018688549675 A 237.4189457363967 237.72273409141854 0 0 0 170.03178697183245 211.15861423800663 L 199.44810107165054 320.55508090445494 L 214.1047220838981 373.5015522825599 L 221.22802893260285 391.4163485997397 L 201.22912380609984 492.87191733591044 A 395.8967953027925 395.8411109740661 0 0 1 86.53078925410182 392.30757277523264 A 395.8411109740661 395.93882785730415 0 0 1 7.128082664089547 100.13452117603453`
 
-
-    const svgMarkup  = `<svg viewBox="100 -20 420 320" xmlns="http://www.w3.org/2000/svg">
+    const svgMarkup  = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
                         <g id="LWPOLYLINE">
-                            <path d="M 461.33 194.28 L 470.46 0.00 A 686.54 686.54 0 0 1 498.77 121.20 L 500.00 154.27 L 480.47 281.65 A 527.76 527.76 0 0 0 461.33 194.28" fill="none" stroke="red" stroke-width="1"/>
+                            <path d="
+                                ${svgPath}
+                            " fill="none" stroke="red" stroke-width="1"/>
                         </g>
                     </svg>`
         
@@ -164,7 +139,7 @@ function loadSVG() {
 
     svgMesh = new THREE.Mesh(svgGeometry, material);
     svgMesh.scale.x = 0.34;
-    svgMesh.scale.y = -0.5;
+    svgMesh.scale.y = -0.34;
     svgMesh.geometry.center();
     svgMesh.position.z = 10;
 
@@ -207,38 +182,6 @@ function saveArrayBuffer( buffer, filename ) {
     save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
 }
 
-function extractAirspaceClasses() {
-    if (!content) return [];
-    const airspaceClasses = new Set(
-        content
-            .split("\n")
-            .filter(line => line.startsWith("AC "))
-            .map(line => line.slice(3).trim())
-    );
-    return Array.from(airspaceClasses);
-}
-
-function extractAirspaceNames(filterClass = null) {
-    const airspaceNames = [];
-
-    blocks.forEach(block => {
-        const lines = block.trim().split("\n");
-        const nameLine = lines.find(line => line.startsWith("AN "));
-        const classLine = lines.find(line => line.startsWith("AC "));
-
-        if (nameLine) {
-            const name = nameLine.slice(3).trim();
-            const airspaceClass = classLine ? classLine.slice(3).trim() : null;
-
-            if (!filterClass || airspaceClass === filterClass) {
-                airspaceNames.push(name);
-            }
-        }
-    });
-
-    return airspaceNames;
-}
-
 function createGUI() {
     const airspaceClassOptions = extractAirspaceClasses();
     const defaultClass = airspaceClassOptions[0] || 'None';
@@ -275,6 +218,13 @@ function createGUI() {
         airspaceNameController = folder1.add(settings, 'Airspace Name', names).name('Name');
     });
 
+    airspaceNameController.onChange(function (newAirspace) {
+        console.log(newAirspace);
+        svgPathOutput = createSVGPath(newAirspace);
+        
+        console.log(svgPathOutput);
+    });
+
     altitudeCeiling.onChange(function (newCeiling) {
         console.log(newCeiling);
     });
@@ -284,7 +234,7 @@ function createGUI() {
     folder2.open();
     folder3.add(settings, 'Download STL');
     folder3.open();
-    folder4.add(settings, 'Bop');
+    folder4.add(settings, 'Test Drop');
     folder4.open();
 }
 
