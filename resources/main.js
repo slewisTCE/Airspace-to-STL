@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { extractAirspaceClasses, extractAirspaceNames, createSVGPath } from './handler.js';
+import { extractAirspaceClasses, extractAirspaceNames, createSVGPath, getAirspaceDetailsByName } from './handler.js';
 import { state } from './state.js';
 
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -11,8 +11,10 @@ import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 THREE.Cache.enabled = true;
 
 let container;
+let infoContainer = null;
 let camera, scene, renderer, controls;
 let group, bbox, materials;
+let settings;
 let svgMesh, svgGeometry, exporter;
 let shapes = [];
 let material = new THREE.MeshPhongMaterial({ color: 0x0094aa, flatShading: true });
@@ -100,6 +102,13 @@ function init() {
 
     window.addEventListener( 'resize', onWindowResize );
 
+    document.getElementById('toggle-info-box').addEventListener('click', () => {
+        const box = document.getElementById('airspace-info-box');
+        box.classList.toggle('collapsed');
+        document.getElementById('toggle-info-box').textContent = box.classList.contains('collapsed') ? 'Show Airspace Data' : 'Hide Airspace Data';
+    });
+    
+
 }
 
 function onWindowResize() {
@@ -121,7 +130,6 @@ function loadSVG(svgPath) {
         svgMesh.material.dispose();
         svgMesh = null;
     }
-    // const svgPath = `M 48.89287729989707 183.89045650444473 L 48.192839163873145 132.891603577414 L 48.192839163873145 132.891603577414 A 36.26304372260307 36.26304372260307 0 0 1 24.596857037053844 70.13744666665025 L 24.596857037053844 70.13744666665025 A 35.994866379133406 35.994866379133406 0 1 1 60.96008380000639 62.286616644805974 L 60.96008380000639 62.286616644805974 A 36.34036915444785 36.34036915444785 0 0 1 84.00552382653574 107.35963107342576 L 96.51501296702304 118.6277598027653 L 104.25477089631438 142.9671952790087 L 154.74770344827112 291.3841233865955 L 154.74770344827112 291.3841233865955 A 37.73028147731745 37.73028147731745 0 0 1 175.93175894690881 334.56990357954857 L 175.93175894690881 334.56990357954857 A 37.915965367627344 37.915965367627344 0 0 1 132.75894491358198 384.1470859784639 L 119.40812127081179 406.1101984522771 L 78.7360412043435 448.62065863185455 L 78.7360412043435 448.62065863185455 A 36.43288855809996 36.43288855809996 0 0 1 60.64609102112087 496.56090804577224 L 52.909768192349965 480.110820673215 L 52.909768192349965 480.110820673215 A 18.12314701081391 18.12314701081391 0 1 0 37.54730895547068 447.3466801353407 L 24.347355004403063 422.2846266928632 L 26.67923303175599 421.451080723863 L 53.01567226454507 418.0855640433955 L 55.40740711058519 408.4881391027152 L 59.515416541897274 401.061196258451 L 59.515416541897274 401.061196258451 A 6.0766055122185385 6.0766055122185385 0 0 1 64.42125880821999 390.0014348093898 L 68.43180014406227 381.1612785469042 L 89.20762045837459 360.0779956028499 L 98.3036167829386 354.14638006458165 L 98.3036167829386 354.14638006458165 A 49.710457366294904 49.710457366294904 0 0 1 99.63144835701767 295.43025297861186 L 69.97533989276447 209.25704851458806 L 75.09526692211097 201.38690469770387 L 55.98066544608381 198.95750286016352 L 48.89287729989707 183.89045650444473`;
 
     const svgMarkup  = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
                         <g id="LWPOLYLINE">
@@ -153,9 +161,6 @@ function loadSVG(svgPath) {
 
     bbox = new THREE.Box3();
     bbox.setFromObject(svgMesh);
-    console.log("Bounding box details are:");
-    console.log(bbox.min);
-    console.log(bbox.max);
 
     group.add(svgMesh);
 }
@@ -177,7 +182,11 @@ function exportBinary() {
 
     // Parse the input and generate the STL encoded output
     const result = exporter.parse( group, options );
-    saveArrayBuffer( result, text + ' DAH-Vol.stl' );
+    
+    const rawName = settings['Airspace Name'] || 'airspace';
+    const safeName = rawName.replace(/[<>:"/\\|?*\[\]]+/g, '').trim().replace(/\s+/g, '_');
+    saveArrayBuffer(result, `${safeName}_DAH-Vol.stl`);
+
 }
 
 function save( blob, filename ) {
@@ -190,6 +199,13 @@ function saveArrayBuffer( buffer, filename ) {
     save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
 }
 
+function airspaceNameChangeController(airspaceName) {
+    const svgPathOutput = createSVGPath(airspaceName);
+    loadSVG(svgPathOutput);
+    const airspaceInfo = getAirspaceDetailsByName(airspaceName);
+    document.getElementById('airspace-info-content').textContent = (airspaceInfo || 'No data available.').replace(/, /g, ',\n\t');
+}
+
 function createGUI() {
     const airspaceClassOptions = extractAirspaceClasses();
     const defaultClass = airspaceClassOptions[0] || 'None';
@@ -200,15 +216,13 @@ function createGUI() {
     const folder1 = panel.addFolder('Airspace Selection');
     const folder2 = panel.addFolder('Airspace Options')
     const folder3 = panel.addFolder('Downloader');
-    const folder4 = panel.addFolder('Test Area');
 
-    const settings = {
+    settings = {
         'Airspace Class': defaultClass,
         'Airspace Name': airspaceNameOptions[0] || 'None',
         'Altitude Floor' : 0,
         'Altitude Ceiling' : 2500,
         'Download STL': exportBinary,
-        'Test Drop': 'bop'
     };
 
     // Controllers (needed for dynamic updating)
@@ -222,31 +236,25 @@ function createGUI() {
         const names = extractAirspaceNames(newClass);
         settings['Airspace Name'] = names[0] || 'None';
     
-        airspaceNameController.destroy(); 
+        airspaceNameController.destroy();
         airspaceNameController = folder1.add(settings, 'Airspace Name', names).name('Name');
+    
+        // Rebind onChange after recreating the controller
+        airspaceNameController.onChange(function (newAirspace) {
+            airspaceNameChangeController(newAirspace);    
+        });
     });
 
     airspaceNameController.onChange(function (newAirspace) {
-        const svgPathOutput = createSVGPath(newAirspace);
-        loadSVG(svgPathOutput);
+        airspaceNameChangeController(newAirspace);
     });
 
     altitudeCeiling.onChange(function (newCeiling) {
         console.log(newCeiling);
     });
-    
 
     folder1.open();
     folder2.open();
     folder3.add(settings, 'Download STL');
     folder3.open();
-    folder4.add(settings, 'Test Drop');
-    folder4.open();
 }
-
-
-
-
-
-
-

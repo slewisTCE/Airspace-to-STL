@@ -258,7 +258,7 @@ function segmentsToSVGPath(segments) {
   
 
 // Main function
-function getAirspaceDetailsByName(name) {
+export function getAirspaceDetailsByName(name) {
     const block = state.blocks.find(block => {
         const lines = block.trim().split("\n");
         const nameLine = lines.find(line => line.startsWith("AN "));

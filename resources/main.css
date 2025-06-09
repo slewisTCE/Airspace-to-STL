@@ -89,3 +89,47 @@ a, button, input, select {
 	margin-top: 20px;
 	padding: 10px;
 }
+
+#airspace-info-box {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 300px;
+	max-height: 80%;
+	overflow-y: auto;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: white;
+	padding: 10px;
+	font-family: monospace;
+	font-size: 12px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	z-index: 3;
+	white-space: pre-wrap;
+}
+
+
+#airspace-info-box button {
+	background: #222;
+	color: white;
+	border: 1px solid #666;
+	padding: 2px 6px;
+	cursor: pointer;
+	/* margin: 0 0 4px 0; */
+	font-size: 12px;
+	line-height: 1;
+	display: block;
+	margin: 0 auto 6px auto; /* ← center horizontally + small space below */
+}
+
+#airspace-info-content {
+	margin: 0;
+	line-height: 1.4;
+}
+
+#airspace-info-box.collapsed #airspace-info-content {
+	display: none;
+}
+
+
+
