@@ -1,23 +1,33 @@
 import * as THREE from 'three';
 
-import { extractAirspaceClasses, extractAirspaceNames, createSVGPath, getAirspaceDetailsByName } from './handler.js';
+import { 
+    extractAirspaceClasses,
+    extractAirspaceNames,
+    createSVGPath,
+    getBasicDetails
+} from './handler.js';
+
 import { state } from './state.js';
 
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from "three/addons/loaders/SVGLoader";
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 THREE.Cache.enabled = true;
 
-let container;
-let infoContainer = null;
 let camera, scene, renderer, controls;
-let group, bbox, materials;
-let settings;
-let svgMesh, svgGeometry, exporter;
+let group, bbox, materials, settings;
+let svgMesh, edgeLines, svgGeometry, exporter, container;
+
 let shapes = [];
-let material = new THREE.MeshPhongMaterial({ color: 0x0094aa, flatShading: true });
+let material = new THREE.MeshPhongMaterial({ 
+    color: 0x0094aa,
+    flatShading: true,
+    transparent: true,
+	opacity: 0.75, // adjust to taste
+});
+
 
 const link = document.createElement( 'a' );
 link.style.display = 'none';
@@ -28,10 +38,19 @@ fetch(state.datasource)
     .then(data => {
         state.content = data;
         state.blocks = state.content.split(/\n\s*\n/);
-        init(); // call only after content is ready
+        init();
         loadSVG();
         animate();
     });
+
+function onWindowResize() {
+    windowHalfX = window.innerWidth / 2;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
 
 function init() {
     container = document.createElement( 'div' );
@@ -47,7 +66,7 @@ function init() {
 
     // CAMERA
     camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.set( 0, -250, 250 );
+    camera.position.set( 0, -400, 400 );
 
     // SCENE
     scene = new THREE.Scene();
@@ -108,49 +127,50 @@ function init() {
         document.getElementById('toggle-info-box').textContent = box.classList.contains('collapsed') ? 'Show Airspace Data' : 'Hide Airspace Data';
     });
     
-
-}
-
-function onWindowResize() {
-    windowHalfX = window.innerWidth / 2;
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 function loadSVG(svgPath) {
-     // Clear previous shapes and mesh
-     shapes = [];
+    // Clear previous shapes and mesh
+    shapes = [];
 
-     if (svgMesh) {
+    if (svgMesh) {
         group.remove(svgMesh);
         svgMesh.geometry.dispose();
         svgMesh.material.dispose();
         svgMesh = null;
     }
 
-    const svgMarkup  = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-                        <g id="LWPOLYLINE">
-                            <path d="
-                                ${svgPath}
-                            " fill="none" stroke="red" stroke-width="1"/>
-                        </g>
-                    </svg>`
-        
+    if (edgeLines) {
+        group.remove(edgeLines);
+        edgeLines.geometry.dispose();
+        edgeLines.material.dispose();
+        edgeLines = null;
+    }
+
+    const svgMarkup = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+        <g id="LWPOLYLINE">
+            <path d="${svgPath}" fill="none" stroke="red" stroke-width="1"/>
+        </g>
+    </svg>`;
+
     const loader_svg = new SVGLoader();
     const svgData = loader_svg.parse(svgMarkup);
 
-    svgData.paths.forEach((path, i) => {
-        shapes = path.toShapes(true);
+    // Collect shapes (overwriting each time = last one wins)
+    svgData.paths.forEach((path) => {
+        shapes = path.toShapes(true, 64);
     });
 
-    shapes.forEach((shape, i) => {
-        svgGeometry = new THREE.ExtrudeGeometry(shape, {
-            depth: 20,
-            bevelEnabled: false
-          });
+    // Use the first shape for extrusion
+    if (!shapes.length) {
+        console.warn("No valid shapes extracted.");
+        return;
+    }
+
+    svgGeometry = new THREE.ExtrudeGeometry(shapes[0], {
+        depth: 20,
+        bevelEnabled: false,
+        curveSegments: 64
     });
 
     svgMesh = new THREE.Mesh(svgGeometry, material);
@@ -163,7 +183,23 @@ function loadSVG(svgPath) {
     bbox.setFromObject(svgMesh);
 
     group.add(svgMesh);
+
+    // Add silhouette edges (visually clean outlines)
+    // const edgeGeometry = new THREE.EdgesGeometry(svgGeometry);
+    const edgeGeometry = new THREE.EdgesGeometry(svgGeometry, 20); // 20° angle threshold
+    const edgeMaterial = new THREE.LineBasicMaterial({
+        color: 0x005390,
+        transparent: false
+        // opacity: 0.8
+    });
+    edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+    edgeLines.scale.copy(svgMesh.scale);
+    edgeLines.position.copy(svgMesh.position);
+    edgeLines.rotation.copy(svgMesh.rotation);
+
+    group.add(edgeLines);
 }
+
 
 function animate() {
     requestAnimationFrame( animate );
@@ -189,21 +225,22 @@ function exportBinary() {
 
 }
 
+function saveArrayBuffer( buffer, filename ) {
+    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+}
+
 function save( blob, filename ) {
     link.href = URL.createObjectURL( blob );
     link.download = filename;
     link.click();
 }
 
-function saveArrayBuffer( buffer, filename ) {
-    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
-}
-
 function airspaceNameChangeController(airspaceName) {
     const svgPathOutput = createSVGPath(airspaceName);
     loadSVG(svgPathOutput);
-    const airspaceInfo = getAirspaceDetailsByName(airspaceName);
-    document.getElementById('airspace-info-content').textContent = (airspaceInfo || 'No data available.').replace(/, /g, ',\n\t');
+    const airspaceInfo = getBasicDetails(airspaceName);
+    document.getElementById('airspace-info-content').textContent = (airspaceInfo || 'No data available.').replace(/, /g, ',\n  ');
+    document.getElementById('svg-preview-path').setAttribute("d", svgPathOutput);
 }
 
 function createGUI() {
@@ -219,7 +256,8 @@ function createGUI() {
 
     settings = {
         'Airspace Class': defaultClass,
-        'Airspace Name': airspaceNameOptions[0] || 'None',
+        // 'Airspace Name': airspaceNameOptions[0] || 'None',
+        'Airspace Name': 'None',
         'Altitude Floor' : 0,
         'Altitude Ceiling' : 2500,
         'Download STL': exportBinary,

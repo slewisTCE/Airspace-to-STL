@@ -3,8 +3,15 @@ import { state } from './state.js';
 import proj4 from 'proj4';
 
 // // Define coordinate systems
-proj4.defs("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-proj4.defs("UTM50S", "+proj=utm +zone=50 +south +datum=WGS84");
+// proj4.defs("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+// proj4.defs("UTM50S", "+proj=utm +zone=50 +south +datum=WGS84");
+
+// proj4.defs("GDA94", "+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=135 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs");
+// proj4.defs("EPSG:3577", "+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +datum=GDA94 +units=m +no_defs");
+
+proj4.defs("CustomUTM", "+proj=tmerc +lat_0=0 +lon_0=153 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs");
+
+
 
 
 export function extractAirspaceClasses() {
@@ -36,7 +43,7 @@ export function extractAirspaceNames(filterClass = null) {
         }
     });
 
-    return airspaceNames;   `   `
+    return airspaceNames;
 }
 
 // Helper to convert DMS to decimal
@@ -60,7 +67,9 @@ function projectLatLon(latDMS, lonDMS) {
     }
   
     try {
-      const [x, y] = proj4("WGS84", "UTM50S", [lon, lat]);
+      // const [x, y] = proj4("WGS84", "UTM50S", [lon, lat]);
+      // const [x, y] = proj4("WGS84", "EPSG:3577", [lon, lat]);
+      const [x, y] = proj4("WGS84", "CustomUTM", [lon, lat]);
       return `${x.toFixed(2)} ${y.toFixed(2)}`;
     } catch (e) {
       console.error("proj4 failed:", e, { lat, lon });
@@ -206,13 +215,6 @@ function segmentsToSVGPath(segments) {
     let path = '';
     let hasMoved = false;
   
-    const getAngle = (cx, cy, x, y) => Math.atan2(y - cy, x - cx);
-    const angleDiff = (a1, a2) => {
-      let diff = a2 - a1;
-      if (diff < 0) diff += Math.PI * 2;
-      return diff;
-    };
-  
     for (const seg of segments) {
       if (seg.type === 'point') {
         if (!hasMoved) {
@@ -297,12 +299,27 @@ export function getAirspaceDetailsByName(name) {
     return finalOutput;
 }
 
+export function getBasicDetails(name) {
+  const block = state.blocks.find(block => {
+      const lines = block.trim().split("\n");
+      const nameLine = lines.find(line => line.startsWith("AN "));
+      return nameLine && nameLine.slice(3).trim() === name;
+  });
+
+  if (!block) {
+      console.log(`No airspace found with the name "${name}".`);
+      return;
+  }
+
+  return block;
+}
+
 export function createSVGPath(param){
     const rawDetails = getAirspaceDetailsByName(param);
     const rawSegments = parseAirspaceToSegments(rawDetails);
     const bounds = getBoundingBox(rawSegments);
     const segments = normalizeSegments(rawSegments, bounds);
     const svgoutput = segmentsToSVGPath(segments);
-    // console.log(segments);
+    console.log(svgoutput);
     return svgoutput;
 }

@@ -17,9 +17,19 @@
           }
         </script>
 	</head>
-	<body>
-		
-    <div id="airspace-info-box"><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">...</pre></div>
+	<body>		
+    <!-- <div id="airspace-info-box"><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">...</pre></div> -->
+    <div id="airspace-info-box"><div id="airspace-info-header">For information on the used syntax, visit: 
+<a href="https://xcaustralia.org/doc/openair/winpilot_Airspace-OpenAir-Format_2018.htm" target="_blank">OpenAir Format Reference
+</a></div><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">Select an airspace...</pre></div>
+
+<div id="svg-preview-box">
+  <svg id="svg-preview" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+    <g id="LWPOLYLINE">
+      <path id="svg-preview-path" d="" fill="solid" stroke="#6abfff" stroke-width="10"/>
+    </g>
+  </svg>
+</div>
 
     <script type="module" src="resources/main.js"></script>
     <!-- <script type="module" src="/proxy/3000/resources/main.js"></script> -->
