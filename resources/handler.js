@@ -1,7 +1,11 @@
-// import { ConstantAlphaFactor } from 'three/src/constants.js';
 import { state } from './state.js';
 
-const { execSync } = require("child_process");
+import proj4 from 'proj4';
+
+// // Define coordinate systems
+proj4.defs("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+proj4.defs("UTM50S", "+proj=utm +zone=50 +south +datum=WGS84");
+
 
 export function extractAirspaceClasses() {
     if (!state.content) return [];
@@ -46,26 +50,25 @@ function dmsToDecimal(dmsStr) {
     return decimal;
 }
 
-// Transform a coordinate with cs2cs
 function projectLatLon(latDMS, lonDMS) {
     const lat = dmsToDecimal(latDMS);
     const lon = dmsToDecimal(lonDMS);
-    if (lat === null || lon === null) return null;
-
-    const input = `${lon} ${lat}`;
-    try {
-        const output = execSync(
-            `echo "${input}" | cs2cs +proj=longlat +datum=WGS84 +to +proj=utm +zone=50 +south +datum=WGS84`,
-            { encoding: "utf8" }
-        ).trim();
-        return output; // UTM X Y
-    } catch (e) {
-        return null;
+  
+    if (!isFinite(lat) || !isFinite(lon)) {
+      console.warn("Invalid lat/lon for projection:", { latDMS, lonDMS, lat, lon });
+      return null;
     }
-}
+  
+    try {
+      const [x, y] = proj4("WGS84", "UTM50S", [lon, lat]);
+      return `${x.toFixed(2)} ${y.toFixed(2)}`;
+    } catch (e) {
+      console.error("proj4 failed:", e, { lat, lon });
+      return null;
+    }
+  }
 
 function parseAirspaceToSegments(finalOutput) {
-    console.log(finalOutput);
     const lines = finalOutput.split('\n');
     const segments = [];
 
@@ -105,37 +108,37 @@ function parseAirspaceToSegments(finalOutput) {
             });
         }
     }
-    console.log(segments);
 
     return segments;
 }
 
 function getBoundingBox(segments) {
-    let xs = [];
-    let ys = [];
-  
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
     for (const seg of segments) {
-      if (seg.type === 'point') {
-        xs.push(seg.x);
-        ys.push(seg.y);
-      } else if (seg.type === 'arc') {
-        xs.push(seg.x1, seg.x2);
-        ys.push(seg.y1, seg.y2);
-        if (seg.cx != null && seg.cy != null) {
-          xs.push(seg.cx);
-          ys.push(seg.cy);
+        if (seg.type === 'point') {
+            minX = Math.min(minX, seg.x);
+            maxX = Math.max(maxX, seg.x);
+            minY = Math.min(minY, seg.y);
+            maxY = Math.max(maxY, seg.y);
+
+        } else if (seg.type === 'arc') {
+            const r = Math.hypot(seg.cx - seg.x1, seg.cy - seg.y1);
+            minX = Math.min(minX, seg.cx - r, seg.x1, seg.x2);
+            maxX = Math.max(maxX, seg.cx + r, seg.x1, seg.x2);
+            minY = Math.min(minY, seg.cy - r, seg.y1, seg.y2);
+            maxY = Math.max(maxY, seg.cy + r, seg.y1, seg.y2);
+
+        } else if (seg.type === 'circle') {
+            const { cx, cy, r } = seg;
+            minX = Math.min(minX, cx - r);
+            maxX = Math.max(maxX, cx + r);
+            minY = Math.min(minY, cy - r);
+            maxY = Math.max(maxY, cy + r);
         }
-      } else if (seg.type === 'circle') {
-        xs.push(seg.cx);
-        ys.push(seg.cy);
-      }
     }
-  
-    const minX = Math.min(...xs) - 1000;
-    const maxX = Math.max(...xs) + 1000;
-    const minY = Math.min(...ys) - 1000;
-    const maxY = Math.max(...ys) + 1000;
-  
+
     return { minX, maxX, minY, maxY };
 } 
 
@@ -203,38 +206,56 @@ function segmentsToSVGPath(segments) {
     let path = '';
     let hasMoved = false;
   
+    const getAngle = (cx, cy, x, y) => Math.atan2(y - cy, x - cx);
+    const angleDiff = (a1, a2) => {
+      let diff = a2 - a1;
+      if (diff < 0) diff += Math.PI * 2;
+      return diff;
+    };
+  
     for (const seg of segments) {
       if (seg.type === 'point') {
         if (!hasMoved) {
-          path += `M ${seg.x} ${seg.y} ` ;
+          path += `M ${seg.x} ${seg.y} `;
           hasMoved = true;
         } else {
-          path += `L ${seg.x} ${seg.y} ` ;
+          path += `L ${seg.x} ${seg.y} `;
         }
-    
-    } else if (seg.type === 'arc') {
+  
+      } else if (seg.type === 'arc') {
         const { x1, y1, x2, y2, cx, cy, direction } = seg;
-  
-        const rx = Math.hypot(x1 - cx, y1 - cy);
-        const ry = Math.hypot(x2 - cx, y2 - cy);
-        const largeArcFlag = 0; // assume arc < 180°
-        const sweepFlag = direction;
-  
-        path += `A ${rx} ${ry} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2} ` ;
       
-    } else if (seg.type === 'circle') {
+        const rx = Math.hypot(x1 - cx, y1 - cy);
+        const ry = rx;
+      
+        const angle1 = Math.atan2(y1 - cy, x1 - cx);
+        const angle2 = Math.atan2(y2 - cy, x2 - cx);
+      
+        let delta = angle2 - angle1;
+        if (direction === 1 && delta < 0) delta += 2 * Math.PI;
+        if (direction === 0 && delta > 0) delta -= 2 * Math.PI;
+      
+        const largeArcFlag = Math.abs(delta) > Math.PI ? 1 : 0;
+        const sweepFlag = direction;
+      
+        path += `L ${x1} ${y1} `;
+        path += `A ${rx} ${ry} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2} `;
+      } else if (seg.type === 'circle') {
         const { cx, cy, r } = seg;
         const startX = cx + r;
         const startY = cy;
-      
-        return `M ${startX} ${startY}
-                A ${r} ${r} 0 1 0 ${cx - r} ${cy}
-                A ${r} ${r} 0 1 0 ${startX} ${startY} `;
+  
+        return `
+          M ${startX} ${startY}
+          A ${r} ${r} 0 1 0 ${cx - r} ${cy}
+          A ${r} ${r} 0 1 0 ${startX} ${startY}
+        `;
       }
     }
   
-    return path.trim(); // clean trailing space
+    return path.trim();
   }
+  
 
 // Main function
 function getAirspaceDetailsByName(name) {
@@ -278,12 +299,10 @@ function getAirspaceDetailsByName(name) {
 
 export function createSVGPath(param){
     const rawDetails = getAirspaceDetailsByName(param);
-    // console.log(rawDetails);
     const rawSegments = parseAirspaceToSegments(rawDetails);
-    // console.log(rawSegments);
     const bounds = getBoundingBox(rawSegments);
     const segments = normalizeSegments(rawSegments, bounds);
     const svgoutput = segmentsToSVGPath(segments);
-
-    console.log("fin...");
+    // console.log(segments);
+    return svgoutput;
 }
