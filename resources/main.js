@@ -17,17 +17,17 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 THREE.Cache.enabled = true;
 
 let camera, scene, renderer, controls;
-let group, bbox, materials, settings;
-let svgMesh, edgeLines, svgGeometry, exporter, container;
+let group, bbox, container, settings;
+let svgMesh, edgeLines, svgGeometry, exporter;
 
 let shapes = [];
+
 let material = new THREE.MeshPhongMaterial({ 
     color: 0x0094aa,
     flatShading: true,
     transparent: true,
 	opacity: 0.75, // adjust to taste
 });
-
 
 const link = document.createElement( 'a' );
 link.style.display = 'none';
@@ -56,7 +56,7 @@ function init() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    // RENDERER
+// Renderer
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -64,15 +64,15 @@ function init() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild( renderer.domElement );
 
-    // CAMERA
+// Camera
     camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.set( 0, -400, 400 );
 
-    // SCENE
+// Scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xe0e0e0 );
+    scene.background = new THREE.Color( 0x1e1e1e );
 
-    // LIGHTS
+// Lights
     const dirLight = new THREE.DirectionalLight( 0xffffff, 1.0);
     dirLight.position.set( 0, -250, 250 ).normalize();
     dirLight.castShadow = true;
@@ -87,11 +87,6 @@ function init() {
     camera.add( followLight );
     scene.add( camera );
 
-    materials = [
-        new THREE.MeshPhongMaterial( { color: 0xff4800, flatShading: true } ), // front
-        new THREE.MeshPhongMaterial( { color: 0xff4800} ) // side
-    ];
-
     group = new THREE.Group();
     group.position.y = 0;
     group.castShadow = true;
@@ -99,14 +94,12 @@ function init() {
 
     scene.add( group );
 
-    const helper = new THREE.GridHelper( 200, 20 );
+    const helper = new THREE.GridHelper( 200, 20, 0x888888, 0x333333 );
     helper.position.y = 0;
-    helper.material.opacity = 0.8;
-    helper.material.transparent = true;
     helper.rotateX(Math.PI / 2);
     scene.add( helper );
 
-    // CONTROLS
+// Controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.minDistance = 200;
     controls.maxDistance = 800;
@@ -114,7 +107,7 @@ function init() {
     controls.maxAzimuthAngle = Math.PI / 2;
     controls.maxPolarAngle = Math.PI;
 
-    // EVENTS
+// Events
     container.style.touchAction = 'none';
 
     createGUI();
@@ -130,7 +123,6 @@ function init() {
 }
 
 function loadSVG(svgPath) {
-    // Clear previous shapes and mesh
     shapes = [];
 
     if (svgMesh) {
@@ -185,12 +177,11 @@ function loadSVG(svgPath) {
     group.add(svgMesh);
 
     // Add silhouette edges (visually clean outlines)
-    // const edgeGeometry = new THREE.EdgesGeometry(svgGeometry);
     const edgeGeometry = new THREE.EdgesGeometry(svgGeometry, 20); // 20° angle threshold
     const edgeMaterial = new THREE.LineBasicMaterial({
         color: 0x005390,
-        transparent: false
-        // opacity: 0.8
+        transparent: true,
+        opacity: 0.8
     });
     edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
     edgeLines.scale.copy(svgMesh.scale);
@@ -213,10 +204,7 @@ function render() {
 
 function exportBinary() {
     exporter = new STLExporter();
-    // Configure export options
-    const options = { binary: true }
-
-    // Parse the input and generate the STL encoded output
+    const options = { binary: true };
     const result = exporter.parse( group, options );
     
     const rawName = settings['Airspace Name'] || 'airspace';
@@ -248,7 +236,11 @@ function createGUI() {
     const defaultClass = airspaceClassOptions[0] || 'None';
     const airspaceNameOptions = extractAirspaceNames(defaultClass);
 
-    const panel = new GUI();
+    const panel = new GUI({ autoPlace: false });
+    const guiContainer = document.createElement('div');
+    guiContainer.classList.add('custom-lil-gui');
+    guiContainer.appendChild(panel.domElement);
+    document.body.appendChild(guiContainer);
 
     const folder1 = panel.addFolder('Airspace Selection');
     const folder2 = panel.addFolder('Airspace Options')
@@ -256,7 +248,6 @@ function createGUI() {
 
     settings = {
         'Airspace Class': defaultClass,
-        // 'Airspace Name': airspaceNameOptions[0] || 'None',
         'Airspace Name': 'None',
         'Altitude Floor' : 0,
         'Altitude Ceiling' : 2500,
@@ -272,7 +263,7 @@ function createGUI() {
     // Update "Airspace Name" when "Airspace Class" changes
     airspaceClassController.onChange(function (newClass) {
         const names = extractAirspaceNames(newClass);
-        settings['Airspace Name'] = names[0] || 'None';
+        settings['Airspace Name'] = 'None';
     
         airspaceNameController.destroy();
         airspaceNameController = folder1.add(settings, 'Airspace Name', names).name('Name');
