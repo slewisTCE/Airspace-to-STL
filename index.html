@@ -5,17 +5,32 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="resources/main.css">
-        <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+        <!-- <script async src="https://unpkg.com/es-module-shims@2.6.2/dist/es-module-shims.js"></script> -->
+        <script async src="./resources/unpkg/es-module-shims.js"></script>
+        
+
+              <!--
+              "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
+              "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/",
+
+              "proj4": "https://cdn.jsdelivr.net/npm/proj4@2.20.2/+esm",
+              "mgrs": "https://cdn.jsdelivr.net/npm/mgrs@1.0.0/+esm",
+              "wkt-parser": "https://cdn.jsdelivr.net/npm/wkt-parser@1.5.2/+esm"
+              -->
 
         <script type="importmap">
           {
             "imports": {
-              "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
-              "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/",
-              "proj4": "https://cdn.jsdelivr.net/npm/proj4@2.9.1/+esm"
+              "three": "./resources/unpkg/three.module.js",
+              "three/addons/": "./resources/unpkg/addons/",
+
+              "proj4": "./resources/npm/proj4js/proj4.esm.js",
+              "/npm/mgrs@1.0.0/+esm": "./resources/npm/mgrs/mgrs.esm.js",
+              "/npm/wkt-parser@1.5.2/+esm": "./resources/npm/wkt-parser/wkt-parser.esm.js"
             }
           }
         </script>
+
 	</head>
 	<body>		
     <!-- <div id="airspace-info-box"><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">...</pre></div> -->

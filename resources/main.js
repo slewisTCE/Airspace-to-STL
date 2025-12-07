@@ -11,27 +11,32 @@ import {
 
 import { state } from './state.js';
 
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+// import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+// import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+// import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+// import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+import { SVGLoader } from 'three/addons/SVGLoader.js';
+import { GUI } from 'three/addons/lil-gui.module.min.js';
+import { STLExporter } from 'three/addons/STLExporter.js';
+import { OrbitControls } from 'three/addons/OrbitControls.js';
 
 THREE.Cache.enabled = true;
 
-const MIN_ALT_FT = 0;   // or whatever floor you like
-const MAX_ALT_FT = 150000;  // give yourself room above FL600
+const MIN_ALT_FT = 0;   // Min Z Value (Floor)
+const MAX_ALT_FT = 150000;  // Max Z Value (Ceiling)
 
 // Three.js core
 let camera, scene, renderer, controls;
 let group, container, settings;
 let exporter;
 
-// SVG → Shape buffer
+// SVG > Shape buffer
 let shapes = [];
 
 // Multi-volume management
 const BASE_EXTRUDE_DEPTH = 20;  // original extrude depth
-const FT_TO_METRES = 0.3048;
+const FT_TO_METRES = 0.3048;    // unit conversion
 
 // SVG normalisation (must match handler.js)
 const SVG_SIZE = 500;
@@ -48,8 +53,8 @@ let volumes = [];
 let nextVolumeId = 1;
 let folderVolumes;
 
-// Shared XY normalization across all volumes
-let globalBounds = null;        // { minX, maxX, minY, maxY }
+// Shared XY normalisation across all volumes
+let globalBounds = null; // { minX, maxX, minY, maxY }
 
 // Download link
 const link = document.createElement('a');
@@ -74,6 +79,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+// App Initilisation
 function init() {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -100,7 +106,7 @@ function init() {
     dirLight.castShadow = true;
     scene.add(dirLight);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
     const followLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -150,6 +156,8 @@ function init() {
     createGUI();
 }
 
+
+// Centers rendered volumes on display plate
 function centerGroupXY() {
     if (!group || group.children.length === 0) return;
 
@@ -163,9 +171,7 @@ function centerGroupXY() {
     group.position.y = -center.y;
 }
 
-/**
- * Build a mesh + edges from an SVG path string.
- */
+// Build a mesh + edges from an SVG path string
 function buildMeshFromSVGPath(svgPath) {
     shapes = [];
 
@@ -194,8 +200,8 @@ function buildMeshFromSVGPath(svgPath) {
     });
 
     const material = new THREE.MeshPhongMaterial({
-        color: 0x0094aa,
-        flatShading: true,
+        color: 0x4de7ff,
+        flatShading: false,
         transparent: true,
         opacity: 0.75
     });
@@ -223,9 +229,8 @@ function buildMeshFromSVGPath(svgPath) {
     return { geometry, mesh, edges };
 }
 
-/**
- * Recompute globalBounds as the union of all current volumes' raw projected bounds.
- */
+
+ // Recompute globalBounds as the union of all current volumes raw projected bounds
 function recalcGlobalBounds() {
     globalBounds = null;
     for (const v of volumes) {
@@ -242,7 +247,7 @@ function recalcGlobalBounds() {
         }
     }
 
-    // 🔧 Derive altitude scale so 1m vertically ≈ 1m horizontally in the scene
+    // Derive altitude scale so 1m vertically kinda equals 1m horizontally in the scene
     if (globalBounds) {
         const spanX = globalBounds.maxX - globalBounds.minX;
         const spanY = globalBounds.maxY - globalBounds.minY;
@@ -258,10 +263,9 @@ function recalcGlobalBounds() {
 
 }
 
-/**
- * Rebuild the geometry of all volumes so they share the same normalization (globalBounds).
- */
+// Rebuild the geometry of all volumes so they share the same normalization (globalBounds)
 function rebuildAllVolumesGeometry() {
+
     // Remove existing meshes/edges from scene and dispose them
     for (const v of volumes) {
         if (v.mesh) {
@@ -298,14 +302,13 @@ function rebuildAllVolumesGeometry() {
         updateVolumeTransform(v);
     }
 
-    centerGroupXY();   // ✅ center the combined set, not each mesh
+    centerGroupXY();   // center the combined set, not each mesh
 }
 
-/**
- * Apply floor/ceiling → Z scaling + positioning to a given volume.
- * Floor/Ceiling are stored in FEET; they’re converted to metres and then
- * scaled with ALTITUDE_SCALE so Z matches X/Y rate.
- */
+
+// Apply floor/ceiling to Z scaling + positioning to a given volume
+// Floor/Ceiling are stored in FEET; they’re converted to metres and then
+// scaled with ALTITUDE_SCALE so Z matches X/Y rate
 function updateVolumeTransform(volume) {
     if (!volume.mesh && !volume.edges) return;
 
@@ -319,30 +322,27 @@ function updateVolumeTransform(volume) {
     const floorM   = floorFt   * FT_TO_METRES;
     const ceilingM = ceilingFt * FT_TO_METRES;
 
-    // Scene Z for floor & ceiling, both scaled by zScaleFactor
+    // Scene Z for floor and ceiling, both scaled by zScaleFactor
     const floorScene = floorM   * ALTITUDE_SCALE * zScaleFactor;
     const ceilScene  = ceilingM * ALTITUDE_SCALE * zScaleFactor;
 
     // Avoid zero-thickness
     const sceneHeight = Math.max(ceilScene - floorScene, ALTITUDE_SCALE);
 
-    // Extrude geometry has fixed depth (BASE_EXTRUDE_DEPTH),
-    // so we stretch it to the desired sceneHeight.
+    // Extrude geometry has fixed depth (BASE_EXTRUDE_DEPTH)
+    // so we stretch it to the desired sceneHeight
     const scaleZ = sceneHeight / BASE_EXTRUDE_DEPTH;
 
     if (volume.mesh)  volume.mesh.scale.z  = scaleZ;
     if (volume.edges) volume.edges.scale.z = scaleZ;
 
-    // 🔧 Anchor local z=0 at the (scaled) floor altitude
+    // Anchor local z=0 at the (scaled) floor altitude
     if (volume.mesh)  volume.mesh.position.z  = floorScene;
     if (volume.edges) volume.edges.position.z = floorScene;
 }
 
 
-
-/**
- * Remove a volume from scene, memory, GUI, and rescale remaining volumes.
- */
+// Remove a volume from scene, memory, GUI, and rescale remaining volumes
 function removeVolume(volume) {
     if (volume.mesh) {
         group.remove(volume.mesh);
@@ -367,11 +367,10 @@ function removeVolume(volume) {
 
 }
 
-/**
- * Create a new volume record for the given airspace and rebuild everything.
- */
+
+ // Create a new volume record for the given airspace and rebuild everything
 function createVolume(airspaceName, airspaceClass) {
-    // Quick sanity check that this airspace is valid & has bounds
+    // Quick sanity check that this airspace is valid and has bounds
     const b = getBoundsForAirspace(airspaceName);
     if (!b) {
         console.warn('No bounds for airspace:', airspaceName);
@@ -393,8 +392,8 @@ function createVolume(airspaceName, airspaceClass) {
         id: nextVolumeId++,
         name: airspaceName,
         airspaceClass,
-        floor: floorFt,        // stored in feet, for the GUI
-        ceiling: ceilingFt,    // stored in feet, for the GUI
+        floor: floorFt,        // stored in feet for the GUI
+        ceiling: ceilingFt,    // stored in feet for the GUI
         mesh: null,
         edges: null,
         folder: null
@@ -423,18 +422,19 @@ function createVolume(airspaceName, airspaceClass) {
     }
 
 
-    // Update global bounding box & rebuild all geometries
+    // Update global bounding box and rebuild all geometries
     recalcGlobalBounds();
     rebuildAllVolumesGeometry();
     refreshInfoAndPreviewFromVolumes();
 
 }
 
+// update the info and preview panels with added information
 function refreshInfoAndPreviewFromVolumes() {
     const infoEl = document.getElementById('airspace-info-content');
     const previewPath = document.getElementById('svg-preview-path');
 
-    // No volumes → clear preview and show hint
+    // No volumes > clear preview and show hint
     if (!volumes.length) {
         if (previewPath) previewPath.setAttribute('d', '');
         if (infoEl) infoEl.textContent = 'No volumes added...';
@@ -483,14 +483,13 @@ function refreshInfoAndPreviewFromVolumes() {
 }
 
 
-/**
- * Update info box + 2D preview SVG when airspace name changes.
- * Uses shared globalBounds if present (so preview matches the 3D scale).
- */
+
+ // Update info box and 2D preview SVG when airspace name changes.
+ // Uses shared globalBounds if present (so preview matches the 3D scale)
 function airspaceNameChangeController(airspaceName) {
     const infoEl = document.getElementById('airspace-info-content');
 
-    // Before any volumes are added, keep the old “single selection” behaviour.
+    // Before any volumes are added, keep the old “single selection” behaviour
     if (!volumes.length) {
         const previewPath = document.getElementById('svg-preview-path');
 
@@ -521,7 +520,7 @@ function airspaceNameChangeController(airspaceName) {
     refreshInfoAndPreviewFromVolumes();
 }
 
-
+// Creates the initial outlay of the GUI overlay controls
 function createGUI() {
     const airspaceClassOptions = extractAirspaceClasses();
     const defaultClass = airspaceClassOptions[0] || 'None';
@@ -568,7 +567,7 @@ function createGUI() {
 
         settings['Airspace Name'] = first;
 
-        // 🔧 Rebuild BOTH Name and Add Volume in the correct order:
+        // Rebuild BOTH Name and Add Volume in the correct order:
         airspaceNameController.destroy();
         addVolumeController.destroy();
 
@@ -601,10 +600,7 @@ function createGUI() {
 
 }
 
-
-/**
- * Export all volumes in `group` as a single STL.
- */
+// Export all volumes in `group` as a single STL.
 function exportBinary() {
     if (!group || group.children.length === 0) {
         console.warn('No geometry to export.');
@@ -629,9 +625,11 @@ function exportBinary() {
     saveArrayBuffer(result, filename);
 }
 
+// handles output for export
 function saveArrayBuffer(buffer, filename) {
     save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
 }
+
 
 function save(blob, filename) {
     link.href = URL.createObjectURL(blob);
@@ -639,11 +637,13 @@ function save(blob, filename) {
     link.click();
 }
 
+
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     render();
 }
+
 
 function render() {
     renderer.render(scene, camera);

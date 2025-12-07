@@ -7,6 +7,7 @@ proj4.defs(
   "+proj=tmerc +lat_0=0 +lon_0=153 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs"
 );
 
+// Extract a unique list of Airspace Classes
 export function extractAirspaceClasses() {
   if (!state.content) return [];
   const airspaceClasses = new Set(
@@ -18,6 +19,7 @@ export function extractAirspaceClasses() {
   return Array.from(airspaceClasses);
 }
 
+// Extracts a unique list of Airspace Names matching the selected class
 export function extractAirspaceNames(filterClass = null) {
   const airspaceNames = [];
 
@@ -39,7 +41,7 @@ export function extractAirspaceNames(filterClass = null) {
   return airspaceNames;
 }
 
-// DMS → decimal degrees
+// DMS to decimal degrees
 function dmsToDecimal(dmsStr) {
   const match = dmsStr.match(/(\d+):(\d+):([\d.]+) ([NSWE])/);
   if (!match) return null;
@@ -50,7 +52,7 @@ function dmsToDecimal(dmsStr) {
   return decimal;
 }
 
-// Lat/lon DMS → projected coords (CustomUTM)
+// Lat/lon DMS to projected coords (CustomUTM)
 function projectLatLon(latDMS, lonDMS) {
   const lat = dmsToDecimal(latDMS);
   const lon = dmsToDecimal(lonDMS);
@@ -70,7 +72,7 @@ function projectLatLon(latDMS, lonDMS) {
 }
 
 
-// --- Altitude parsing helpers (AL / AH) ---
+// Altitude parsing helpers (AL / AH)
 
 function parseAltitudeValue(raw) {
   if (!raw) {
@@ -306,6 +308,7 @@ function segmentsToSVGPath(segments) {
   return path.trim();
 }
 
+// Identifies volume shape data block based off of drop down selction
 export function getBasicDetails(name) {
   const block = state.blocks.find(block => {
     const lines = block.trim().split("\n");
@@ -321,6 +324,7 @@ export function getBasicDetails(name) {
   return block;
 }
 
+// Identifies volume altitude info based off of drop down selction
 export function getAltitudeInfo(name) {
   const block = state.blocks.find(block => {
     const lines = block.trim().split("\n");
@@ -411,7 +415,7 @@ export function getAirspaceDetailsByName(name) {
   return finalOutput;
 }
 
-// NEW: raw projected bounds for a named airspace
+// raw projected bounds for a named airspace
 export function getBoundsForAirspace(name) {
   const rawDetails = getAirspaceDetailsByName(name);
   if (!rawDetails) return null;
@@ -419,7 +423,7 @@ export function getBoundsForAirspace(name) {
   return getBoundingBox(segments);
 }
 
-// UPDATED: createSVGPath can optionally take sharedBounds
+//createSVGPath can optionally take sharedBounds
 export function createSVGPath(name, sharedBounds = null) {
   const rawDetails = getAirspaceDetailsByName(name);
   if (!rawDetails) return '';
