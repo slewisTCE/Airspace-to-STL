@@ -171,3 +171,10 @@ body {
 	text-decoration: underline;
 	pointer-events: auto;
 }
+
+#github-link {
+	position: absolute;
+	bottom: 10px;
+	right: 100px;
+	z-index: 10;
+}
