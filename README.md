@@ -1,5 +1,4 @@
-# DAH Volume Modeller Tool
-## An Australian Airspace Visualiser
+# DAH Volume Modeller Tool ### An Australian Airspace Visualiser
 Interactive 3D & SVG Explorer for OpenAir-Formatted Airspace Data
 
 This project provides an interactive tool for exploring Australian airspace geometry in both 2D (SVG) and 3D (Three.js).  
@@ -71,7 +70,7 @@ No build step is required.
 1. Host the folder locally or via GitHub Pages.  
 2. Open `index.html` in a browser (Chrome recommended).  
 3. Select an airspace from the dropdown.  
-4. Add volumes, adjust altitudes, combine shapes, and export SVG.
+4. Add volumes, adjust altitudes, combine shapes, and export STL.
 
 All computation runs in-browser.
 
