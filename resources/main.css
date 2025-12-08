@@ -55,7 +55,7 @@ body {
 	left: 10px;
 	width: 230px;
 	min-height: 180px;
-	max-height: 80%;
+	max-height: 680px;
 	overflow-y: auto;
 	background-color: rgba(0, 0, 0, 0.7);
 	color: white;
@@ -137,7 +137,7 @@ body {
 
 #disclaimer {
 	position: absolute;
-	bottom: 10px;
+	bottom: 35px;
 	width: 100%;
 	text-align: center;
 	color: white;
@@ -154,3 +154,20 @@ body {
 }
 
 
+#licences {
+	position: absolute;
+	bottom: 10px;
+	width: 100%;
+	text-align: center;
+	color: white;
+	font-size: 12px;
+	font-family: sans-serif;
+	pointer-events: none;
+	z-index: 10;
+}
+
+#licences a {
+	color: white;
+	text-decoration: underline;
+	pointer-events: auto;
+}
