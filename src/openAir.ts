@@ -124,7 +124,7 @@ export class OpenAirAirspace {
     })
     this.shapes.push(...arcsFromCoordinates)
 
-    const arcsFromRadiusAngles: Shape[] = arcFromCoordinatesStartIndexes.map((value)=>{
+    const arcsFromRadiusAngles: Shape[] = arcFromRadiusAnglesStartIndexes.map((value)=>{
       const direction = this.getMatchingDirection(directionIndexes, value, lines)
       const center = this.getMatchingCenter(centerIndexes, value, lines)
       const arc = this.parseArcRadiusAngles(lines[value])
