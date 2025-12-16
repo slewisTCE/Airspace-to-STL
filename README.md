@@ -1,4 +1,5 @@
 # DAH Volume Modeller Tool
+
 ### (An Australian Airspace Visualiser)
 Interactive 3D & SVG Explorer for OpenAir-Formatted Airspace Data
 
@@ -8,8 +9,21 @@ It parses OpenAir-formatted airspace data — specifically the dataset supplied 
 
 The application runs entirely client-side and is suitable for static hosting platforms such as GitHub Pages.
 
----
 
+## Table of Contents
+*   [Getting Started](#getting-started)
+*   [Features](#features)
+*   [Architecture](#architecture)
+*   [Project Structure](#project-structure)
+*   [License](#license)
+
+## Getting Started
+
+These instructions will get your project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+npm
 ## Features
 
 ### **Airspace Loading & Parsing**
@@ -39,15 +53,27 @@ The application runs entirely client-side and is suitable for static hosting pla
 - Displays basic metadata for each selected airspace (class, name, altitude limits, etc.).  
 - When multiple volumes are added, the panel appends each entry separated by a dashed divider for readability.
 
----
+### **Architecture**
+<div style="text-align: center;">
+  <img src="https://vite.dev/logo.svg" alt="Vite" width="200">
+  <img src="https://react.dev/images/brand/logo_dark.svg" alt="React" width="200">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/1024px-Typescript_logo_2020.svg.png" alt="Typescript" width="200">
+</div>
+
 
 ### **Project Structure**
-- index.html – UI and application shell
-- main.js – Core visualisation logic, scene management, controls
-- handler.js – OpenAir parser, coordinate conversion, altitude logic
-- state.js – Shared application state and datasource reference
-- main.css – Styling for layout and controls
-- resources/ – Airspace dataset + library files
+*   [Features](#features)
+- `index.html`&emsp;&emsp;&emsp;&nbsp;- Favicon and front door to the application
+- `main.tsx`&emsp;&emsp;&emsp;&emsp;&nbsp;- Not alot going on here. Just adds some css and points to App.tsx
+- `App.tsx`&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;- Core visualisation logic, scene management, controls
+- `openAir.ts`&emsp;&emsp;&emsp;&nbsp;- The class that does most of the heavy lifting with respect to scraping
+- `public/`&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;- Home of the favicon
+- `src/assets/`&emsp;&emsp;&ensp;- Airspace dataset + image files
+- `src/components/`&ensp;- React components
+- `src/styles/`&emsp;&emsp;&ensp;&nbsp;- Theme and style files
+- `src/types/`&emsp;&emsp;&emsp;&nbsp;- Typescript type files
+- `src/utils/`&emsp;&emsp;&emsp;&nbsp;- Utility functions
+
 
 
 ---
@@ -67,10 +93,8 @@ https://www.airservicesaustralia.com/aip/aip.asp
 
 ### **Running the Application**
 
-No build step is required.
-
-1. Host the folder locally or via GitHub Pages.  
-2. Open `index.html` in a browser (Chrome recommended).  
+1. Install: `npm i` 
+2. Run development environment: `npm run dev`  
 3. Select an airspace from the dropdown.  
 4. Add volumes, adjust altitudes, combine shapes, and export STL.
 
