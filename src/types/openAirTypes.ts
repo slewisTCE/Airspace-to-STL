@@ -40,11 +40,16 @@ export type Coordinate = {
     minutes: number
     seconds: number
   }
+
 }
 
 export type CoordinatePair = {
   latitude: Coordinate
   longitude: Coordinate
+  projection?: {
+    x: number
+    y: number
+  }
 }
 
 export type Direction = "clockwise" | "anti-clockwise"
@@ -81,5 +86,6 @@ export type Circle = {
 
 export type Shape = {
   shape: ArcFromRadiusAngles | ArcFromCoordinates | Polygon | Circle,
+  svg?: string,
   shapeType: "ArcFromRadiusAngles" | "ArcFromCoordinates" | "Polygon" | "Circle"
 }

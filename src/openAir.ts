@@ -1,4 +1,11 @@
+import proj4 from "proj4"
 import type { Altitude, ArcFromCoordinates, ArcFromRadiusAngles, ArcFromRadiusAnglesPartial, Circle, CompassPoint, Coordinate, CoordinatePair, Direction, OpenAirAirspaceClass, OpenAirClassName, Polygon, Shape } from "./types/openAirTypes"
+
+// Projection definition
+proj4.defs(
+  "CustomUTM",
+  "+proj=tmerc +lat_0=0 +lon_0=153 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs"
+);
 
 
 export const airspaceClassMap = {
@@ -107,6 +114,7 @@ export class OpenAirAirspace {
       return polygon !== undefined
     })
     this.shapes.push(...polygons)
+    
 
     const arcsFromCoordinates: Shape[] = arcFromCoordinatesStartIndexes.map((value)=>{
       const direction = this.getMatchingDirection(directionIndexes, value, lines)
@@ -154,9 +162,11 @@ export class OpenAirAirspace {
       } as Shape
     })
     this.shapes.push(...circles)
+
+
   }
 
-  private generateSvg(shape: Shape): string | void {
+  private generateSvg(shape: Shape): string | undefined {
     if (shape.shapeType == "Circle"){
       const circle = shape.shape as Circle
       return (`<circle r=${circle.radius}>`)
@@ -180,17 +190,51 @@ export class OpenAirAirspace {
     if (shape.shapeType == "Polygon"){
       const polygon = shape.shape as Polygon
       const svgPoints = polygon.points.map((pointPair)=>{
-        return `${this.coordsToSvg(pointPair)[0]},${this.coordsToSvg(pointPair)[1]}}`
+        return this.coordsToSvg(pointPair)
       })
       return `<polygon points="${svgPoints.join(' ')}"`
     }
   }
 
+  private coordinateToDecimal(coordinate: Coordinate): number {
+    let decimal = (coordinate.measurement.degrees) 
+      + (coordinate.measurement.minutes) / 60.0 
+      + (+coordinate.measurement.seconds) / 3600.0
+    if (coordinate.direction === 'S' || coordinate.direction === 'W'){
+      decimal *= -1.0;
+    }
+    return decimal
+  }
+
+  private projectLatLon(coordinates: CoordinatePair): [number, number] | null{
+    const latitudeDecimal = this.coordinateToDecimal(coordinates.latitude);
+    const longitudeDecimal = this.coordinateToDecimal(coordinates.longitude);
+
+    if (!isFinite(latitudeDecimal) || !isFinite(longitudeDecimal)) {
+      console.warn("Invalid lat/lon for projection:", { coordinates });
+      return null;
+    }
+    try {
+      const [x, y] = proj4("WGS84", "CustomUTM", [longitudeDecimal, latitudeDecimal]);
+      return [x, y]
+    } catch (e) {
+      console.error("proj4 failed:", e, { coordinates});
+      return null;
+    }
+  }
   private getRadius(startPoint: CoordinatePair, center: CoordinatePair): number{
 
   }
 
-  private coordsToSvg(coordinatePair: CoordinatePair): [number, number]{}
+  private coordsToSvg(coordinatePair: CoordinatePair): string | null {
+    const projectedCoordinates = this.projectLatLon(coordinatePair);
+    if(projectedCoordinates){
+      const [x, y] = projectedCoordinates
+      return `${x.toFixed(2)},${y.toFixed(2)}`
+    } else {
+      return null
+    }
+  }
 
   private angleToSvgCoords(arc: ArcFromRadiusAngles): [number, number, number, number]{}
 
@@ -285,7 +329,13 @@ export class OpenAirAirspace {
       latitude = pair[1]
       longitude = pair[0]
     }
-    return {latitude: latitude, longitude: longitude}
+    let coordinatePair: CoordinatePair = {latitude: latitude, longitude: longitude}
+    const projection = this.projectLatLon(coordinatePair)
+    if (projection){
+      coordinatePair.projection = {x: projection[0], y: projection[1]} 
+    }
+
+    return coordinatePair
   }
 
   private parseArcRadiusAngles(line: string): ArcFromRadiusAnglesPartial{
