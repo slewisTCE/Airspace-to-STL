@@ -72,7 +72,7 @@ export class OpenAirAirspace {
     const polygonStartIndexes = this.sanitiseShapeStarts(allPolygonIndexes)
     const arcFromCoordinatesStartIndexes = this.getAllIndexes(lines, commandMap.arcFromCoordinates)
     const arcFromRadiusAnglesStartIndexes = this.getAllIndexes(lines, commandMap.arcFromRadiusAngles)
-    const circleStartIndexes = [...this.getAllIndexes(lines, commandMap.circle + ' '), ...centerIndexes].sort((a, b) => a - b)
+    const circleStartIndexes = [...this.getAllIndexes(lines, commandMap.circle + ' ')].sort((a, b) => a - b)
     const allAirwaySegmentIndexes = this.getAllIndexes(lines, commandMap.airwaySegment + ' ')
     const airwaySegmentStartIndexes = this.sanitiseShapeStarts(allAirwaySegmentIndexes)
     
