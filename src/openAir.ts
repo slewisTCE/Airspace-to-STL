@@ -423,6 +423,4 @@ export class OpenAirAirspace {
     })
     return indexes;
   }
-
-
 }
