@@ -40,7 +40,6 @@ export type Coordinate = {
     minutes: number
     seconds: number
   }
-
 }
 
 export type CoordinatePair = {

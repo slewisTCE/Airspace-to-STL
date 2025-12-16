@@ -40,6 +40,10 @@ export const commandMap = {
   centerAssignment: "V X="
 }
 
+export function airspaceFromName(airspaces: OpenAirAirspace[], name: string): OpenAirAirspace | undefined {
+  return airspaces.find((airspace: OpenAirAirspace) => airspace.name === name)
+}
+
 
 export class OpenAirAirspace {
   name: string
@@ -419,4 +423,6 @@ export class OpenAirAirspace {
     })
     return indexes;
   }
+
+
 }

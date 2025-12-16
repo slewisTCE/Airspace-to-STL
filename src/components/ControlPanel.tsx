@@ -6,7 +6,7 @@ import { useEffect, useState, type SyntheticEvent } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type {AlertSeverity} from "../types/alertTypes"
 import type { OpenAirClassCode } from "../types/openAirTypes";
-import { airspaceFromName } from "../utils/utils";
+import { airspaceFromName } from "../openAir"
 import CloseIcon from '@mui/icons-material/Close'
 
 
