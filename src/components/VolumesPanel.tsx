@@ -3,19 +3,26 @@ import type { VolumePanelProps } from "../types/volumePanelTypes";
 import { Accordion, AccordionDetails, AccordionSummary, IconButton, Stack, Typography } from "@mui/material";
 import { ExpandMore, Remove } from "@mui/icons-material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
+import type { AlertSeverity } from "../types/alertTypes";
+import { AlertWithSeverity } from "./Alert";
 
 export function VolumesPanel(props: VolumePanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
 
   const handleAccordianChange = (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
   }
 
   const handleRemoveVolume = (name: string) => (event: SyntheticEvent) => {
-    console.log(name)
     props.setVolumes(props.volumes.filter((volume) => {
       return volume.name != name
     }))
+    setAlertMessage(`Removed "${name}" volume`)
+    setAlertSeverity('success')
+    setOpenAlert(true)
   }
   
   return (
@@ -40,6 +47,7 @@ export function VolumesPanel(props: VolumePanelProps) {
                     <Remove/>
                   </IconButton >
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
+
                 </Stack>
               </>)
             })}
@@ -47,6 +55,7 @@ export function VolumesPanel(props: VolumePanelProps) {
           </Stack>
         </Stack>
       </AccordionDetails>
+      <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
     </Accordion>
   )
 }
