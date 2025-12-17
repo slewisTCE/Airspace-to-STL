@@ -7,16 +7,19 @@ import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 export function VolumesPanel(props: VolumePanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
 
-  const handleChange = (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordianChange = (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
   }
 
-  function handleRemoveVolume(event: any){
-    props.setVolumes(props.volumes.filter((volume)=> {volume.name == event.target.value}))    
+  function handleRemoveVolume(event: SyntheticEvent){
+    console.log(event)
+    props.setVolumes(props.volumes.filter((volume)=> {
+      return volume.name != event.target.value
+    }))    
   }
   
   return (
-    <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+    <Accordion expanded={expanded === 'panel1'} onChange={handleAccordianChange('panel1')}>
       <AccordionSummary
         expandIcon={<ExpandMore />}
         aria-controls="panel1bh-content"
@@ -32,9 +35,9 @@ export function VolumesPanel(props: VolumePanelProps) {
             {props.volumes.map((volume, index)=>{
               return(
               <>
-                <Stack key={index} spacing={1} direction={"row"} >
+                <Stack key={`stack${index}`} spacing={1} direction={"row"} >
                   <IconButton key={`removeVolume${index}`} aria-label="remove" size="small" value={volume.name} onClick={handleRemoveVolume}>
-                    <Remove/>
+                    <Remove />
                   </IconButton>
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
                 </Stack>
