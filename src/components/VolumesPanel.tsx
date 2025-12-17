@@ -11,11 +11,11 @@ export function VolumesPanel(props: VolumePanelProps) {
       setExpanded(isExpanded ? panel : false);
   }
 
-  function handleRemoveVolume(event: SyntheticEvent){
-    console.log(event)
-    props.setVolumes(props.volumes.filter((volume)=> {
-      return volume.name != event.target.value
-    }))    
+  const handleRemoveVolume = (name: string) => (event: SyntheticEvent) => {
+    console.log(name)
+    props.setVolumes(props.volumes.filter((volume) => {
+      return volume.name != name
+    }))
   }
   
   return (
@@ -36,9 +36,9 @@ export function VolumesPanel(props: VolumePanelProps) {
               return(
               <>
                 <Stack key={`stack${index}`} spacing={1} direction={"row"} >
-                  <IconButton key={`removeVolume${index}`} aria-label="remove" size="small" value={volume.name} onClick={handleRemoveVolume}>
-                    <Remove />
-                  </IconButton>
+                  <IconButton value={volume.name} onClick={handleRemoveVolume(volume.name)}>
+                    <Remove/>
+                  </IconButton >
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
                 </Stack>
               </>)
