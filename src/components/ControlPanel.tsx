@@ -1,13 +1,12 @@
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Divider, FormControl, IconButton, InputLabel, MenuItem, Select, Snackbar, Stack, Typography, type SelectChangeEvent, type SnackbarCloseReason } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, FormControl, InputLabel, MenuItem, Select, Stack, Typography, type SelectChangeEvent } from "@mui/material";
 import { airspaceClassMap, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
-import { Fragment } from "react/jsx-runtime";
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useEffect, useState } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
-import type {AlertSeverity} from "../types/alertTypes"
 import type { OpenAirClassCode } from "../types/openAirTypes";
 import { airspaceFromName } from "../openAir"
-import CloseIcon from '@mui/icons-material/Close'
+import type { AlertSeverity } from "../types/alertTypes";
+import { AlertWithSeverity } from "./Alert";
 
 
 export function ControlPanel(props: ControlPanelProps) {
@@ -16,6 +15,7 @@ export function ControlPanel(props: ControlPanelProps) {
   const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
   const [airspaceLocales, setAirspaceLocales] = useState<string[]>([])
+
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
@@ -31,7 +31,6 @@ export function ControlPanel(props: ControlPanelProps) {
       setAirspaceLocales(uniqueLocales as string[])
     }
   },[airspaceClassCode])
-
 
   let airspaceMenuItems: string[] = []
 
@@ -63,33 +62,10 @@ export function ControlPanel(props: ControlPanelProps) {
     }
   }
 
-  const handleCloseAlert = (
-    event: SyntheticEvent | Event,
-    reason?: SnackbarCloseReason,
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenAlert(false);
-  };
-
   const handleLocaleSelect = (event: SelectChangeEvent) => {
     console.log(event)
     setAirspaceLocale(event.target.value)
   }
-
-  const snackAction = (
-    <Fragment>
-      <IconButton
-        size="medium"
-        aria-label="close"
-        color="inherit"
-        onClick={handleCloseAlert}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Fragment>
-  );
   
   return (
       <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')}>
@@ -133,8 +109,6 @@ export function ControlPanel(props: ControlPanelProps) {
                     return (<MenuItem key={index} value={locale}>{locale}</MenuItem>)
                   })
                 }
-                
-                
               </Select>
             </FormControl>
             <FormControl fullWidth>
@@ -157,19 +131,7 @@ export function ControlPanel(props: ControlPanelProps) {
               </Select>
             </FormControl>
             <Button onClick={handleVolumeAddClick}>Add Volume</Button>
-            <Snackbar
-              open={openAlert}
-              autoHideDuration={6000}
-              onClose={handleCloseAlert}
-              action={snackAction}
-             >
-              <Alert
-                onClose={handleCloseAlert}
-                severity={alertSeverity}
-                variant="filled"
-                sx={{ width: '100%' }}
-              >{alertMessage}</Alert>
-            </Snackbar>
+            <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
           </Stack>
         </AccordionDetails>
       </Accordion>
