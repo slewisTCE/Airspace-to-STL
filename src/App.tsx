@@ -6,20 +6,19 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { darkTheme } from './styles/themes'
 import { Loading } from './components/Loading'
-import { OpenAirAirspace } from './openAir'
+import { OpenAirAirspace, OpenAirAirspaces } from './openAir'
 import { TopBar } from './components/TopBar'
 import { DrawerRight } from './components/DrawerRight'
 import { DrawerLeft } from './components/DrawerLeft'
 import { CentralDisplay } from './components/CentralDisplay'
 import { Error } from './components/Error'
-import { splitRawAirspaceData } from './utils/utils'
 
 const drawerWidth = 320;
 
 export function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [airspacesData, setAirspacesData] = useState<OpenAirAirspace[]>([])
+  const [airspacesData, setAirspacesData] = useState<OpenAirAirspaces>()
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
   const [volumes, setVolumes] = useState<OpenAirAirspace[]>([])
   
@@ -29,10 +28,7 @@ export function App() {
         return response.text()
       })
       .then((data) => {
-        const airspaceDataSplit = splitRawAirspaceData(data)
-        setAirspacesData(airspaceDataSplit.splice(1).map((airspaceData)=>{
-          return new OpenAirAirspace(airspaceData)
-        }))
+        setAirspacesData(new OpenAirAirspaces(data))
         setError(null)
       })
       .catch((reason)=>{
@@ -46,7 +42,7 @@ export function App() {
   if (loading){
     return (<Loading/>)
   } 
-  if (airspacesData.length == 0){
+  if (airspacesData?.airspaces.length == 0){
     return (<Loading/>)
   }
   if (error) {

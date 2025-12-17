@@ -11,21 +11,21 @@ export function formatFeet(value: number): string {
   return `${value} ft`;
 }
 
-export function splitRawAirspaceData(airspaceData: string): string[] {
-  return airspaceData.split(/\n\s*\n/)
-}
+
 
   // Normalize to 500×500 SVG space
-export function normalizeToSVG(x: number, y: number, bounds: Bounds, padding=10, size=500): {x: number, y: number} {
+export function normaliseToSVG(x: number, y: number, bounds: Bounds, padding=10): {x: number, y: number} {
   const spanX = bounds.maxX - bounds.minX;
-  const spanY = bounds.maxY - bounds.minY;
+  const spanY = bounds.maxY - bounds.minY
+  const size = Math.max(x, y)
   const maxSpan = Math.max(spanX, spanY);
-  const scale = (size - padding * 2) / maxSpan;
-  const xScaled = (x - bounds.minX) * scale + padding;
-  const yScaled = (y - bounds.minY) * scale + padding;
+  const scale = (size - padding * 2.0) / maxSpan;
+  // console.log(x, y, scale)
+  const xScaled = x  / scale - padding;
+  const yScaled = y / scale - padding;
 
   return {
     x: xScaled,
-    y: size - yScaled // Flip Y for SVG coordinate space
+    y: -1 * yScaled // Flip Y for SVG coordinate space
   };
 }

@@ -1,5 +1,6 @@
 import proj4 from "proj4"
-import type { Altitude, ArcFromCoordinates, ArcFromRadiusAngles, ArcFromRadiusAnglesPartial, Circle, CompassPoint, Coordinate, CoordinatePair, Direction, OpenAirAirspaceClass, OpenAirClassName, Polygon, Shape } from "./types/openAirTypes"
+import type { Altitude, ArcFromCoordinates, ArcFromRadiusAngles, ArcFromRadiusAnglesPartial, Circle, CompassPoint, Coordinate, CoordinatePair, Direction, OpenAirAirspaceClass, OpenAirClassCode, OpenAirClassName, Polygon, Shape } from "./types/openAirTypes"
+import { normaliseToSVG } from "./utils/utils";
 
 // Projection definition
 proj4.defs(
@@ -56,6 +57,7 @@ export class OpenAirAirspace {
   rawText: string
 
   static currentDirection: Direction
+  maxProjection: number;
 
   constructor(airspaceTxt: string){
     this.rawText = airspaceTxt.trim()
@@ -64,8 +66,10 @@ export class OpenAirAirspace {
     this.name = 'UNKNOWN'
     this.ceiling = {raw: '', valueFeet: null} 
     this.floor = {raw: '', valueFeet: null} 
+    this.maxProjection = 0
     
     const lines = this.trimLines(airspaceTxt.split('\n'))
+    
 
     // Parse header
     lines.forEach((line: string)=>{
@@ -98,12 +102,15 @@ export class OpenAirAirspace {
     ].sort((a, b) => a - b)
     
     const shapesRaw: string[][] = this.splitArrayByIndexes(lines, shapeStartIndexs).slice(1)
-    
     const polygons: Shape[] = shapesRaw.map((shapeRaw) => {
       if(shapeRaw[0].startsWith(commandMap.polygonPoint + ' ')){
         const points: any[] = []
         shapeRaw.forEach((line) => {
-          points.push(this.parseCoordinatePair(line.slice(commandMap.polygonPoint.length + 1)))
+          const coordinatePair = this.parseCoordinatePair(line.slice(commandMap.polygonPoint.length + 1))
+          const x = coordinatePair.projection ? coordinatePair.projection.x : 0
+          const y = coordinatePair.projection ? coordinatePair.projection.y : 0
+          this.maxProjection = Math.max(this.maxProjection, x, y)
+          points.push(coordinatePair)
         })
         if (points.length>0){
           return {
@@ -117,6 +124,8 @@ export class OpenAirAirspace {
     }).filter((polygon)=>{
       return polygon !== undefined
     })
+    const polySvg = polygons.map((polygon)=> {return this.generateSvg(polygon)})
+    // console.log(polySvg)
     this.shapes.push(...polygons)
     
 
@@ -196,7 +205,9 @@ export class OpenAirAirspace {
       const svgPoints = polygon.points.map((pointPair)=>{
         return this.coordsToSvg(pointPair)
       })
-      return `<polygon points="${svgPoints.join(' ')}"`
+      if(svgPoints){
+        return `<polygon points=${svgPoints.join(' ')}`
+      }
     }
   }
 
@@ -234,7 +245,9 @@ export class OpenAirAirspace {
     const projectedCoordinates = this.projectLatLon(coordinatePair);
     if(projectedCoordinates){
       const [x, y] = projectedCoordinates
-      return `${x.toFixed(2)},${y.toFixed(2)}`
+      const normalised = normaliseToSVG(x, y, {maxX: 500, maxY: 500, minX: 0, minY: 0})
+      
+      return `${normalised.x.toFixed(2)},${normalised.y.toFixed(2)}`
     } else {
       return null
     }
@@ -337,6 +350,7 @@ export class OpenAirAirspace {
     const projection = this.projectLatLon(coordinatePair)
     if (projection){
       coordinatePair.projection = {x: projection[0], y: projection[1]} 
+
     }
 
     return coordinatePair
@@ -422,5 +436,23 @@ export class OpenAirAirspace {
       }
     })
     return indexes;
+  }
+}
+
+export class OpenAirAirspaces {
+  airspaces: OpenAirAirspace[]
+  maxProjection: number = 0
+
+  constructor(airspacesText: string){
+    const airspaceDataSplit = this.splitRawAirspaceData(airspacesText)
+    this.airspaces = airspaceDataSplit.splice(1).map((airspaceData)=>{
+      const airspace = new OpenAirAirspace(airspaceData)
+      this.maxProjection = Math.max(this.maxProjection, airspace.maxProjection)
+      return airspace
+    })
+  }
+
+  private splitRawAirspaceData(airspaceData: string): string[] {
+    return airspaceData.split(/\n\s*\n/)
   }
 }

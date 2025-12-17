@@ -21,7 +21,7 @@ export function ControlPanel(props: ControlPanelProps) {
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
   useEffect(()=>{
-    const localesFiltered = props.airspaces.map((thisAirspace, index)=>{
+    const localesFiltered = props.airspaces.airspaces.map((thisAirspace, index)=>{
       if (thisAirspace.airspaceClass.code == airspaceClassCode){
         return thisAirspace.locale
       }
@@ -44,7 +44,7 @@ export function ControlPanel(props: ControlPanelProps) {
     };
 
   const handleAirspaceNameSelect = (event: SelectChangeEvent) =>{
-    const airspaceSelected = airspaceFromName(props.airspaces, event.target.value)
+    const airspaceSelected = airspaceFromName(props.airspaces.airspaces, event.target.value)
     console.log(airspaceSelected)
     if(airspaceSelected) { 
       props.setAirspaceSelect(airspaceSelected) 
@@ -90,7 +90,7 @@ export function ControlPanel(props: ControlPanelProps) {
                 label="Class"
                 onChange={handleClassSelect}
               >
-                {Array.from(new Set(props.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
+                {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
                   return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode]}`}</MenuItem>)
                 })}
               </Select>
@@ -122,7 +122,7 @@ export function ControlPanel(props: ControlPanelProps) {
               >
                 <MenuItem>{airspaceMenuItems}</MenuItem>
 
-                {props.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
+                {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
                   if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode){
                     return (<MenuItem key={index} value={thisAirspace.name}>{thisAirspace.name}</MenuItem>)
                   }

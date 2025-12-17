@@ -1,7 +1,7 @@
-import type { OpenAirAirspace } from "../openAir"
+import type { OpenAirAirspace, OpenAirAirspaces } from "../openAir"
 
 export interface ControlPanelProps {
-    airspaces: OpenAirAirspace[]
+    airspaces: OpenAirAirspaces
     volumes: OpenAirAirspace[]
     setVolumes: React.Dispatch<React.SetStateAction<OpenAirAirspace[]>>
     airspaceSelect: OpenAirAirspace

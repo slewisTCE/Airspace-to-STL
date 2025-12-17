@@ -43,8 +43,8 @@ export function VolumesPanel(props: VolumePanelProps) {
               return(
               <>
                 <Stack key={`stack${index}`} spacing={1} direction={"row"} >
-                  <IconButton value={volume.name} onClick={handleRemoveVolume(volume.name)}>
-                    <Remove/>
+                  <IconButton key={`iconButton${index}`}value={volume.name} onClick={handleRemoveVolume(volume.name)}>
+                    <Remove key={`removeIcon${index}`}/>
                   </IconButton >
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
 
