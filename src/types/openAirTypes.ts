@@ -48,6 +48,10 @@ export type CoordinatePair = {
   projection?: {
     x: number
     y: number
+    scaled?: {
+      x: number
+      y: number
+    }
   }
 }
 
