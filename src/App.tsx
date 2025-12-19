@@ -1,7 +1,7 @@
 import './styles/App.css'
 import { useEffect, useState } from 'react'
 import airspaceDataRaw from './assets/Australian Airspace 28 November 2024_v1.txt'
-import { Box} from '@mui/material'
+import { Box } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { darkTheme } from './styles/themes'
@@ -51,18 +51,18 @@ export function App() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar drawerWidth={drawerWidth}/>
-          <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect}/>
-          <DrawerLeft 
-            drawerWidth={drawerWidth} 
-            airspaces={airspacesData} 
-            volumes={volumes} 
-            setVolumes={setVolumes} 
-            airspaceSelect={airspaceSelect} 
-            setAirspaceSelect={setAirspaceSelect}/>
-          <CentralDisplay loading={loading}/> 
+        <TopBar drawerWidth={drawerWidth}/>   
+        <DrawerLeft 
+          drawerWidth={drawerWidth} 
+          airspaces={airspacesData} 
+          volumes={volumes} 
+          setVolumes={setVolumes} 
+          airspaceSelect={airspaceSelect} 
+          setAirspaceSelect={setAirspaceSelect}/>
+        <CentralDisplay loading={loading} volumes={volumes} airspaces={airspacesData} margins={drawerWidth}/> 
+        <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect}/>       
       </Box>
     </ThemeProvider>
   )
