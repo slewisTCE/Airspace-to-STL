@@ -452,6 +452,22 @@ export class OpenAirAirspaces {
     })
   }
 
+  public scaleProjection(airspace: OpenAirAirspace, projectedAbsMaxPixels: number){
+    airspace.shapes.map((shape)=>{
+      if (shape.shapeType == "Polygon"){
+        const polygon = shape.shape as Polygon
+        polygon.points.map((point)=>{
+          if (point.projection){
+            point.projection.scaled = {
+              x: (point.projection?.x / this.maxProjection) * projectedAbsMaxPixels,
+              y: (point.projection?.y / this.maxProjection) * projectedAbsMaxPixels
+            }
+          }
+        })
+      }
+    })
+  }
+
   private splitRawAirspaceData(airspaceData: string): string[] {
     return airspaceData.split(/\n\s*\n/)
   }
