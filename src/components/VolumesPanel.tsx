@@ -42,7 +42,7 @@ export function VolumesPanel(props: VolumePanelProps) {
             {props.volumes.map((volume, index)=>{
               return(
                 <Stack key={`stack${index}`} spacing={1} direction={"row"} >
-                  <IconButton key={`iconButton${index}`}value={volume.name} onClick={handleRemoveVolume(volume.name)}>
+                  <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${index}`} value={volume.name} onClick={handleRemoveVolume(volume.name)}>
                     <Remove key={`removeIcon${index}`}/>
                   </IconButton >
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
