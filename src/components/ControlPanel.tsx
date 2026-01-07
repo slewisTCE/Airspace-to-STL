@@ -21,7 +21,7 @@ export function ControlPanel(props: ControlPanelProps) {
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
   useEffect(()=>{
-    const localesFiltered = props.airspaces.airspaces.map((thisAirspace, index)=>{
+    const localesFiltered = props.airspaces.airspaces.map((thisAirspace)=>{
       if (thisAirspace.airspaceClass.code == airspaceClassCode){
         return thisAirspace.locale
       }
@@ -35,7 +35,7 @@ export function ControlPanel(props: ControlPanelProps) {
   let airspaceMenuItems: string[] = []
 
   const handleAccordian =
-    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
 
@@ -45,7 +45,6 @@ export function ControlPanel(props: ControlPanelProps) {
 
   const handleAirspaceNameSelect = (event: SelectChangeEvent) =>{
     const airspaceSelected = airspaceFromName(props.airspaces.airspaces, event.target.value)
-    console.log(airspaceSelected)
     if(airspaceSelected) { 
       props.setAirspaceSelect(airspaceSelected) 
       setAirspaceNameSelect(airspaceSelected.name)
@@ -53,7 +52,6 @@ export function ControlPanel(props: ControlPanelProps) {
   }
 
   const handleVolumeAddClick = () => {
-    console.log(props.airspaceSelect)
     if(props.airspaceSelect){
       props.setVolumes(props.volumes.concat(props.airspaceSelect))
       setAlertMessage(`Added "${props.airspaceSelect.name}" volume`)
@@ -63,77 +61,75 @@ export function ControlPanel(props: ControlPanelProps) {
   }
 
   const handleLocaleSelect = (event: SelectChangeEvent) => {
-    console.log(event)
     setAirspaceLocale(event.target.value)
   }
   
   return (
-      <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')}>
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="controlsPanel-content"
-          id="controlsPanel-header"
-        >
-          <Typography component="span" sx={{ width: '100%', flexShrink: 0 }}>
-            Controls
-          </Typography>
-          <Divider/>
-        </AccordionSummary>
-        <AccordionDetails sx={{py:3}}>
-          <Stack spacing={2}>
-            <FormControl fullWidth>
-              <InputLabel id="airspace-class-label">Class</InputLabel>
-              <Select
-                labelId="airspace-class-label"
-                id="airspace-class-select"
-                value={airspaceClassCode}
-                label="Class"
-                onChange={handleClassSelect}
-              >
-                {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
-                  return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode]}`}</MenuItem>)
-                })}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="airspace-locale-label">Locale</InputLabel>
-              <Select
-                labelId="airspace-locale-label"
-                id="airspace-locale-select"
-                value={airspaceLocale}
-                label="locale"
-                onChange={handleLocaleSelect}
-              >
-                { 
-                  airspaceLocales.map((locale: string, index: number) => {
-                    return (<MenuItem key={index} value={locale}>{locale}</MenuItem>)
-                  })
+    <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')}>
+      <AccordionSummary
+        expandIcon={<ExpandMore />}
+        aria-controls="controlsPanel-content"
+        id="controlsPanel-header"
+      >
+        <Typography component="span" sx={{ width: '100%', flexShrink: 0 }}>
+          Controls
+        </Typography>
+        <Divider/>
+      </AccordionSummary>
+      <AccordionDetails sx={{py:3}}>
+        <Stack spacing={2}>
+          <FormControl fullWidth>
+            <InputLabel id="airspace-class-label">Class</InputLabel>
+            <Select
+              labelId="airspace-class-label"
+              id="airspace-class-select"
+              value={airspaceClassCode}
+              label="Class"
+              onChange={handleClassSelect}
+            >
+              {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
+                return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode]}`}</MenuItem>)
+              })}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="airspace-locale-label">Locale</InputLabel>
+            <Select
+              labelId="airspace-locale-label"
+              id="airspace-locale-select"
+              value={airspaceLocale}
+              label="locale"
+              onChange={handleLocaleSelect}
+            >
+              { 
+                airspaceLocales.map((locale: string, index: number) => {
+                  return (<MenuItem key={index} value={locale}>{locale}</MenuItem>)
+                })
+              }
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="airspace-name-label">Name</InputLabel>
+            <Select
+              labelId="airspace-name-label"
+              id="airspace-name-select"
+              value={airspaceNameSelect}
+              label="Name"
+              onChange={handleAirspaceNameSelect}
+            >
+              <MenuItem>{airspaceMenuItems}</MenuItem>
+              {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
+                if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode){
+                  return (<MenuItem key={index} value={thisAirspace.name}>{thisAirspace.name}</MenuItem>)
                 }
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="airspace-name-label">Name</InputLabel>
-              <Select
-                labelId="airspace-name-label"
-                id="airspace-name-select"
-                value={airspaceNameSelect}
-                label="Name"
-                onChange={handleAirspaceNameSelect}
-              >
-                <MenuItem>{airspaceMenuItems}</MenuItem>
-
-                {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
-                  if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode){
-                    return (<MenuItem key={index} value={thisAirspace.name}>{thisAirspace.name}</MenuItem>)
-                  }
-                }
-                )}
-              </Select>
-            </FormControl>
-            <Button onClick={handleVolumeAddClick}>Add Volume</Button>
-            <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
-          </Stack>
-        </AccordionDetails>
-      </Accordion>
+              }
+              )}
+            </Select>
+          </FormControl>
+          <Button onClick={handleVolumeAddClick}>Add Volume</Button>
+          <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
+        </Stack>
+      </AccordionDetails>
+    </Accordion>
   )
 }

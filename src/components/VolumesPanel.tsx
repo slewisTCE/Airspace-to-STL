@@ -12,11 +12,11 @@ export function VolumesPanel(props: VolumePanelProps) {
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
 
-  const handleAccordianChange = (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordianChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
   }
 
-  const handleRemoveVolume = (name: string) => (event: SyntheticEvent) => {
+  const handleRemoveVolume = (name: string) => (_event: SyntheticEvent) => {
     props.setVolumes(props.volumes.filter((volume) => {
       return volume.name != name
     }))
@@ -41,17 +41,13 @@ export function VolumesPanel(props: VolumePanelProps) {
           <Stack spacing={1} direction={"column"} >
             {props.volumes.map((volume, index)=>{
               return(
-              <>
                 <Stack key={`stack${index}`} spacing={1} direction={"row"} >
                   <IconButton key={`iconButton${index}`}value={volume.name} onClick={handleRemoveVolume(volume.name)}>
                     <Remove key={`removeIcon${index}`}/>
                   </IconButton >
                   <VolumeCeilingFloorPanel volumeName={volume.name} />
-
-                </Stack>
-              </>)
+                </Stack>)
             })}
-            
           </Stack>
         </Stack>
       </AccordionDetails>

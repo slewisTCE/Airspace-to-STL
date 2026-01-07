@@ -18,7 +18,7 @@ const drawerWidth = 320;
 export function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [airspacesData, setAirspacesData] = useState<OpenAirAirspaces>()
+  const [allAirspacesData, setAllAirspacesData] = useState<OpenAirAirspaces>()
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
   const [volumes, setVolumes] = useState<OpenAirAirspace[]>([])
   
@@ -28,7 +28,7 @@ export function App() {
         return response.text()
       })
       .then((data) => {
-        setAirspacesData(new OpenAirAirspaces(data))
+        setAllAirspacesData(new OpenAirAirspaces(data))
         setError(null)
       })
       .catch((reason)=>{
@@ -37,12 +37,12 @@ export function App() {
         .finally(()=>setLoading(false))
   }, [])
 
-  useEffect(() => {console.log(airspacesData)},[airspacesData])
+  useEffect(() => {allAirspacesData ? console.log(allAirspacesData) : null},[allAirspacesData])
 
   if (loading){
     return (<Loading/>)
   } 
-  if (airspacesData?.airspaces.length == 0){
+  if (allAirspacesData?.airspaces.length == 0){
     return (<Loading/>)
   }
   if (error) {
@@ -53,16 +53,20 @@ export function App() {
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar drawerWidth={drawerWidth}/>   
+        <TopBar drawerWidth={drawerWidth}/>
+        {allAirspacesData ? 
+        <>
         <DrawerLeft 
           drawerWidth={drawerWidth} 
-          airspaces={airspacesData} 
+          airspaces={allAirspacesData} 
           volumes={volumes} 
           setVolumes={setVolumes} 
           airspaceSelect={airspaceSelect} 
           setAirspaceSelect={setAirspaceSelect}/>
-        <CentralDisplay loading={loading} volumes={volumes} airspaces={airspacesData} margins={drawerWidth}/> 
+        <CentralDisplay loading={loading} volumes={volumes} airspaces={allAirspacesData} margins={drawerWidth}/> 
         <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect}/>       
+        </>
+        : <></>}
       </Box>
     </ThemeProvider>
   )

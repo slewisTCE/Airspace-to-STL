@@ -45,14 +45,21 @@ export type Coordinate = {
 export type CoordinatePair = {
   latitude: Coordinate
   longitude: Coordinate
-  projection?: {
-    x: number
-    y: number
-    scaled?: {
-      x: number
-      y: number
-    }
-  }
+  projection?: ProjectionPair
+}
+
+export type ProjectionPair = {
+  x: number,
+  y: number,
+  scaled?: XYPair
+}
+export type Projection = {
+  value: number,
+  scaled?: number
+}
+export type XYPair = {
+  x: number,
+  y: number
 }
 
 export type Direction = "clockwise" | "anti-clockwise"
@@ -66,7 +73,7 @@ export type ArcFromRadiusAngles = {
 }
 
 export type ArcFromRadiusAnglesPartial = {
-  radius: number
+  radius: { original: number, scaled: number }
   angleStart: number
   angleEnd: number
 }
@@ -76,6 +83,17 @@ export type ArcFromCoordinates = {
   endPoint: CoordinatePair
   center: CoordinatePair
   direction: Direction
+  angles?: {
+    startAngle: number,
+    endAngle: number,
+    arcAngle: number,
+    largeArc: boolean
+  }
+}
+
+export type ArcAngles = {
+  startAngle: number,
+  endAngle: number
 }
 
 export type Polygon = {
@@ -83,12 +101,33 @@ export type Polygon = {
 }
 
 export type Circle = {
-  radius: Number
+  radius: { 
+    value: number,
+    projection: {
+      value?: number, 
+      scaled?: number 
+    }
+  }
   center: CoordinatePair
+  arcStartPoint?: CoordinatePair
+  arcEndPoint?: CoordinatePair
 }
 
 export type Shape = {
   shape: ArcFromRadiusAngles | ArcFromCoordinates | Polygon | Circle,
-  svg?: string,
+  svgPathSegment?: string,
+  svgPathSegmentScaled?: string,
   shapeType: "ArcFromRadiusAngles" | "ArcFromCoordinates" | "Polygon" | "Circle"
+}
+
+export type ShapeIndexes = {
+    directionIndexes: number[];
+    centerIndexes: number[];
+    allPolygonIndexes: number[];
+    polygonStartIndexes: number[];
+    arcFromCoordinatesStartIndexes: number[];
+    arcFromRadiusAnglesStartIndexes: number[];
+    circleStartIndexes: number[];
+    allAirwaySegmentIndexes: number[];
+    airwaySegmentStartIndexes: number[];
 }

@@ -5,7 +5,7 @@ import { Disclaimer } from "./Disclaimer";
 import { GithubLink } from "./GithubLink";
 import type { OpenAirAirspace } from "../openAir";
 
-export function DrawerRight(props: {drawerWidth: number, airspaceSelect: OpenAirAirspace}){
+export function DrawerRight(props: {drawerWidth: number, airspaceSelect: OpenAirAirspace | undefined}){
   return(
     <Drawer
       sx={{
@@ -20,7 +20,6 @@ export function DrawerRight(props: {drawerWidth: number, airspaceSelect: OpenAir
       anchor="right"
     >
       <Toolbar sx={{py:3, justifyContent: 'center', height: 20}}>
-        {/* <img src={EdgyLogo}/> */}
       </Toolbar>
       <Divider />
       <Stack
