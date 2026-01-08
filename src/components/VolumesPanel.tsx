@@ -6,7 +6,7 @@ import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
 import type { Envelope } from "../types/openAirTypes";
-import type { OpenAirAirspace } from "../openAir";
+import type { OpenAirAirspace, Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
 import { downloadBlob } from "../utils/utils";
 import { Group } from "three";
@@ -74,23 +74,23 @@ export function VolumesPanel(props: VolumePanelProps) {
 
 export function VolumePanelStack(
   props: {
-    volume: OpenAirAirspace, 
+    volume: Volume, 
     index: number, 
-    volumes: OpenAirAirspace[], 
-    setVolumes: Dispatch<SetStateAction<OpenAirAirspace[]>>, 
+    volumes: Volume[], 
+    setVolumes: Dispatch<SetStateAction<Volume[]>>, 
     setAlertMessage: Dispatch<SetStateAction<string>>, 
     setAlertSeverity: Dispatch<SetStateAction<AlertSeverity>>, 
     setOpenAlert: Dispatch<SetStateAction<boolean>>
   }){
-    const floor = props.volume.floor.valueFeet ? props.volume.floor.valueFeet : 0 
-    const ceiling = props.volume.ceiling.valueFeet ? props.volume.ceiling.valueFeet : 1000 
+    const floor = props.volume.airspace.floor.valueFeet ? props.volume.airspace.floor.valueFeet : 0 
+    const ceiling = props.volume.airspace.ceiling.valueFeet ? props.volume.airspace.ceiling.valueFeet : 1000 
     const [envelope, setEnvelope] = useState<Envelope>({floor: floor, ceiling: ceiling})
 
     useEffect(()=>{
       props.setVolumes(props.volumes.map((volume) => {
-        if (volume.name == props.volume.name){
-          volume.ceiling.valueFeet = envelope.ceiling
-          volume.floor.valueFeet = envelope.floor
+        if (volume.airspace.name == props.volume.airspace.name){
+          volume.airspace.ceiling.valueFeet = envelope.ceiling
+          volume.airspace.floor.valueFeet = envelope.floor
         }
         return volume
       }))
@@ -98,7 +98,7 @@ export function VolumePanelStack(
       
     const handleRemoveVolume = (name: string) => (_event: SyntheticEvent) => {
       props.setVolumes(props.volumes.filter((volume) => {
-        return volume.name != name
+        return volume.airspace.name != name
       }))
       props.setAlertMessage(`Removed "${name}" volume`)
       props.setAlertSeverity('success')
@@ -107,9 +107,9 @@ export function VolumePanelStack(
 
     return(
       <Stack key={`stack${props.index}`} spacing={1} direction={"row"} >
-        <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.name} onClick={handleRemoveVolume(props.volume.name)}>
+        <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={handleRemoveVolume(props.volume.airspace.name)}>
           <Remove key={`removeIcon${props.index}`}/>
         </IconButton >
-        <VolumeCeilingFloorPanel volumeName={props.volume.name} envelope={envelope} setEnvelope={setEnvelope} />
+        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={envelope} setEnvelope={setEnvelope} />
       </Stack>)
   }

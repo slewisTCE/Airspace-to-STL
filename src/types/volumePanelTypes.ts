@@ -1,8 +1,8 @@
 import type { Mesh } from "three"
-import type { OpenAirAirspace } from "../openAir"
+import type { Volume } from "../openAir"
 
 export interface VolumePanelProps {
-    volumes: OpenAirAirspace[]
-    setVolumes: React.Dispatch<React.SetStateAction<OpenAirAirspace[]>>
+    volumes: Volume[]
+    setVolumes: React.Dispatch<React.SetStateAction<Volume[]>>
     meshes: Mesh[]
 }

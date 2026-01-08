@@ -1,5 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, FormControl, InputLabel, MenuItem, Select, Stack, Typography, type SelectChangeEvent } from "@mui/material";
-import { airspaceClassMap, type OpenAirAirspace } from "../openAir";
+import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
@@ -7,8 +7,6 @@ import type { OpenAirClassCode } from "../types/openAirTypes";
 import { airspaceFromName } from "../openAir"
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
-import { VolumesPanel } from "./VolumesPanel";
-
 
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -34,7 +32,7 @@ export function ControlPanel(props: ControlPanelProps) {
   },[airspaceClassCode])
 
   useEffect(()=>{
-    setVolumeNames(props.volumes.map(volume=>volume.name))
+    setVolumeNames(props.volumes.map(volume=>volume.airspace.name))
   },[props.volumes])
 
   let airspaceMenuItems: string[] = []
@@ -58,7 +56,7 @@ export function ControlPanel(props: ControlPanelProps) {
 
   const handleVolumeAddClick = () => {
     if(props.airspaceSelect){
-      props.setVolumes(props.volumes.concat(props.airspaceSelect))
+      props.setVolumes(props.volumes.concat(new Volume(props.airspaceSelect)))
       props.setAirspaceSelect(undefined)
       setAlertMessage(`Added "${props.airspaceSelect.name}" volume`)
       setAlertSeverity("success")
@@ -94,7 +92,7 @@ export function ControlPanel(props: ControlPanelProps) {
               onChange={handleClassSelect}
             >
               {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
-                return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode]}`}</MenuItem>)
+                return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode].name}`}</MenuItem>)
               })}
             </Select>
           </FormControl>

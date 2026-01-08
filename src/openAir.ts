@@ -10,21 +10,21 @@ proj4.defs(
 
 
 export const airspaceClassMap = {
-  R: "Restricted",
-  Q: "Danger",
-  P: "Prohibited",
-  A:"Class A",
-  B:"Class B",
-  C:"Class C",
-  D:"Class D",
-  E:"Class E",
-  F:"Class F",
-  G:"Class G",
-  GP: "Glider Prohibited",
-  CTR: "CTR",
-  W: "Wave window",
-  RMZ: "Radio Mandatory Zone",
-  UNKNOWN: "UNKNOWN"
+  R: {name: "Restricted", colour: "#f2ff61"},
+  Q: {name: "Danger", colour: "#ff6b61"},
+  P: {name: "Prohibited", colour: "#ffd261"},
+  A: {name: "Class A", colour: "#61ffdf"},
+  B: {name: "Class B", colour: "#61a3ff"},
+  C: {name: "Class C", colour: "#6461ff"},
+  D: {name: "Class D", colour: "#ca61ff"},
+  E: {name: "Class E", colour: "#ff61cd"},
+  F: {name: "Class F", colour: "#b5ff61"},
+  G: {name: "Class G", colour: "#6176ff"},
+  GP: {name: "Glider Prohibited", colour: "#6176ff"},
+  CTR: {name: "CTR", colour: ""},
+  W: {name: "Wave window", colour: "#b7f2aa"},
+  RMZ: {name: "Radio Mandatory Zone", colour: "#aacaf2"},
+  UNKNOWN: {name: "UNKNOWN", colour: "#f2f3f5"}
 }
 
 export const commandMap = {
@@ -667,7 +667,7 @@ export class OpenAirAirspace {
 
   private parseAirspaceClass(line: string): OpenAirAirspaceClass{
     let code = line.slice(3).trim() as OpenAirClassCode
-    let name = airspaceClassMap[code] as OpenAirClassName
+    let name = airspaceClassMap[code].name as OpenAirClassName
     return { name: name, code: code }
   }
 
@@ -754,5 +754,14 @@ export class OpenAirAirspaces {
       airspace.svg = airspace.compileShapestoSingleSvg(airspace.shapes, false)
       return airspace
     })
+  }
+}
+
+export class Volume {
+  airspace: OpenAirAirspace
+  selected: boolean = false
+
+  constructor(airspace: OpenAirAirspace){
+    this.airspace = airspace
   }
 }

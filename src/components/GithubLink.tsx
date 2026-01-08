@@ -8,7 +8,7 @@ function GitHubIcon() {
 
 export function GithubLink() {
   return (
-    <Paper sx={{ p:2 , mx:'auto'}}>
+    <Paper  sx={{ p:2, alignItems: 'flex-end'}}>
       <Link href="https://github.com/slewisTCE/Airspace-to-STL" target="_blank">
         <IconButton sx={{display: "flex", justifyContent: "center", alignItems: "center"}}>
           <GitHubIcon/>

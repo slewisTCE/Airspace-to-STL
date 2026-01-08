@@ -6,7 +6,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { darkTheme } from './styles/themes'
 import { Loading } from './components/Loading'
-import { OpenAirAirspace, OpenAirAirspaces } from './openAir'
+import { OpenAirAirspace, OpenAirAirspaces, Volume } from './openAir'
 import { TopBar } from './components/TopBar'
 import { DrawerRight } from './components/DrawerRight'
 import { DrawerLeft } from './components/DrawerLeft'
@@ -21,8 +21,9 @@ export function App() {
   const [error, setError] = useState(null)
   const [allAirspacesData, setAllAirspacesData] = useState<OpenAirAirspaces>()
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
-  const [volumes, setVolumes] = useState<OpenAirAirspace[]>([])
+  const [volumes, setVolumes] = useState<Volume[]>([])
   const [meshes, setMeshes] = useState<Mesh[]>([])
+  const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
   
   useEffect(() => {
     fetch(airspaceDataRaw)
@@ -55,7 +56,7 @@ export function App() {
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar drawerWidth={drawerWidth}/>
+        <TopBar drawerWidth={drawerWidth} setRightDrawerOpen={setRightDrawerOpen}/>
         {allAirspacesData ? 
         <>
         <DrawerLeft 
@@ -66,9 +67,10 @@ export function App() {
           airspaceSelect={airspaceSelect} 
           setAirspaceSelect={setAirspaceSelect}
           meshes={meshes}
+          
           />
-        <CentralDisplay loading={loading} volumes={volumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes}/> 
-        <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect}/>       
+        <CentralDisplay loading={loading} volumes={volumes} setVolumes={setVolumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes}/> 
+        <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect} setOpen={setRightDrawerOpen} open={rightDrawerOpen}/>       
         </>
         : <></>}
       </Box>
