@@ -69,12 +69,25 @@ function MeshFromSvgString(
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
   const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
-  const [selected, setSelected] = useState(false)
+  const [thisVolume, setThisVolume] = useState(props.volume)
+
   useEffect(()=>{
     if(meshData){
       props.setMeshes(props.meshes.concat(meshData))
     }
   },[meshData])
+
+  useEffect(()=>{
+    const updatedVolumes = props.volumes.map((_volume)=>{
+      if (_volume.airspace.name == thisVolume.airspace.name){
+        return thisVolume
+      } else {
+        return _volume
+      }
+    })
+      props.setVolumes(updatedVolumes)
+
+  },[thisVolume])
 
   function clearAllSelections(){
     props.setVolumes(props.volumes.map((_volume)=>{
@@ -84,12 +97,15 @@ function MeshFromSvgString(
   }
 
   function handleClick(volume: Volume){
-    props.volumes.map((_volume)=>{
+    console.log(volume.airspace.name, volume.selected)
+    props.setVolumes(props.volumes.map((_volume)=>{
       if(_volume.airspace.name == volume.airspace.name){
         _volume.selected = !volume.selected
       }
       return _volume
-    })
+    }))
+    console.log(volume.airspace.name, volume.selected)
+    setThisVolume(volume)
   }
 
   if(!meshData){
@@ -118,11 +134,11 @@ function MeshFromSvgString(
         />
       ))}
       <meshPhongMaterial
-        color={selected ? "white": props.colour}
-        opacity={selected ? 1 : 0.5}
+        color={thisVolume.selected ? "white": props.colour}
+        opacity={props.volume.selected ? 1 : 0.5}
         side={THREE.DoubleSide}
       />
-      {selected ? 
+      {thisVolume.selected ? 
       <Outlines thickness={0.5}
         color="black"
         screenspace={true}
