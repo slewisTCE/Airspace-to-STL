@@ -6,7 +6,7 @@ import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
 import type { Envelope } from "../types/openAirTypes";
-import type { OpenAirAirspace, Volume } from "../openAir";
+import type { Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
 import { downloadBlob } from "../utils/utils";
 import { Group } from "three";

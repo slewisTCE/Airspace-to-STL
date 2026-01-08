@@ -1,4 +1,4 @@
-import { Button, Divider, Drawer, IconButton, Stack, Toolbar } from "@mui/material";
+import { Divider, Drawer, IconButton, Stack, Toolbar } from "@mui/material";
 import { AirSpaceInfoBox } from "./AirspaceInfoBox";
 import { SvgPreviewBox } from "./SvgPreviewBox";
 import { Disclaimer } from "./Disclaimer";

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SVGLoader, type SVGResult } from "three/examples/jsm/Addons.js";
 import * as THREE from "three";
 import { useMemo } from "react";

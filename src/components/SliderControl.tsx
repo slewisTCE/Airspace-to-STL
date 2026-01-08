@@ -1,5 +1,5 @@
 import { Box, FormControl, Grid, Input, InputAdornment, InputLabel, Slider, Typography } from "@mui/material"
-import { useState, type Dispatch, type SetStateAction } from "react"
+import { type Dispatch, type SetStateAction } from "react"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { formatFeet } from "../utils/utils";
@@ -12,19 +12,6 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
   const stepSize = 1000
   const majorStep1 = Math.floor(((maxAlt-minAlt)*(1/3)) / 1000) * 1000
   const majorStep2 = Math.floor(((maxAlt-minAlt)*(2/3)) / 1000) * 1000
-  const [value, setValue] = useState(30);
-
-  const handleSliderChange = (event: Event, newValue: number) => {
-    setValue(newValue);
-  }
-
-  const handleBlur = () => {
-    if (value < minAlt) {
-      setValue(minAlt);
-    } else if (value > maxAlt) {
-      setValue(maxAlt);
-    }
-  }
 
   const handleChange = (_event: Event, newValue: number[], activeThumb: number) => {
     if (activeThumb === 0) {
