@@ -12,6 +12,7 @@ import { DrawerRight } from './components/DrawerRight'
 import { DrawerLeft } from './components/DrawerLeft'
 import { CentralDisplay } from './components/CentralDisplay'
 import { Error } from './components/Error'
+import type { Mesh } from 'three'
 
 const drawerWidth = 320;
 
@@ -21,6 +22,7 @@ export function App() {
   const [allAirspacesData, setAllAirspacesData] = useState<OpenAirAirspaces>()
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
   const [volumes, setVolumes] = useState<OpenAirAirspace[]>([])
+  const [meshes, setMeshes] = useState<Mesh[]>([])
   
   useEffect(() => {
     fetch(airspaceDataRaw)
@@ -62,8 +64,10 @@ export function App() {
           volumes={volumes} 
           setVolumes={setVolumes} 
           airspaceSelect={airspaceSelect} 
-          setAirspaceSelect={setAirspaceSelect}/>
-        <CentralDisplay loading={loading} volumes={volumes} airspaces={allAirspacesData} margins={drawerWidth}/> 
+          setAirspaceSelect={setAirspaceSelect}
+          meshes={meshes}
+          />
+        <CentralDisplay loading={loading} volumes={volumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes}/> 
         <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect}/>       
         </>
         : <></>}

@@ -31,6 +31,11 @@ export type Altitude = {
   pressureReference?: "QNH" | "ISA"
 }
 
+export type Envelope = {
+  floor: number,
+  ceiling: number
+}
+
 export type CompassPoint = "N" | "E" | "S" | "W"
 
 export type Coordinate = {

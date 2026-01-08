@@ -362,7 +362,7 @@ export class OpenAirAirspace {
 
   public compileShapestoSingleSvg(shapes: Shape[], scaled=true): string {
     const svgHeader = `<svg viewBox="800 1500 500 500" xmlns="http://www.w3.org/2000/svg"><g id="LWPOLYLINE"><path d="`
-    const svgFooter = `" fill="solid" stroke="#6abfff" stroke-width="1"></path></g></svg>`
+    const svgFooter = `" fill="#6abfff" stroke="#6abfff" stroke-width="1"></path></g></svg>`
     let allShapesSvg = svgHeader
     shapes.forEach((shape, index)=>{
       let svgPathSegment

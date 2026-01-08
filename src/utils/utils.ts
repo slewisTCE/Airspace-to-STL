@@ -1,3 +1,4 @@
+import type { Envelope } from "../types/openAirTypes";
 import type { Bounds } from "../types/types";
 
 export function removeHeader(airspaceText: string): string {
@@ -29,4 +30,27 @@ export function distanceBetweenTwoPoints(x1: number, y1: number, x2: number, y2:
   const deltaX = x2 - x1;
   const deltaY = y2 - y1;
   return Math.hypot(deltaX, deltaY);
+}
+
+export function feetToNauticalMiles(feet: number): number {
+  return feet / 6076.12
+}
+
+export function floorCeilingToDepthFloor(envelope: Envelope, scalingFactor: number): [number, number] {
+   const depth = feetToNauticalMiles((envelope.ceiling*scalingFactor) - (envelope.floor*scalingFactor))
+   const floor = feetToNauticalMiles(envelope.floor*scalingFactor)
+   return [depth, floor]
+}
+
+
+export function downloadBlob(blob: Blob, fileName: string){
+    const link = document.createElement('a');
+    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName
+    link.click();
+
+    // Clean up
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }

@@ -31,7 +31,7 @@ export function DrawerLeft(props: DrawerLeftProps){
         }}
       >
         <ControlPanel airspaces={props.airspaces} airspaceSelect={props.airspaceSelect} setAirspaceSelect={props.setAirspaceSelect} volumes={props.volumes} setVolumes={props.setVolumes}/>
-        <VolumesPanel volumes={props.volumes} setVolumes={props.setVolumes}/> 
+        <VolumesPanel volumes={props.volumes} setVolumes={props.setVolumes} meshes={props.meshes}/> 
       </Stack>
     </Drawer>
   )

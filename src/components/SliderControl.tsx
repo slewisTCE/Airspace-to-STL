@@ -1,21 +1,22 @@
 import { Box, FormControl, Grid, Input, InputAdornment, InputLabel, Slider, Typography } from "@mui/material"
-import { useState } from "react"
+import { useState, type Dispatch, type SetStateAction } from "react"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { formatFeet } from "../utils/utils";
+import type { Envelope } from "../types/openAirTypes";
 
-export function SliderControl() {
+export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<SetStateAction<Envelope>>}) {
   const minDistance = 100
   const minAlt = 0
-  const maxAlt = 10000
-  const stepSize = 100
+  const maxAlt = 60000
+  const stepSize = 1000
   const majorStep1 = Math.floor(((maxAlt-minAlt)*(1/3)) / 1000) * 1000
   const majorStep2 = Math.floor(((maxAlt-minAlt)*(2/3)) / 1000) * 1000
   const [value, setValue] = useState(30);
 
   const handleSliderChange = (event: Event, newValue: number) => {
     setValue(newValue);
-  };
+  }
 
   const handleBlur = () => {
     if (value < minAlt) {
@@ -23,17 +24,25 @@ export function SliderControl() {
     } else if (value > maxAlt) {
       setValue(maxAlt);
     }
-  };
+  }
 
-  const [envelope, setEnvelope] = useState<number[]>([majorStep1, majorStep2]);
-
-  const handleChange = (event: Event, newValue: number[], activeThumb: number) => {
+  const handleChange = (_event: Event, newValue: number[], activeThumb: number) => {
     if (activeThumb === 0) {
-      setEnvelope([Math.min(newValue[0], envelope[1] - minDistance), envelope[1]]);
+      props.setEnvelope(
+        {
+          floor: Math.min(newValue[0], props.envelope.ceiling - minDistance), 
+          ceiling: props.envelope.ceiling
+        }
+      )
     } else {
-      setEnvelope([envelope[0], Math.max(newValue[1], envelope[0] + minDistance)]);
+      props.setEnvelope(
+        {
+          floor: props.envelope.floor, 
+          ceiling: Math.max(newValue[1], props.envelope.floor + minDistance)
+        }
+      )
     }
-  };
+  }
 
   return (
     <>
@@ -57,9 +66,9 @@ export function SliderControl() {
                 </InputAdornment>
               }
               endAdornment={<InputAdornment position="end">ft</InputAdornment>}
-              value={envelope[1]}
+              value={props.envelope.ceiling}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                setEnvelope([envelope[0], Number(event.target.value)]);
+                props.setEnvelope({floor: props.envelope.floor, ceiling: Number(event.target.value)});
               }}
             />
           </FormControl>
@@ -79,9 +88,9 @@ export function SliderControl() {
                   </InputAdornment>
                 }
                 endAdornment={<InputAdornment position="end">ft</InputAdornment>}
-                value={envelope[0]}
+                value={props.envelope.floor}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  setEnvelope([Number(event.target.value), envelope[1]]);
+                  props.setEnvelope({floor: Number(event.target.value), ceiling: props.envelope.ceiling});
                 }}
               />
             </FormControl>
@@ -96,7 +105,7 @@ export function SliderControl() {
               orientation="vertical"
               getAriaLabel={() => 'Minimum distance'}
               getAriaValueText={formatFeet}
-              value={envelope}
+              value={[props.envelope.floor, props.envelope.ceiling]}
               onChange={handleChange}
               valueLabelDisplay="auto"
               // getAriaValueText={"valuetext"}

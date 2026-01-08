@@ -7,6 +7,7 @@ import type { OpenAirClassCode } from "../types/openAirTypes";
 import { airspaceFromName } from "../openAir"
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
+import { VolumesPanel } from "./VolumesPanel";
 
 
 export function ControlPanel(props: ControlPanelProps) {
@@ -15,10 +16,10 @@ export function ControlPanel(props: ControlPanelProps) {
   const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
   const [airspaceLocales, setAirspaceLocales] = useState<string[]>([])
-
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
+  const [volumeNames, setVolumeNames] = useState<string[]>([])
   
   useEffect(()=>{
     const localesFiltered = props.airspaces.airspaces.map((thisAirspace)=>{
@@ -31,6 +32,10 @@ export function ControlPanel(props: ControlPanelProps) {
       setAirspaceLocales(uniqueLocales as string[])
     }
   },[airspaceClassCode])
+
+  useEffect(()=>{
+    setVolumeNames(props.volumes.map(volume=>volume.name))
+  },[props.volumes])
 
   let airspaceMenuItems: string[] = []
 
@@ -54,6 +59,7 @@ export function ControlPanel(props: ControlPanelProps) {
   const handleVolumeAddClick = () => {
     if(props.airspaceSelect){
       props.setVolumes(props.volumes.concat(props.airspaceSelect))
+      props.setAirspaceSelect(undefined)
       setAlertMessage(`Added "${props.airspaceSelect.name}" volume`)
       setAlertSeverity("success")
       setOpenAlert(true)
@@ -113,13 +119,13 @@ export function ControlPanel(props: ControlPanelProps) {
             <Select
               labelId="airspace-name-label"
               id="airspace-name-select"
-              value={airspaceNameSelect}
+              value={volumeNames.includes(airspaceNameSelect) ? '' : airspaceNameSelect}
               label="Name"
               onChange={handleAirspaceNameSelect}
             >
               <MenuItem>{airspaceMenuItems}</MenuItem>
               {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
-                if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode){
+                if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode && !volumeNames.includes(thisAirspace.name)){
                   return (<MenuItem key={index} value={thisAirspace.name}>{thisAirspace.name}</MenuItem>)
                 }
               }
