@@ -2,9 +2,9 @@ import { Paper } from "@mui/material";
 import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { feetToNauticalMiles, floorCeilingToDepthFloor } from "../utils/utils";
+import { airspaceClassMap, Volume } from "../openAir";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { floorCeilingToDepthFloor } from "../utils/utils";
 import { useMeshFromSvgData } from "../hooks/geometry";
 
 export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}) {
@@ -16,6 +16,7 @@ export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<Set
 }
 
 export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}){
+  const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const modelScale=0.4
   return (
     <Canvas camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
@@ -45,6 +46,9 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
                 volume={volume}
                 volumes={props.volumes}
                 setVolumes={props.setVolumes}
+                selected={selected}
+                setSelected={setSelected}
+                index={index}
               />
               )
           }
@@ -66,10 +70,12 @@ function MeshFromSvgString(
     volume: Volume,
     volumes: Volume[],
     setVolumes: Dispatch<SetStateAction<Volume[]>>
+    selected: boolean[],
+    setSelected: Dispatch<SetStateAction<boolean[]>>,
+    index: number
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
   const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
-  const [thisVolume, setThisVolume] = useState(props.volume)
 
   useEffect(()=>{
     if(meshData){
@@ -77,35 +83,26 @@ function MeshFromSvgString(
     }
   },[meshData])
 
-  useEffect(()=>{
-    const updatedVolumes = props.volumes.map((_volume)=>{
-      if (_volume.airspace.name == thisVolume.airspace.name){
-        return thisVolume
+  function handleClick(name: string){
+    const newSelected = !props.selected[props.index]
+    const newArray = Array(props.selected.length).fill(false)
+    props.setSelected(newArray)
+    newArray[props.index] = newSelected
+    props.setSelected(newArray)
+    
+    const newVolumes = props.volumes.map((_volume)=>{
+      if(_volume.airspace.name == name){
+        return {
+          selected: newSelected,
+          airspace: _volume.airspace
+        }
       } else {
         return _volume
       }
     })
-      props.setVolumes(updatedVolumes)
+    
 
-  },[thisVolume])
-
-  function clearAllSelections(){
-    props.setVolumes(props.volumes.map((_volume)=>{
-      _volume.selected = false
-      return _volume
-    }))
-  }
-
-  function handleClick(volume: Volume){
-    console.log(volume.airspace.name, volume.selected)
-    props.setVolumes(props.volumes.map((_volume)=>{
-      if(_volume.airspace.name == volume.airspace.name){
-        _volume.selected = !volume.selected
-      }
-      return _volume
-    }))
-    console.log(volume.airspace.name, volume.selected)
-    setThisVolume(volume)
+    props.setVolumes(newVolumes)
   }
 
   if(!meshData){
@@ -113,7 +110,7 @@ function MeshFromSvgString(
   } 
   return (
     <mesh
-      onClick={()=>handleClick(props.volume)}
+      onClick={()=>handleClick(props.volume.airspace.name)}
       ref={meshRef}
       scale={props.scale}
       rotation={[0,0,0]}
@@ -134,11 +131,11 @@ function MeshFromSvgString(
         />
       ))}
       <meshPhongMaterial
-        color={thisVolume.selected ? "white": props.colour}
-        opacity={props.volume.selected ? 1 : 0.5}
+        color={props.selected[props.index] ? "white": props.colour}
+        opacity={props.selected[props.index] ? 1 : 0.5}
         side={THREE.DoubleSide}
       />
-      {thisVolume.selected ? 
+      {props.selected[props.index] ? 
       <Outlines thickness={0.5}
         color="black"
         screenspace={true}

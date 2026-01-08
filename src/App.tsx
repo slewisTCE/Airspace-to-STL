@@ -70,7 +70,7 @@ export function App() {
           
           />
         <CentralDisplay loading={loading} volumes={volumes} setVolumes={setVolumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes}/> 
-        <DrawerRight drawerWidth={drawerWidth} airspaceSelect={airspaceSelect} setOpen={setRightDrawerOpen} open={rightDrawerOpen}/>       
+        <DrawerRight drawerWidth={drawerWidth} volumes={volumes} setOpen={setRightDrawerOpen} open={rightDrawerOpen}/>       
         </>
         : <></>}
       </Box>

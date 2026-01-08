@@ -3,11 +3,18 @@ import { AirSpaceInfoBox } from "./AirspaceInfoBox";
 import { SvgPreviewBox } from "./SvgPreviewBox";
 import { Disclaimer } from "./Disclaimer";
 import { GithubLink } from "./GithubLink";
-import type { OpenAirAirspace } from "../openAir";
+import { Volume } from "../openAir";
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
-export function DrawerRight(props: {drawerWidth: number, airspaceSelect: OpenAirAirspace | undefined, open: boolean, setOpen: Dispatch<SetStateAction<boolean>>}){
+export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open: boolean, setOpen: Dispatch<SetStateAction<boolean>>}){
+  const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
+  useEffect(()=>{
+    const newVolumes = props.volumes.filter(volume=>volume.selected)
+    console.log(props.volumes)
+    setVolumesInfo(newVolumes)
+  },[props.volumes])
+
   return(
     <Drawer
       sx={{
@@ -37,7 +44,7 @@ export function DrawerRight(props: {drawerWidth: number, airspaceSelect: OpenAir
           </IconButton>
         </Toolbar>
         <Divider />
-        <AirSpaceInfoBox airspaceSelect={props.airspaceSelect}/>
+        <AirSpaceInfoBox volumes={volumesInfo}/>
       </Stack>
         <SvgPreviewBox/>
       <Stack>
