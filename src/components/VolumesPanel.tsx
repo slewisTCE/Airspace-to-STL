@@ -5,11 +5,12 @@ import { ExpandMore, Remove } from "@mui/icons-material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
-import type { Envelope } from "../types/openAirTypes";
+import type { Envelope } from "../openAir/openAirTypes";
 import type { Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
 import { downloadBlob } from "../utils/utils";
 import { Group } from "three";
+import { Distance } from "../openAir/distance";
 
 
 export function VolumesPanel(props: VolumePanelProps) {
@@ -87,13 +88,28 @@ export function VolumePanelStack(
     const [envelope, setEnvelope] = useState<Envelope>({floor: floor, ceiling: ceiling})
 
     useEffect(()=>{
-      props.setVolumes(props.volumes.map((volume) => {
-        if (volume.airspace.name == props.volume.airspace.name){
-          volume.airspace.ceiling.valueFeet = envelope.ceiling
-          volume.airspace.floor.valueFeet = envelope.floor
+      // Build updated volumes immutably and set Altitude.value to new Distance instances
+      const newVolumes = props.volumes.map((volume) => {
+        if (volume.airspace.name === props.volume.airspace.name){
+          return {
+            ...volume,
+            airspace: {
+              ...volume.airspace,
+              ceiling: {
+                ...volume.airspace.ceiling,
+                value: new Distance(envelope.ceiling, "feet")
+              },
+              floor: {
+                ...volume.airspace.floor,
+                value: new Distance(envelope.floor, "feet")
+              }
+            }
+          }
         }
         return volume
-      }))
+      })
+
+      props.setVolumes(newVolumes)
     },[envelope])
       
     const handleRemoveVolume = (name: string) => (_event: SyntheticEvent) => {

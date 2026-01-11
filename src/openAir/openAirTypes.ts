@@ -1,3 +1,11 @@
+import { Path, type CircleGeometry } from "three"
+import type { Arc } from "./arc"
+import type { Circle } from "./circle"
+import type { CoordinatePair } from "./coordinatePair"
+import type { Polygon } from "./polygon"
+import type { Angle } from "./angle"
+import * as THREE from "three"
+
 export type OpenAirClassCode = "R" | "Q" | "P" | "A" | "B" | "C" | "D" | "GP" | "CTR" | "W" | "UNKNOWN"
 export type OpenAirClassName = 
   "Restricted" | 
@@ -38,19 +46,11 @@ export type Envelope = {
 
 export type CompassPoint = "N" | "E" | "S" | "W"
 
-export type Coordinate = {
-  direction: CompassPoint
-  measurement: {
-    degrees: number
-    minutes: number
-    seconds: number
-  }
-}
-
-export type CoordinatePair = {
-  latitude: Coordinate
-  longitude: Coordinate
-  projection?: ProjectionPair
+export type DMSBearing = {
+  degrees: number,
+  minutes: number,
+  seconds: number,
+  bearing: CompassPoint
 }
 
 export type ProjectionPair = {
@@ -96,34 +96,38 @@ export type ArcFromCoordinates = {
   }
 }
 
-export type ArcAngles = {
-  startAngle: number,
+export type CircleGeometryType = {
+  value: CircleGeometry
+  projection: {
+    value: CircleGeometry, 
+    scaled?: CircleGeometry 
+  }
+}
+
+export type ParseArcRadiusAnglesResult = {
+  radius: number
+  startAngle: number
   endAngle: number
 }
 
-export type Polygon = {
-  points: CoordinatePair[]
+export type ParseArcCoordinatesResult = {
+  startPoint: CoordinatePair
+  endPoint: CoordinatePair
 }
 
-export type Circle = {
-  radius: { 
-    value: number,
-    projection: {
-      value?: number, 
-      scaled?: number 
-    }
+export type PathType = {
+  projection: {
+    value: THREE.Shape, 
+    scaled?: THREE.Shape 
   }
-  center: CoordinatePair
-  arcStartPoint?: CoordinatePair
-  arcEndPoint?: CoordinatePair
+} 
+
+export type ArcAngles = {
+  startAngle: Angle,
+  endAngle: Angle
 }
 
-export type Shape = {
-  shape: ArcFromRadiusAngles | ArcFromCoordinates | Polygon | Circle,
-  svgPathSegment?: string,
-  svgPathSegmentScaled?: string,
-  shapeType: "ArcFromRadiusAngles" | "ArcFromCoordinates" | "Polygon" | "Circle"
-}
+export type ShapesType = (Arc | Circle | Polygon)
 
 export type ShapeIndexes = {
     directionIndexes: number[];
@@ -136,3 +140,13 @@ export type ShapeIndexes = {
     allAirwaySegmentIndexes: number[];
     airwaySegmentStartIndexes: number[];
 }
+
+export type AltitudeValues = {
+  raw: string
+  flightLevel?: number
+  pressureReference?: PressureReference
+  valueFeet: number
+  reference?: AltitudeReference
+}
+
+export type PressureReference = "ISA"

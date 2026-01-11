@@ -6,7 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { darkTheme } from './styles/themes'
 import { Loading } from './components/Loading'
-import { OpenAirAirspace, OpenAirAirspaces, Volume } from './openAir'
+import { siteLog } from './utils/siteLog'
+import { type OpenAirAirspace, OpenAirAirspaces, Volume } from './openAir'
 import { TopBar } from './components/TopBar'
 import { DrawerRight } from './components/DrawerRight'
 import { DrawerLeft } from './components/DrawerLeft'
@@ -26,18 +27,21 @@ export function App() {
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
   
   useEffect(() => {
+    siteLog('fetch: start')
     fetch(airspaceDataRaw)
-      .then((response) => {
-        return response.text()
-      })
+      .then((response) => response.text())
       .then((data) => {
+        siteLog('fetch: parsed data, constructing OpenAirAirspaces')
         setAllAirspacesData(new OpenAirAirspaces(data))
         setError(null)
+        siteLog('OpenAirAirspaces constructed')
       })
       .catch((reason)=>{
         setError(reason.message);
-        console.error('Error fetching', reason)})
-        .finally(()=>setLoading(false))
+        siteLog('Error fetching: ' + String(reason))
+        console.error('Error fetching', reason)
+      })
+      .finally(()=>{ siteLog('fetch: finished'); setLoading(false) })
   }, [])
 
   useEffect(() => {allAirspacesData ? console.log(allAirspacesData) : null},[allAirspacesData])

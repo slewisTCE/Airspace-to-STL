@@ -1,4 +1,4 @@
-import type { Envelope } from "../types/openAirTypes";
+import type { Envelope } from "../openAir/openAirTypes";
 import type { Bounds } from "../types/types";
 
 export function removeHeader(airspaceText: string): string {
@@ -26,11 +26,7 @@ export function normaliseToSVG(x: number, y: number, bounds: Bounds, padding=10)
   };
 }
 
-export function distanceBetweenTwoPoints(x1: number, y1: number, x2: number, y2: number): number {
-  const deltaX = x2 - x1;
-  const deltaY = y2 - y1;
-  return Math.hypot(deltaX, deltaY);
-}
+
 
 export function feetToNauticalMiles(feet: number): number {
   return feet / 6076.12

@@ -3,8 +3,8 @@ import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
-import type { OpenAirClassCode } from "../types/openAirTypes";
-import { airspaceFromName } from "../openAir"
+import type { OpenAirClassCode } from "../openAir/openAirTypes";
+import { airspaceFromName } from "../openAir/utils";
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
 

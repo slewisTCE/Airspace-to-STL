@@ -17,10 +17,10 @@ export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<Set
 
 export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}){
   const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
-  const modelScale=0.4
+  const modelScale=0.1
   return (
     <Canvas camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
-      <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[200, 20, 0x888888, 0x333333]} />
+      <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
@@ -29,16 +29,23 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
         props.volumes.map((volume, index)=>{
           let depth = 2
           let floor = 0
-          if (volume.airspace.ceiling.valueFeet && volume.airspace.floor.valueFeet != undefined){
-            [depth, floor] = floorCeilingToDepthFloor({ceiling: volume.airspace.ceiling.valueFeet, floor: volume.airspace.floor.valueFeet}, modelScale)
+          let ceiling = 0
+          // Ensure kiloMetres are numeric (0 is valid) before using them
+          const ceilingKM = volume.airspace.ceiling?.value?.kiloMetres
+          const floorKM = volume.airspace.floor?.value?.kiloMetres
+          if (typeof ceilingKM === 'number' && typeof floorKM === 'number'){
+            floor  = floorKM
+            ceiling = ceilingKM
+            depth = ceiling - floor
+            // [depth, floor] = floorCeilingToDepthFloor({ceiling: volume.airspace.ceiling.value.feet, floor: volume.airspace.floor.value.feet}, modelScale)
           }
           if (volume.airspace.svg){
             return (
               <MeshFromSvgString 
                 key={index} 
-                svgString={volume.airspace.svgScaled} 
+                svgString={volume.airspace.svg} 
                 depth={depth} 
-                position={[-350,-690, floor]} 
+                position={[0,20, floor]} 
                 scale={modelScale} 
                 setMeshes={props.setMeshes} 
                 meshes={props.meshes} 
@@ -50,7 +57,7 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
                 setSelected={setSelected}
                 index={index}
               />
-              )
+            )
           }
         })
       }
@@ -76,7 +83,7 @@ function MeshFromSvgString(
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
   const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
-
+  console.log(meshData?.geometry.parameters.options.depth)
   useEffect(()=>{
     if(meshData){
       props.setMeshes(props.meshes.concat(meshData))
@@ -100,14 +107,13 @@ function MeshFromSvgString(
         return _volume
       }
     })
-    
-
     props.setVolumes(newVolumes)
   }
 
   if(!meshData){
     return (<></>)
   } 
+  
   return (
     <mesh
       onClick={()=>handleClick(props.volume.airspace.name)}

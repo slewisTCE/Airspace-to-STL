@@ -3,7 +3,7 @@ import { type Dispatch, type SetStateAction } from "react"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { formatFeet } from "../utils/utils";
-import type { Envelope } from "../types/openAirTypes";
+import type { Envelope } from "../openAir/openAirTypes";
 
 export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<SetStateAction<Envelope>>}) {
   const minDistance = 100
@@ -13,22 +13,15 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
   const majorStep1 = Math.floor(((maxAlt-minAlt)*(1/3)) / 1000) * 1000
   const majorStep2 = Math.floor(((maxAlt-minAlt)*(2/3)) / 1000) * 1000
 
-  const handleChange = (_event: Event, newValue: number[], activeThumb: number) => {
-    if (activeThumb === 0) {
-      props.setEnvelope(
-        {
-          floor: Math.min(newValue[0], props.envelope.ceiling - minDistance), 
-          ceiling: props.envelope.ceiling
-        }
-      )
-    } else {
-      props.setEnvelope(
-        {
-          floor: props.envelope.floor, 
-          ceiling: Math.max(newValue[1], props.envelope.floor + minDistance)
-        }
-      )
-    }
+  const handleChange = (_event: Event, newValue: number | number[]) => {
+    const vals = Array.isArray(newValue) ? newValue : [props.envelope.floor, props.envelope.ceiling]
+    const newFloor = vals[0]
+    const newCeiling = vals[1]
+
+    const floor = Math.min(newFloor, newCeiling - minDistance)
+    const ceiling = Math.max(newCeiling, newFloor + minDistance)
+
+    props.setEnvelope({ floor, ceiling })
   }
 
   return (

@@ -11,7 +11,6 @@ export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open
   const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
   useEffect(()=>{
     const newVolumes = props.volumes.filter(volume=>volume.selected)
-    console.log(props.volumes)
     setVolumesInfo(newVolumes)
   },[props.volumes])
 
@@ -52,7 +51,6 @@ export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open
         <Divider/>
         <GithubLink/>
       </Stack>
-      
     </Drawer>
   )
 }

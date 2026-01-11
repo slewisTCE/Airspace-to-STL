@@ -2,7 +2,7 @@ import { ExpandMore } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Stack, Typography } from "@mui/material";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { SliderControl } from "./SliderControl";
-import type { Envelope } from "../types/openAirTypes";
+import type { Envelope } from "../openAir/openAirTypes";
 
 export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: Envelope, setEnvelope: Dispatch<SetStateAction<Envelope>>}){
   const [expanded, setExpanded] = useState<string | false>(false);

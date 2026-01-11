@@ -19,23 +19,13 @@ export function CentralDisplay(props: {loading: boolean, volumes: Volume[], setV
 
   const modelSize = {width: 2500, height: 2500 }
 
-  props.volumes.map((volume)=>{
-     props.airspaces.scaleProjection(volume.airspace, modelWidth)
-  })
-
-  const volumesScaled = props.airspaces.airspaces.filter((_airspace)=>{
-    return props.volumes.some(volume => volume.airspace.name === _airspace.name)
-  }).map((_airspace)=>{
-    return new Volume(_airspace)
-  })
-
   return (
     <Box
       component="main"
       sx={{ ml: marginLeft, mr: marginRight, marginTop: `64px`, marginBottom: `${padding}px` }}
     >
         {props.loading ? <Loading />:''}
-      <ModelDisplay volumes={volumesScaled} setVolumes={props.setVolumes} size={modelSize} setMeshes={props.setMeshes} meshes={props.meshes}/>
+      <ModelDisplay volumes={props.volumes} setVolumes={props.setVolumes} size={modelSize} setMeshes={props.setMeshes} meshes={props.meshes}/>
     </Box>
   )
 }
