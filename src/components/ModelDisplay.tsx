@@ -83,7 +83,7 @@ function MeshFromSvgString(
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
   const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
-  console.log(meshData?.geometry.parameters.options.depth)
+  // mesh depth logged previously for debugging; removed to avoid noisy console output
   useEffect(()=>{
     if(meshData){
       props.setMeshes(props.meshes.concat(meshData))

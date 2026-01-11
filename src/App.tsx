@@ -44,7 +44,7 @@ export function App() {
       .finally(()=>{ siteLog('fetch: finished'); setLoading(false) })
   }, [])
 
-  useEffect(() => {allAirspacesData ? console.log(allAirspacesData) : null},[allAirspacesData])
+  useEffect(() => {/* intentionally left blank: allAirspacesData available for debugging if needed */},[allAirspacesData])
 
   if (loading){
     return (<Loading/>)
