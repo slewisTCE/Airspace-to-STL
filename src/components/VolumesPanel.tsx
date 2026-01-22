@@ -6,13 +6,12 @@ import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { AlertSeverity } from "../types/alertTypes";
 import { AlertWithSeverity } from "./Alert";
 import type { Envelope } from "../openAir/openAirTypes";
-import type { OpenAirAirspace, Volume } from "../openAir";
+import type { Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
 import { downloadBlob } from "../utils/utils";
 import { Group, Box3, Vector3, Mesh, BufferGeometry } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { Distance } from "../openAir/distance";
-import { Altitude } from "../openAir/altitude";
 
 
 export function VolumesPanel(props: VolumePanelProps) {
@@ -153,27 +152,27 @@ export function VolumePanelStack(
 
     useEffect(()=>{
       // Build updated volumes immutably and set Altitude.value to new Distance instances
-      const newVolumes =  [] as Volume[]
-      props.volumes.map((volume) => {
+      const newVolumes = props.volumes.map((volume) => {
         if (volume.airspace.name === props.volume.airspace.name){
-          let ceiling: Altitude = volume.airspace.ceiling
-          let floor: Altitude = volume.airspace.floor
-          let airspace: OpenAirAirspace = volume.airspace
-
-          ceiling.value = new Distance(envelope.ceiling, "feet")
-          floor.value = new Distance(envelope.floor, "feet")
-          airspace.ceiling = ceiling
-          airspace.floor = floor
-
-          newVolumes.push({
+          return {
             ...volume,
-            airspace: airspace
-          })
+            airspace: {
+              ...volume.airspace,
+              ceiling: {
+                ...volume.airspace.ceiling,
+                value: new Distance(envelope.ceiling, "feet")
+              },
+              floor: {
+                ...volume.airspace.floor,
+                value: new Distance(envelope.floor, "feet")
+              }
+            }
+          }
         }
         return volume
       })
 
-      props.setVolumes(newVolumes)
+      props.setVolumes(newVolumes as Volume[])
     },[envelope])
       
     const handleRemoveVolume = (name: string) => (_event: SyntheticEvent) => {
