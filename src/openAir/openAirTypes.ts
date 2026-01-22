@@ -1,4 +1,4 @@
-import { Path, type CircleGeometry } from "three"
+import { type CircleGeometry } from "three"
 import type { Arc } from "./arc"
 import type { Circle } from "./circle"
 import type { CoordinatePair } from "./coordinatePair"
