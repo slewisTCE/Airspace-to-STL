@@ -12,7 +12,7 @@ describe.skip('Polygon.generatePolygonSvgPathSegment', () => {
       { projection: { x: 30, y: 40 } }
     ]
     const polygon = new Polygon(shape as any, points as any)
-    const seg = polygon.generatePolygonSvgPathSegment(polygon, false)
+    const seg = polygon.generateSvgPathSegment(false)
     expect(normalizeSpaces(seg)).toBe(normalizeSpaces('L 10 20 L 30 40'))
   })
 
@@ -23,7 +23,7 @@ describe.skip('Polygon.generatePolygonSvgPathSegment', () => {
       { projection: { scaled: { x: 3.5, y: 4.5 } } }
     ]
     const polygon = new Polygon(shape as any, points as any)
-    const seg = polygon.generatePolygonSvgPathSegment(polygon, true)
+    const seg = polygon.generateSvgPathSegment(true)
     expect(normalizeSpaces(seg)).toBe(normalizeSpaces('L 1.5 2.5 L 3.5 4.5'))
   })
 })
