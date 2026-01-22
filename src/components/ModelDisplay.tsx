@@ -4,7 +4,6 @@ import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { airspaceClassMap, Volume } from "../openAir";
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { floorCeilingToDepthFloor } from "../utils/utils";
 import { useMeshFromSvgData } from "../hooks/geometry";
 
 export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}) {
@@ -40,12 +39,16 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
             // [depth, floor] = floorCeilingToDepthFloor({ceiling: volume.airspace.ceiling.value.feet, floor: volume.airspace.floor.value.feet}, modelScale)
           }
           if (volume.airspace.svg){
+            // Position must be in the same units as the scaled geometry
+            const posX = 0 * modelScale
+            const posY = 20 * modelScale
+            const posZ = floor * modelScale
             return (
               <MeshFromSvgString 
                 key={index} 
                 svgString={volume.airspace.svg} 
                 depth={depth} 
-                position={[0,20, floor]} 
+                position={[posX, posY, posZ]} 
                 scale={modelScale} 
                 setMeshes={props.setMeshes} 
                 meshes={props.meshes} 
@@ -82,11 +85,35 @@ function MeshFromSvgString(
     index: number
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
-  const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
+  const [meshData, _shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
   // mesh depth logged previously for debugging; removed to avoid noisy console output
   useEffect(()=>{
     if(meshData){
-      props.setMeshes(props.meshes.concat(meshData))
+      // capture meshData for export and for debugging
+      // clone meshData and apply the same position/scale used in the scene so exports preserve relative Z
+      try {
+        const exportClone = meshData.clone(true) as THREE.Mesh
+        // apply scene transforms
+        exportClone.position.set(props.position[0] ?? 0, props.position[1] ?? 0, props.position[2] ?? 0)
+        exportClone.scale.set(props.scale ?? 1, props.scale ?? 1, props.scale ?? 1)
+        exportClone.updateMatrixWorld(true)
+        props.setMeshes(props.meshes.concat(exportClone))
+      } catch (e) {
+        // fallback to pushing raw meshData
+        props.setMeshes(props.meshes.concat(meshData))
+      }
+      try {
+        meshData.geometry.computeBoundingBox()
+        const bb = meshData.geometry.boundingBox
+        // compute world-space top Z (position.z + scaled bbox max.z)
+        const posZ = props.position && props.position.length > 2 ? props.position[2] : 0
+        const worldTopZ = (bb?.max.z || 0) * props.scale + posZ
+        const worldBottomZ = (bb?.min.z || 0) * props.scale + posZ
+        // eslint-disable-next-line no-console
+        console.log(`Mesh ready: ${props.volume.airspace.name} bboxZ:`, bb?.min.z, bb?.max.z, 'depth(km):', props.depth, 'worldBottomZ(km):', worldBottomZ, 'worldTopZ(km):', worldTopZ)
+      } catch (e) {
+        // ignore
+      }
     }
   },[meshData])
 
@@ -112,8 +139,8 @@ function MeshFromSvgString(
 
   if(!meshData){
     return (<></>)
-  } 
-  
+  }
+
   return (
     <mesh
       onClick={()=>handleClick(props.volume.airspace.name)}
@@ -123,19 +150,6 @@ function MeshFromSvgString(
       position={props.position}
       geometry={meshData.geometry}
     >
-      {shapes.map((shape, index) => (
-        <extrudeGeometry
-          key={index}
-          args={[
-            shape,
-            {
-              depth: props.depth,
-              bevelEnabled: false,
-              steps: 30,
-            },
-          ]}
-        />
-      ))}
       <meshPhongMaterial
         color={props.selected[props.index] ? "white": props.colour}
         opacity={props.selected[props.index] ? 1 : 0.5}
@@ -146,8 +160,7 @@ function MeshFromSvgString(
         color="black"
         screenspace={true}
         opacity={1}
-        /> : 
-        <></>}
+        /> : null}
     </mesh>
   )
 }

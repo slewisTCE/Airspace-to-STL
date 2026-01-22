@@ -1,6 +1,5 @@
-import { ShapeGeometry } from "three"
+import { setProjectionCentroid } from "./coordinatePair"
 import { OpenAirAirspace } from "./openAirAirspace"
-import type { Polygon } from "./polygon"
 
 export class OpenAirAirspaces {
   airspaces: OpenAirAirspace[]
@@ -18,6 +17,70 @@ export class OpenAirAirspaces {
       return airspace
     })
 
+    // Compute centroid (lat/lon) of all coordinate pairs and switch to a local equirectangular projection
+    try {
+      let latSum = 0
+      let lonSum = 0
+      let count = 0
+      this.airspaces.forEach((airspace)=>{
+        airspace.shapes.forEach((shape)=>{
+          if (shape.constructor.name === 'Polygon'){
+            const poly = shape as any
+            poly.points.forEach((p: any)=>{
+              if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
+                latSum += p.latitude.degreesDecimal
+                lonSum += p.longitude.degreesDecimal
+                count += 1
+              }
+            })
+          } else if (shape.constructor.name === 'Arc'){
+            const arc = shape as any
+            const pts = [arc.center, arc.startPoint, arc.endPoint]
+            pts.forEach((p: any)=>{
+              if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
+                latSum += p.latitude.degreesDecimal
+                lonSum += p.longitude.degreesDecimal
+                count += 1
+              }
+            })
+          } else if (shape.constructor.name === 'Circle'){
+            const circle = shape as any
+            const p = circle.center
+            if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
+              latSum += p.latitude.degreesDecimal
+              lonSum += p.longitude.degreesDecimal
+              count += 1
+            }
+          }
+        })
+      })
+      if (count > 0){
+        const centroidLat = latSum / count
+        const centroidLon = lonSum / count
+        setProjectionCentroid(centroidLat, centroidLon)
+        // Recompute projections for all coordinate pairs so shapes use the new local projection
+        this.airspaces.forEach((airspace)=>{
+          airspace.shapes.forEach((shape)=>{
+            if (shape.constructor.name === 'Polygon'){
+              const poly = shape as any
+              poly.points.forEach((p: any)=>{ if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection() })
+            } else if (shape.constructor.name === 'Arc'){
+              const arc = shape as any
+              const pts = [arc.center, arc.startPoint, arc.endPoint]
+              pts.forEach((p: any)=>{ if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection() })
+            } else if (shape.constructor.name === 'Circle'){
+              const circle = shape as any
+              const p = circle.center
+              if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection()
+            }
+          })
+        })
+      }
+    } catch (e) {
+      // if centroid computation fails, fall back to existing projection behavior
+      console.warn('Centroid projection computation failed, using default projection', e)
+    }
+
     this.airspaces.map((airspace)=>{
       if(airspace.geometry){
         airspace.geometry = airspace.geometry.scale(0.1, 0.1, 1)
@@ -27,44 +90,13 @@ export class OpenAirAirspaces {
     })
     this.offset = Math.abs(this.minProjection)
     this.scalingFactor = 2000.0 / (this.offset + this.maxProjection)
-    // this.scaleAirspaces(this.airspaces, this.offset, this.scalingFactor)
 
   }
-
-  // private scaleProjection(airspace: OpenAirAirspace, projectedAbsMaxPixels: number){
-  //   airspace.shapes.map((shape)=>{
-  //     if (shape.constructor.name == "Polygon"){
-  //       const polygon = shape as Polygon
-  //       polygon.points.map((point)=>{
-  //         if (point.projection){
-  //           point.projection.scaled = {
-  //             x: (point.projection?.x / this.maxProjection) * projectedAbsMaxPixels,
-  //             y: (point.projection?.y / this.maxProjection) * projectedAbsMaxPixels
-  //           }
-  //         }
-  //       })
-  //     }
-  //   })
-  // }
 
   private splitRawAirspaceData(airspaceData: string): string[] {
     return airspaceData.split(/\n\s*\n/)
   }
 
-  public scaleAirspaces(airspaces: OpenAirAirspace[], offset: number, scalingFactor: number){
-    airspaces.map((airspace)=>{
-      // airspace.scaleShapes(airspace.shapes, offset, scalingFactor)
-      airspace.shapes.map((shape)=>{
-        // shape.svgPathSegmentScaled = airspace.generateShapeSvgPath(shape, true)
-        // shape.svgPathSegment = airspace.generateShapeSvgPath(shape, false)
-        return shape
-      })
-    
-      airspace.svgScaled = airspace.compileShapestoSingleSvg(airspace.shapes, true)
-      airspace.svg = airspace.compileShapestoSingleSvg(airspace.shapes, false)
-
-    })
-  }
 
   public airspaceFromName(name: string): OpenAirAirspace | undefined {
     return this.airspaces.find((airspace: OpenAirAirspace) => airspace.name === name)

@@ -3,9 +3,19 @@ import { Geometry } from "./geometry"
 import type { CompassPoint, ProjectionPair, XYPair } from "./openAirTypes"
 import proj4 from "proj4"
 
-// Using a transverse mercator centred on Australia (lat_0=-25, lon_0=135)
+// Using a transverse mercator centred on Australia as a fallback
 const australianProjection = new proj4.Proj('+proj=tmerc +lat_0=-25 +lon_0=135 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +units=km +no_defs');
 const wgs84 = new proj4.Proj('WGS84'); // Standard Lat/Long
+
+// Optional centroid for a local equirectangular projection
+let projectionCentroid: { lat: number, lon: number } | undefined = undefined
+
+export function setProjectionCentroid(lat: number, lon: number){
+  projectionCentroid = { lat, lon }
+}
+export function clearProjectionCentroid(){
+  projectionCentroid = undefined
+}
 
 export class CoordinatePair extends Geometry {
   latitude: Coordinate
@@ -54,6 +64,18 @@ export class CoordinatePair extends Geometry {
         throw new Error("Invalid lat/lon for projection")
       }
       try {
+        // If a centroid is set, use a simple local equirectangular projection
+        if (projectionCentroid){
+          // Earth radius in kilometres
+          const R = 6371
+          const lat0 = projectionCentroid.lat * Math.PI / 180
+          const lon0 = projectionCentroid.lon * Math.PI / 180
+          const lat = this.latitude.degreesDecimal * Math.PI / 180
+          const lon = this.longitude.degreesDecimal * Math.PI / 180
+          const x = (lon - lon0) * Math.cos(lat0) * R
+          const y = (lat - lat0) * R
+          return [x, y]
+        }
         // proj4 expects input as [lon, lat]
         const projection = this.latLonToAustraliaXY(this.latitude.degreesDecimal, this.longitude.degreesDecimal)
         return [projection.x, projection.y]
@@ -63,6 +85,12 @@ export class CoordinatePair extends Geometry {
     } else {
       throw new Error("proj4 failed: latitude and longitude not defined")
     }
+  }
+
+  // Recompute projection for this coordinate pair using current projection mode
+  public recomputeProjection(){
+    const projection = this.projectLatLon()
+    this.projection = { x: projection[0], y: projection[1] }
   }
 
 // Convenience helper: convert numeric latitude/longitude to Australia-centered X/Y (meters)

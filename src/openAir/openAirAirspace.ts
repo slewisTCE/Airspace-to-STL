@@ -1,14 +1,13 @@
 
-import type { Direction, OpenAirAirspaceClass, OpenAirClassCode, OpenAirClassName, XYPair, ShapesType } from "./openAirTypes"
+import type { Direction, OpenAirAirspaceClass, OpenAirClassCode, OpenAirClassName } from "./openAirTypes"
 import { airspaceClassMap, commandMap } from "./data";
 import { CoordinatePair } from "./coordinatePair";
 import { Altitude } from "./altitude";
-import { Polygon, Polygon as PolygonPoint } from "./polygon";
+import { Polygon } from "./polygon";
 import { Arc } from "./arc";
 import { Circle } from "./circle";
-import { BufferGeometry, ExtrudeGeometry, Shape as ThreeShape, ShapeGeometry, ShapePath } from "three";
+import {Shape as ThreeShape } from "three";
 import { Distance } from "./distance";
-import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 
 
 export class OpenAirAirspace {
@@ -36,12 +35,12 @@ export class OpenAirAirspace {
   svg: string
   svgScaled: string
   shape: ThreeShape
-  geometry: BufferGeometry
   shapeInstructions:string[] = []
 
   static currentDirection: Direction
   maxProjection: number
   minProjection: number
+  geometry: any;
 
   constructor(airspaceTxt: string){
     this.shape = new ThreeShape
@@ -61,29 +60,6 @@ export class OpenAirAirspace {
     this.shape.autoClose = true
     this.procesRawLines()
     this.svg = this.compileShapestoSingleSvg(this.shapes)
-
-    // if ( this.shape.curves.length > 0){
-    //   this.shape.closePath()
-    // }
-    
-    // this.geometry = new ExtrudeGeometry(this.shape, {depth: this.ceiling.value.kiloMetres - this.floor.value.kiloMetres})
-    // this.geometry = this.geometry.scale(0.001, 0.001, 1)
-    // this.geometry.computeBoundingBox()
-    // const newPath = this.joinPaths(this.shapes, false)
-    // if (newPath){
-    //   this.shapePath = newPath
-    //   this.geometry = new ExtrudeGeometry(newPath, {
-    //     steps: 100, // Number of segments along the path
-    //     bevelEnabled: false // Or true for bevels
-    // });
-    // }
-    // // this.shapesThree = this.shapePath.toShapes(true)
-    // const geometries = this.shapesThree.map((shape)=>{
-    //   return new ShapeGeometry(shape)
-    // })
-    // if(geometries.length > 0){
-    //   this.geometry = BufferGeometryUtils.mergeGeometries(geometries)
-    // }
   }
 
   public isValidSVG(svgString: any): boolean {
@@ -99,31 +75,6 @@ export class OpenAirAirspace {
   // Ensure the root element is actually an <svg> tag
   return doc.documentElement.nodeName === 'svg';
 }
-
-  private joinPaths(shapes: (Arc | Circle | Polygon)[], scaled=false): Shape | undefined {
-    let path = new Shape()
-    let pathScaled = new Shape()
-    if(shapes[0]){
-      path = shapes[0].path.projection.value
-      pathScaled = shapes[0].path.projection.scaled
-      shapes.forEach((shape, index)=>{
-        if(scaled){
-          if(shape.path.projection.scaled && pathScaled){
-            if (index>0){
-              pathScaled.add(shape.path.projection.scaled)
-            } 
-          }else {
-            throw new Error("Path has not been scaled")
-          }
-        } else {
-          if (index>0){
-            path.add(shape.path.projection.value)
-          }
-        }
-      })
-      return path
-    }
-  }
 
   public procesRawLines(){
     let lastDirection: Direction = "clockwise"
@@ -162,66 +113,15 @@ export class OpenAirAirspace {
         } else if(command == commandMap.circle){
           this.shapeInstructions.push("abcArc")
           const circle = new Circle(this.shape, line, lastCenter)
-          this.shape = circle.shape
-          this.shapes.push(circle)
+          if(circle.shape){
+            this.shape = circle.shape
+            this.shapes.push(circle)
+          }
         } else { unreconisedCommand = true}
       } else if (unreconisedCommand){
         console.warn(`Did not recognise command "${command}" when parsing line "${line}"`)
       }
     })
-  }
-
-  public scaleShapes(shapes: Shape[], offset: number, scalingFactor: number){
-    shapes.map(shape => this.scaleShape(shape, offset, scalingFactor))
-  }
-
-  public scaleShape(shape: (Arc | Circle | Polygon), offset: number, scalingFactor: number) {
-    let thisShape
-    if(shape.constructor.name == "Circle"){
-      thisShape = shape as Circle
-      if(thisShape.radius.value){
-      if (thisShape.center.projection && thisShape.arcStartPoint?.projection && thisShape.arcEndPoint?.projection && thisShape.radius.value){
-        thisShape.center.projection.scaled = this.scaleProjectionPair(thisShape.center.projection, offset, scalingFactor)
-        thisShape.arcStartPoint.projection.scaled = this.scaleProjectionPair(thisShape.arcStartPoint.projection, offset, scalingFactor)
-        thisShape.arcEndPoint.projection.scaled = this.scaleProjectionPair(thisShape.arcEndPoint.projection, offset, scalingFactor)
-        thisShape.radius.scaled = new Distance(this.scaleDistance(thisShape.radius.value.metres, scalingFactor), "metres")
-      }
-    }
-    }
-    else if(shape.constructor.name == "Polygon"){
-      thisShape = shape as Polygon
-      const points = thisShape.points.map((point)=>{
-        if (point.projection){
-          point.projection.scaled = this.scaleProjectionPair(point.projection, offset, scalingFactor)
-          return {
-            ...point,
-            projection:{
-              ...point.projection,
-              scaled: this.scaleProjectionPair(point.projection, offset, scalingFactor)
-            }
-          }
-        }
-      })
-      thisShape.points = points as CoordinatePair[]
-    } else if (shape.constructor.name== "Arc"){
-      thisShape = shape as Arc
-      if(thisShape.center && thisShape.endPoint && thisShape.startPoint){
-        if (thisShape.center.projection && thisShape.endPoint.projection && thisShape.startPoint.projection){
-          thisShape.center.projection.scaled = this.scaleProjectionPair(thisShape.center.projection, offset, scalingFactor)
-          thisShape.startPoint.projection.scaled = this.scaleProjectionPair(thisShape.startPoint.projection, offset, scalingFactor)
-          thisShape.endPoint.projection.scaled = this.scaleProjectionPair(thisShape.endPoint.projection, offset, scalingFactor)
-        }
-      }
-    }
-
-    
-  }
-
-  private scaleProjectionPair(pair: {x: number, y: number}, offset: number, scalingFactor: number): XYPair {
-    return {
-        x: this.scaleProjection(pair.x, offset, scalingFactor),
-        y: this.scaleProjection(pair.y, offset, scalingFactor)
-    }
   }
 
   public scaleProjection(projection: number, offset: number, scalingFactor: number): number {
@@ -230,13 +130,6 @@ export class OpenAirAirspace {
 
   public scaleDistance(projection: number, scalingFactor: number): number {
     return projection * scalingFactor
-  }
-
-
-  private updateMinMaxProjections(projections: Array<number | undefined>): void {
-    const safeProjections =  projections.filter(projection => projection !== undefined)
-    this.maxProjection = Math.max(...[this.maxProjection, ...safeProjections])
-    this.minProjection = Math.min(...[this.minProjection, ...safeProjections])
   }
 
  
@@ -264,35 +157,6 @@ export class OpenAirAirspace {
     allShapesSvg = allShapesSvg.concat(svgFooter)
     return allShapesSvg
   }
-
- 
-  public generateShapeSvgPath(shape: Shape, scaled=true): string | undefined {
-    if (shape.constructor.name == "Circle"){
-      shape = shape as Circle
-      return shape.generateCircleSvgPathSegment(shape as Circle, scaled)
-    }
-    else if (shape.constructor.name == "Arc"){
-      try {
-        shape = shape as Arc
-        return shape.generateSvgPathSegment(scaled)
-      } catch {
-        console.error(shape)
-      }
-    }
-    else if (shape.constructor.name == "Arc"){
-      
-      const arc = shape as Arc
-      const [startX, startY, endX, endY] = arc.generateArcFromRadiusAnglesSvgPathSegment(scaled)
-      return (`
-        ${arc.direction == "clockwise" ? startX: endX} ${arc.direction == "clockwise" ? startY: endY}
-        A ${arc.radius} ${arc.radius} 0 0 0 ${arc.direction == "clockwise" ? endX : startX} ${arc.direction == "clockwise" ? endY: startY}`)
-    }
-    else if (shape.constructor.name == "Polygon"){
-      shape = shape as Polygon
-      return shape.generatePolygonSvgPathSegment(shape as PolygonPoint, scaled)
-    }
-  }
-
 
   private trimLines(lines: string[]): string[]{
     return lines.map((line)=>{

@@ -14,7 +14,20 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: THREE.Ext
     const shapesTemp: THREE.Shape[] = []
     svgData.paths.map((path) => shapesTemp.push(...path.toShapes(true)))
     setShapes(shapesTemp)
-    const geometry = new THREE.ExtrudeGeometry(shapesTemp, extrudeSettings);
+    // Ensure no bevel is applied (bevel adds extra depth unexpectedly)
+    const settings = Object.assign({}, extrudeSettings, { bevelEnabled: false })
+    const geometry = new THREE.ExtrudeGeometry(shapesTemp, settings);
+    // Normalize geometry so its base sits at z=0 (remove negative min.z offsets)
+    try {
+      geometry.computeBoundingBox()
+      const bb = geometry.boundingBox
+      if (bb) {
+        const minZ = bb.min.z || 0
+        if (minZ !== 0) geometry.translate(0, 0, -minZ)
+      }
+    } catch (e) {
+      // ignore
+    }
     const material = new THREE.MeshBasicMaterial({ color: colour });
     setMesh(new THREE.Mesh(geometry, material))
     // cleanup: dispose geometry/material when svgString or settings change
