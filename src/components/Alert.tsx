@@ -12,7 +12,7 @@ export function AlertWithSeverity(props: {
 }){
 
   function handleCloseAlert(
-    event: SyntheticEvent | Event,
+    _event: SyntheticEvent | Event,
     reason?: SnackbarCloseReason) {
       if (reason === 'clickaway') {
         return
