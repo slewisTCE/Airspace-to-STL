@@ -13,10 +13,7 @@ export function CentralDisplay(props: {loading: boolean, volumes: Volume[], setV
   const padding = 30
   const drawerWidth = props.margins + padding
   const marginLeft = `${drawerWidth-10}px`
-  const drawersWidth = (props.margins + padding)*2
   const marginRight = `${width - drawerWidth- padding}px`
-  const modelWidth = width - drawersWidth
-
   const modelSize = {width: 2500, height: 2500 }
 
   return (
