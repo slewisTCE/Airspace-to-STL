@@ -1,5 +1,5 @@
 import { Paper } from "@mui/material";
-import { OrbitControls, Outlines, type OrbitControlsProps } from "@react-three/drei";
+import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { airspaceClassMap, Volume } from "../openAir";
