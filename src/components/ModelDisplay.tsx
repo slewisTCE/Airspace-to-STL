@@ -22,6 +22,7 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
   useEffect(()=>{
     try {
       if (!controlsRef.current) return
+      if (props.volumes.length == 1){
       const meshes = props.meshes || []
       if (meshes.length === 0) return
       const box = new THREE.Box3()
@@ -45,7 +46,9 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
         camera.lookAt(center)
       }
       controlsRef.current.target.set(center.x, center.y, center.z)
-      controlsRef.current.update()
+      
+        controlsRef.current.update()
+      }
     } catch (e) {
       // ignore
     }
