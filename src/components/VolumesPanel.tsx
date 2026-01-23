@@ -80,11 +80,10 @@ export function VolumesPanel(props: VolumePanelProps) {
     const size = new Vector3();
     box.getSize(size);
     const currentMax = Math.max(size.x, size.y, size.z) || 1;
-    const targetMm = 300; // 300 mm cube
-    // Current geometry coordinates are in kilometres (proj4 uses +units=km).
-    // Convert currentMax (km) to millimetres: mm = km * 1000 (m/km) * 1000 (mm/m) = km * 1e6
-    const currentMaxMm = currentMax * 1_000_000;
-    const scaleFactor = currentMaxMm > 0 ? targetMm / currentMaxMm : 1;
+    const targetMm = 200; // 300 mm cube
+    // Geometry coordinates are in kilometres (proj4 uses +units=km).
+    // Scale so the largest dimension becomes targetMm (units in STL are interpreted as mm).
+    const scaleFactor = currentMax > 0 ? targetMm / currentMax : 1;
     exportTarget.scale.multiplyScalar(scaleFactor);
     exportTarget.updateMatrixWorld(true);
 
