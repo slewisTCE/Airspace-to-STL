@@ -84,7 +84,6 @@ export class OpenAirAirspaces {
     this.airspaces.map((airspace)=>{
       if(airspace.geometry){
         airspace.geometry = airspace.geometry.scale(0.1, 0.1, 1)
-        airspace.geometry
         airspace.geometry.computeBoundingBox()
       }
     })
