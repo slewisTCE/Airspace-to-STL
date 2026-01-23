@@ -6,4 +6,6 @@ export interface ControlPanelProps {
     setVolumes: React.Dispatch<React.SetStateAction<Volume[]>>
     airspaceSelect: OpenAirAirspace | undefined
     setAirspaceSelect: React.Dispatch<React.SetStateAction<OpenAirAirspace | undefined>>
+    zScale: number
+    setZScale: React.Dispatch<React.SetStateAction<number>>
 }

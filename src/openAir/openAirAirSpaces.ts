@@ -1,6 +1,54 @@
 import { setProjectionCentroid } from "./coordinatePair"
 import { OpenAirAirspace } from "./openAirAirspace"
 
+type Degrees = { degreesDecimal?: number }
+type ProjectionPoint = {
+  latitude?: Degrees
+  longitude?: Degrees
+  recomputeProjection?: () => void
+}
+
+type ShapeWithConstructor = { constructor?: { name?: string } }
+
+function isProjectionPoint(value: unknown): value is ProjectionPoint {
+  return typeof value === "object" && value !== null
+}
+
+function hasLatLon(point: ProjectionPoint): point is ProjectionPoint & { latitude: { degreesDecimal: number }, longitude: { degreesDecimal: number } } {
+  return typeof point.latitude?.degreesDecimal === "number" && typeof point.longitude?.degreesDecimal === "number"
+}
+
+function getConstructorName(shape: unknown): string {
+  const candidate = shape as ShapeWithConstructor
+  return typeof candidate?.constructor?.name === "string" ? candidate.constructor.name : ""
+}
+
+function getProjectionPoints(shape: unknown): ProjectionPoint[] {
+  const shapeName = getConstructorName(shape)
+  if (shapeName === "Polygon") {
+    const points = (shape as { points?: unknown }).points
+    if (Array.isArray(points)) {
+      return points.filter(isProjectionPoint)
+    }
+    if (isProjectionPoint(points)) {
+      return [points]
+    }
+    return []
+  }
+
+  if (shapeName === "Arc") {
+    const arc = shape as { center?: unknown, startPoint?: unknown, endPoint?: unknown }
+    return [arc.center, arc.startPoint, arc.endPoint].filter(isProjectionPoint)
+  }
+
+  if (shapeName === "Circle") {
+    const circle = shape as { center?: unknown }
+    return circle.center && isProjectionPoint(circle.center) ? [circle.center] : []
+  }
+
+  return []
+}
+
 export class OpenAirAirspaces {
   airspaces: OpenAirAirspace[]
   maxProjection: number = 0
@@ -22,71 +70,45 @@ export class OpenAirAirspaces {
       let latSum = 0
       let lonSum = 0
       let count = 0
-      this.airspaces.forEach((airspace)=>{
-        airspace.shapes.forEach((shape)=>{
-          if (shape.constructor.name === 'Polygon'){
-            const poly = shape as any
-            poly.points.forEach((p: any)=>{
-              if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
-                latSum += p.latitude.degreesDecimal
-                lonSum += p.longitude.degreesDecimal
-                count += 1
-              }
-            })
-          } else if (shape.constructor.name === 'Arc'){
-            const arc = shape as any
-            const pts = [arc.center, arc.startPoint, arc.endPoint]
-            pts.forEach((p: any)=>{
-              if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
-                latSum += p.latitude.degreesDecimal
-                lonSum += p.longitude.degreesDecimal
-                count += 1
-              }
-            })
-          } else if (shape.constructor.name === 'Circle'){
-            const circle = shape as any
-            const p = circle.center
-            if (p && p.latitude && p.longitude && typeof p.latitude.degreesDecimal === 'number'){
-              latSum += p.latitude.degreesDecimal
-              lonSum += p.longitude.degreesDecimal
+      for (const airspace of this.airspaces) {
+        for (const shape of airspace.shapes) {
+          const points = getProjectionPoints(shape)
+          for (const point of points) {
+            if (hasLatLon(point)) {
+              latSum += point.latitude.degreesDecimal
+              lonSum += point.longitude.degreesDecimal
               count += 1
             }
           }
-        })
-      })
+        }
+      }
       if (count > 0){
         const centroidLat = latSum / count
         const centroidLon = lonSum / count
         setProjectionCentroid(centroidLat, centroidLon)
         // Recompute projections for all coordinate pairs so shapes use the new local projection
-        this.airspaces.forEach((airspace)=>{
-          airspace.shapes.forEach((shape)=>{
-            if (shape.constructor.name === 'Polygon'){
-              const poly = shape as any
-              poly.points.forEach((p: any)=>{ if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection() })
-            } else if (shape.constructor.name === 'Arc'){
-              const arc = shape as any
-              const pts = [arc.center, arc.startPoint, arc.endPoint]
-              pts.forEach((p: any)=>{ if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection() })
-            } else if (shape.constructor.name === 'Circle'){
-              const circle = shape as any
-              const p = circle.center
-              if (p && typeof p.recomputeProjection === 'function') p.recomputeProjection()
+        for (const airspace of this.airspaces) {
+          for (const shape of airspace.shapes) {
+            const points = getProjectionPoints(shape)
+            for (const point of points) {
+              if (typeof point.recomputeProjection === "function") {
+                point.recomputeProjection()
+              }
             }
-          })
-        })
+          }
+        }
       }
     } catch (e) {
       // if centroid computation fails, fall back to existing projection behavior
       console.warn('Centroid projection computation failed, using default projection', e)
     }
 
-    this.airspaces.map((airspace)=>{
-      if(airspace.geometry){
+    for (const airspace of this.airspaces) {
+      if (airspace.geometry) {
         airspace.geometry = airspace.geometry.scale(0.1, 0.1, 1)
         airspace.geometry.computeBoundingBox()
       }
-    })
+    }
     this.offset = Math.abs(this.minProjection)
     this.scalingFactor = 2000.0 / (this.offset + this.maxProjection)
 

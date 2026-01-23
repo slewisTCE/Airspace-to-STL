@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, FormControl, InputLabel, MenuItem, Select, Stack, Typography, type SelectChangeEvent } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, InputLabel, MenuItem, Select, Slider, Stack, Typography, type SelectChangeEvent } from "@mui/material";
 import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
@@ -82,6 +82,23 @@ export function ControlPanel(props: ControlPanelProps) {
       </AccordionSummary>
       <AccordionDetails sx={{py:3}}>
         <Stack spacing={2}>
+          <Box>
+            <Typography gutterBottom>
+              Z Scale ({props.zScale}×)
+            </Typography>
+            <Slider
+              value={props.zScale}
+              onChange={(_event, value) => {
+                const nextValue = Array.isArray(value) ? value[0] : value
+                props.setZScale(Math.min(50, Math.max(1, nextValue)))
+              }}
+              min={1}
+              max={50}
+              step={1}
+              valueLabelDisplay="auto"
+              aria-label="Z axis scale"
+            />
+          </Box>
           <FormControl fullWidth>
             <InputLabel id="airspace-class-label">Class</InputLabel>
             <Select

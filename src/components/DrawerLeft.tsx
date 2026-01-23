@@ -30,7 +30,7 @@ export function DrawerLeft(props: DrawerLeftProps){
           justifyContent: "space-evenly",
         }}
       >
-        <ControlPanel airspaces={props.airspaces} airspaceSelect={props.airspaceSelect} setAirspaceSelect={props.setAirspaceSelect} volumes={props.volumes} setVolumes={props.setVolumes}/>
+        <ControlPanel airspaces={props.airspaces} airspaceSelect={props.airspaceSelect} setAirspaceSelect={props.setAirspaceSelect} volumes={props.volumes} setVolumes={props.setVolumes} zScale={props.zScale} setZScale={props.setZScale}/>
         <VolumesPanel volumes={props.volumes} setVolumes={props.setVolumes} meshes={props.meshes}/> 
       </Stack>
     </Drawer>

@@ -3,18 +3,18 @@ import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { airspaceClassMap, Volume } from "../openAir";
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
 
-export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}) {
+export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[], zScale: number}) {
   return (
     <Paper sx={{ justifyContent: 'center', width:1 }}>
-      <Scene volumes={props.volumes} setVolumes={props.setVolumes} size={props.size} setMeshes={props.setMeshes} meshes={props.meshes}/>
+      <Scene volumes={props.volumes} setVolumes={props.setVolumes} size={props.size} setMeshes={props.setMeshes} meshes={props.meshes} zScale={props.zScale}/>
     </Paper>
   )
 }
 
-export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}){
+export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[], zScale: number}){
   const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const modelScale=0.1
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
@@ -39,9 +39,10 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
   return (
     <Canvas frameloop="demand" camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
       <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
-      <ambientLight intensity={Math.PI / 2} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+      <ambientLight intensity={1} color={0xffffff} />
+      <directionalLight position={[0, -250, 250]} intensity={1} color={0xffffff} />
+      {/* <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> */}
       <OrbitControls enableDamping={false}/>
       {
         props.volumes.map((volume, index)=>{
@@ -54,14 +55,14 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
           if (typeof ceilingKM === 'number' && typeof floorKM === 'number'){
             floor  = floorKM
             ceiling = ceilingKM
-            depth = ceiling - floor
+            depth = (ceiling - floor) * props.zScale
             // [depth, floor] = floorCeilingToDepthFloor({ceiling: volume.airspace.ceiling.value.feet, floor: volume.airspace.floor.value.feet}, modelScale)
           }
           if (volume.airspace.svg){
             // Position must be in the same units as the scaled geometry
             const posX = centroidOffset.x
-            const posY = centroidOffset.y + 20 * modelScale
-            const posZ = floor * modelScale
+            const posY = centroidOffset.y  * modelScale
+            const posZ = floor * modelScale * props.zScale
             return (
               <MeshFromSvgString 
                 key={index} 
@@ -103,36 +104,9 @@ function MeshFromSvgString(
     setSelected: Dispatch<SetStateAction<boolean[]>>,
     index: number
   }){
-  const meshRef = useRef<THREE.Mesh | undefined>(undefined)
-  const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
-  // mesh depth logged previously for debugging; removed to avoid noisy console output
-  useEffect(()=>{
-    if(meshData){
-      // capture meshData for export and for debugging
-      // clone meshData and apply the same position/scale used in the scene so exports preserve relative Z
-      try {
-        const exportClone = meshData.clone(true) as THREE.Mesh
-        // apply scene transforms
-        exportClone.position.set(props.position[0] ?? 0, props.position[1] ?? 0, props.position[2] ?? 0)
-        exportClone.scale.set(props.scale ?? 1, props.scale ?? 1, props.scale ?? 1)
-        exportClone.updateMatrixWorld(true)
-        props.setMeshes(props.meshes.concat(exportClone))
-      } catch (e) {
-        // fallback to pushing raw meshData
-        props.setMeshes(props.meshes.concat(meshData))
-      }
-      try {
-        meshData.geometry.computeBoundingBox()
-        const bb = meshData.geometry.boundingBox
-        // compute world-space top Z (position.z + scaled bbox max.z)
-        const posZ = props.position && props.position.length > 2 ? props.position[2] : 0
-        const worldTopZ = (bb?.max.z || 0) * props.scale + posZ
-        const worldBottomZ = (bb?.min.z || 0) * props.scale + posZ
-      } catch (e) {
-        // ignore
-      }
-    }
-  },[meshData])
+  // const meshRef = useRef<THREE.Mesh | undefined>(undefined)
+  const meshData = useMeshFromSvgData(props.svgString, {depth: props.depth, curveSegments: 64}, props.colour)
+  
 
   function handleClick(name: string){
     const newSelected = !props.selected[props.index]
@@ -161,17 +135,16 @@ function MeshFromSvgString(
   return (
     <mesh
       onClick={()=>handleClick(props.volume.airspace.name)}
-      ref={meshRef}
       scale={props.scale}
       rotation={[0,0,0]}
       position={props.position}
       geometry={meshData.geometry}
     >
-      <meshStandardMaterial
+      <meshPhongMaterial
         transparent={true}
+        flatShading={false}
         color={props.selected[props.index] ? "white": props.colour}
-        opacity={props.volumes.length > 1 ? 0.5 : 1}
-        side={THREE.DoubleSide}
+        opacity={props.volumes.length > 1 ? 0.75 : 1}
       />
       {props.selected[props.index] ? 
       <Outlines thickness={0.5}

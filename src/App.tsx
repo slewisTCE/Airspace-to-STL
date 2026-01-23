@@ -25,6 +25,7 @@ export function App() {
   const [volumes, setVolumes] = useState<Volume[]>([])
   const [meshes, setMeshes] = useState<Mesh[]>([])
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
+  const [zScale, setZScale] = useState(1)
   
   useEffect(() => {
     siteLog('fetch: start')
@@ -71,9 +72,11 @@ export function App() {
           airspaceSelect={airspaceSelect} 
           setAirspaceSelect={setAirspaceSelect}
           meshes={meshes}
+          zScale={zScale}
+          setZScale={setZScale}
           
           />
-        <CentralDisplay loading={loading} volumes={volumes} setVolumes={setVolumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes}/> 
+        <CentralDisplay loading={loading} volumes={volumes} setVolumes={setVolumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes} zScale={zScale}/> 
         <DrawerRight drawerWidth={drawerWidth} volumes={volumes} setOpen={setRightDrawerOpen} open={rightDrawerOpen}/>       
         </>
         : <></>}

@@ -7,7 +7,7 @@ import { useWindowSize } from "../hooks/windowSize";
 import type { Dispatch, SetStateAction } from "react";
 
 
-export function CentralDisplay(props: {loading: boolean, volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, airspaces: OpenAirAirspaces, margins: number, setMeshes: Dispatch<SetStateAction<Mesh[]>>, meshes: Mesh[]}){
+export function CentralDisplay(props: {loading: boolean, volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, airspaces: OpenAirAirspaces, margins: number, setMeshes: Dispatch<SetStateAction<Mesh[]>>, meshes: Mesh[], zScale: number}){
   const { width } = useWindowSize();
   
   const padding = 30
@@ -22,7 +22,7 @@ export function CentralDisplay(props: {loading: boolean, volumes: Volume[], setV
       sx={{ ml: marginLeft, mr: marginRight, marginTop: `64px`, marginBottom: `${padding}px` }}
     >
         {props.loading ? <Loading />:''}
-      <ModelDisplay volumes={props.volumes} setVolumes={props.setVolumes} size={modelSize} setMeshes={props.setMeshes} meshes={props.meshes}/>
+      <ModelDisplay volumes={props.volumes} setVolumes={props.setVolumes} size={modelSize} setMeshes={props.setMeshes} meshes={props.meshes} zScale={props.zScale}/>
     </Box>
   )
 }
