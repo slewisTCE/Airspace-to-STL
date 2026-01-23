@@ -18,6 +18,19 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
   const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const modelScale=0.1
   const controlsRef = useRef<any>(null)
+  const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const projectedCentroid = Volume.getCombinedProjectedCentroid(props.volumes)
+    if (projectedCentroid) {
+      setCentroidOffset({
+        x: -projectedCentroid.x * modelScale,
+        y: -projectedCentroid.y * modelScale
+      })
+    } else {
+      setCentroidOffset({ x: 0, y: 0 })
+    }
+  }, [props.volumes, modelScale])
   // Re-center camera and controls to fit all meshes when meshes change
   useEffect(()=>{
     try {
@@ -77,8 +90,8 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
           }
           if (volume.airspace.svg){
             // Position must be in the same units as the scaled geometry
-            const posX = 0 * modelScale
-            const posY = 20 * modelScale
+            const posX = centroidOffset.x
+            const posY = centroidOffset.y + 20 * modelScale
             const posZ = floor * modelScale
             return (
               <MeshFromSvgString 
