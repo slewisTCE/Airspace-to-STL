@@ -59,26 +59,24 @@ export class Circle extends Geometry {
   public generateSvgPathSegment(scaled=false): string {
     let center
     let radius
-    let arcStartPoint
-    let arcEndPoint
     if (scaled){
       center = this.center.projection.scaled
       radius = this.radius.scaled
-      arcStartPoint = this.arcStartPoint.projection.scaled
-      arcEndPoint = this.arcEndPoint.projection.scaled
     } else {
       center = this.center.projection
       radius = this.radius.value
-      arcStartPoint = this.arcStartPoint.projection
-      arcEndPoint = this.arcEndPoint.projection
     }
-    if (center && arcStartPoint && arcEndPoint){
-        const svgPathSegment = " " + [
-          `L ${arcStartPoint.x} ${arcStartPoint.y}`,
-          `A ${radius?.kiloMetres} ${radius?.kiloMetres} 0 1 0 ${arcEndPoint.x} ${arcEndPoint.y}`,
-          `A ${radius?.kiloMetres} ${radius?.kiloMetres} 0 1 0 ${arcStartPoint.x} ${arcStartPoint.y}`
-        ].join(' ').trim()
-          return svgPathSegment
+    if (center && radius){
+      const startX = center.x + radius.kiloMetres
+      const startY = center.y
+      const endX = center.x - radius.kiloMetres
+      const endY = center.y
+      const svgPathSegment = " " + [
+        `L ${startX} ${startY}`,
+        `A ${radius.kiloMetres} ${radius.kiloMetres} 0 1 0 ${endX} ${endY}`,
+        `A ${radius.kiloMetres} ${radius.kiloMetres} 0 1 0 ${startX} ${startY}`
+      ].join(' ').trim()
+      return svgPathSegment
     } else {
       throw new Error("Can't generate svg path segments until scaled projection's are defined");
     }
