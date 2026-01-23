@@ -60,7 +60,7 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <OrbitControls ref={controlsRef} />
+      <OrbitControls ref={controlsRef} enableDamping={false}/>
       {
         props.volumes.map((volume, index)=>{
           let depth = 2
@@ -122,7 +122,7 @@ function MeshFromSvgString(
     index: number
   }){
   const meshRef = useRef<THREE.Mesh | undefined>(undefined)
-  const [meshData, _shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
+  const [meshData, shapes] = useMeshFromSvgData(props.svgString, {depth: props.depth}, props.colour)
   // mesh depth logged previously for debugging; removed to avoid noisy console output
   useEffect(()=>{
     if(meshData){
@@ -187,9 +187,10 @@ function MeshFromSvgString(
       position={props.position}
       geometry={meshData.geometry}
     >
-      <meshPhongMaterial
+      <meshStandardMaterial
+        transparent={true}
         color={props.selected[props.index] ? "white": props.colour}
-        opacity={props.selected[props.index] ? 1 : 0.5}
+        opacity={props.volumes.length > 1 ? 0.5 : 1}
         side={THREE.DoubleSide}
       />
       {props.selected[props.index] ? 
@@ -197,7 +198,12 @@ function MeshFromSvgString(
         color="black"
         screenspace={true}
         opacity={1}
-        /> : null}
+        /> : 
+      <Outlines thickness={0.2}
+        color="black"
+        screenspace={true}
+        opacity={1}
+      />}
     </mesh>
   )
 }
