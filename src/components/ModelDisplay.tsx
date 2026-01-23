@@ -17,63 +17,32 @@ export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<Set
 export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[]}){
   const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const modelScale=0.1
-  const controlsRef = useRef<any>(null)
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
 
   useEffect(() => {
-    const projectedCentroid = Volume.getCombinedProjectedCentroid(props.volumes)
-    if (projectedCentroid) {
-      setCentroidOffset({
-        x: -projectedCentroid.x * modelScale,
-        y: -projectedCentroid.y * modelScale
-      })
-    } else {
-      setCentroidOffset({ x: 0, y: 0 })
+    async function fetchProjections() {
+      const projectedCentroid = Volume.getCombinedProjectedCentroid(props.volumes)
+      if (projectedCentroid) {
+        setCentroidOffset({
+          x: -projectedCentroid.x * modelScale,
+          y: -projectedCentroid.y * modelScale
+        })
+      } else {
+        setCentroidOffset({ x: 0, y: 0 })
+      }
     }
+    fetchProjections()
   }, [props.volumes, modelScale])
   // Re-center camera and controls to fit all meshes when meshes change
-  useEffect(()=>{
-    try {
-      if (!controlsRef.current) return
-      if (props.volumes.length == 1){
-      const meshes = props.meshes || []
-      if (meshes.length === 0) return
-      const box = new THREE.Box3()
-      meshes.forEach((m)=>{
-        try {
-          m.updateMatrixWorld(true)
-          box.expandByObject(m)
-        } catch(e){}
-      })
-      const center = new THREE.Vector3()
-      box.getCenter(center)
-      const size = new THREE.Vector3()
-      box.getSize(size)
-      const maxDim = Math.max(size.x, size.y, size.z)
-      const fitOffset = 1.4
-      // position camera so model fits nicely (offset on Y and Z)
-      const cameraDistance = Math.max(20, maxDim * fitOffset)
-      const camera = controlsRef.current.object || controlsRef.current.camera
-      if (camera && camera.position){
-        camera.position.set(center.x, center.y - cameraDistance, center.z + cameraDistance)
-        camera.lookAt(center)
-      }
-      controlsRef.current.target.set(center.x, center.y, center.z)
-      
-        controlsRef.current.update()
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, [props.meshes])
+
 
   return (
-    <Canvas camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
+    <Canvas frameloop="demand" camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
       <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <OrbitControls ref={controlsRef} enableDamping={false}/>
+      <OrbitControls enableDamping={false}/>
       {
         props.volumes.map((volume, index)=>{
           let depth = 2
@@ -159,8 +128,6 @@ function MeshFromSvgString(
         const posZ = props.position && props.position.length > 2 ? props.position[2] : 0
         const worldTopZ = (bb?.max.z || 0) * props.scale + posZ
         const worldBottomZ = (bb?.min.z || 0) * props.scale + posZ
-        // eslint-disable-next-line no-console
-        console.log(`Mesh ready: ${props.volume.airspace.name} bboxZ:`, bb?.min.z, bb?.max.z, 'depth(km):', props.depth, 'worldBottomZ(km):', worldBottomZ, 'worldTopZ(km):', worldTopZ)
       } catch (e) {
         // ignore
       }
