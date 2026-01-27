@@ -1,12 +1,12 @@
 import { Paper } from "@mui/material";
 import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import * as THREE from "three";
+import { Mesh as ThreeMesh } from "three";
 import { airspaceClassMap, Volume } from "../openAir";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
 
-export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[], zScale: number}) {
+export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<ThreeMesh[]>>, meshes: ThreeMesh[], zScale: number}) {
   return (
     <Paper sx={{ justifyContent: 'center', width:1 }}>
       <Scene volumes={props.volumes} setVolumes={props.setVolumes} size={props.size} setMeshes={props.setMeshes} meshes={props.meshes} zScale={props.zScale}/>
@@ -14,7 +14,7 @@ export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<Set
   )
 }
 
-export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, meshes: THREE.Mesh[], zScale: number}){
+export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<ThreeMesh[]>>, meshes: ThreeMesh[], zScale: number}){
   const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const modelScale=0.1
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
@@ -94,8 +94,8 @@ function MeshFromSvgString(
     depth: number, 
     position: [number, number, number], 
     scale: number, 
-    setMeshes: Dispatch<SetStateAction<THREE.Mesh[]>>, 
-    meshes: THREE.Mesh[], 
+    setMeshes: Dispatch<SetStateAction<ThreeMesh[]>>, 
+    meshes: ThreeMesh[], 
     colour: string, 
     volume: Volume,
     volumes: Volume[],

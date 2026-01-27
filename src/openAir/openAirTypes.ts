@@ -1,10 +1,9 @@
-import { type CircleGeometry } from "three"
+import { type CircleGeometry, type Shape as ThreeShape } from "three"
 import type { Arc } from "./arc"
 import type { Circle } from "./circle"
 import type { CoordinatePair } from "./coordinatePair"
 import type { Polygon } from "./polygon"
 import type { Angle } from "./angle"
-import * as THREE from "three"
 
 export type OpenAirClassCode = "R" | "Q" | "P" | "A" | "B" | "C" | "D" | "GP" | "CTR" | "W" | "UNKNOWN"
 export type OpenAirClassName = 
@@ -117,8 +116,8 @@ export type ParseArcCoordinatesResult = {
 
 export type PathType = {
   projection: {
-    value: THREE.Shape, 
-    scaled?: THREE.Shape 
+    value: ThreeShape, 
+    scaled?: ThreeShape 
   }
 } 
 

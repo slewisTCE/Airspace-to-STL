@@ -6,7 +6,7 @@ import { Altitude } from "./altitude";
 import { Polygon } from "./polygon";
 import { Arc } from "./arc";
 import { Circle } from "./circle";
-import {Shape as ThreeShape } from "three";
+import {Shape as ThreeShape, type BufferGeometry } from "three";
 import { Distance } from "./distance";
 
 
@@ -40,7 +40,7 @@ export class OpenAirAirspace {
   static currentDirection: Direction
   maxProjection: number
   minProjection: number
-  geometry: any;
+  geometry?: BufferGeometry;
 
   constructor(airspaceTxt: string){
     this.shape = new ThreeShape
@@ -61,20 +61,6 @@ export class OpenAirAirspace {
     this.procesRawLines()
     this.svg = this.compileShapestoSingleSvg(this.shapes)
   }
-
-  public isValidSVG(svgString: any): boolean {
-  if (!svgString || typeof svgString !== 'string') return false;
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgString, 'image/svg+xml');
-
-  // Check if the browser's parser generated an error element
-  const errorNode = doc.querySelector('parsererror');
-  if (errorNode) return false;
-
-  // Ensure the root element is actually an <svg> tag
-  return doc.documentElement.nodeName === 'svg';
-}
 
   public procesRawLines(){
     let lastDirection: Direction = "clockwise"
@@ -193,8 +179,8 @@ export class OpenAirAirspace {
   }
 
   private parseAirspaceClass(line: string): OpenAirAirspaceClass{
-    let code = line.slice(3).trim() as OpenAirClassCode
-    let name = airspaceClassMap[code].name as OpenAirClassName
+    const code = line.slice(3).trim() as OpenAirClassCode
+    const name = airspaceClassMap[code].name as OpenAirClassName
     return { name: name, code: code }
   }
 }
