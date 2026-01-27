@@ -8,7 +8,6 @@ export function siteLog(message: string) {
   if (entries.length > 200) entries.splice(0, entries.length - 200)
   // mirror to console for developer visibility
     // centralised logging function - write to console for now
-    // eslint-disable-next-line no-console
     console.log(line)
 }
 

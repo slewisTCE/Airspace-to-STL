@@ -80,7 +80,7 @@ export class CoordinatePair extends Geometry {
         const projection = this.latLonToAustraliaXY(this.latitude.degreesDecimal, this.longitude.degreesDecimal)
         return [projection.x, projection.y]
       } catch (e) {
-        throw new Error("proj4 failed");
+        throw new Error("proj4 failed " + e);
       }
     } else {
       throw new Error("proj4 failed: latitude and longitude not defined")
@@ -156,13 +156,13 @@ export class CoordinatePair extends Geometry {
           minutes: minutes,
           seconds: this.latitude.seconds,
           bearing: this.latitude.bearing
-        } as any)
+        })
         const newLon = new Coordinate({
           degrees: this.longitude.degrees,
           minutes: this.longitude.minutes,
           seconds: this.longitude.seconds,
           bearing: this.longitude.bearing
-        } as any)
+        })
         const movePoint = new CoordinatePair([newLat, newLon])
 
         const balancedMovePoint = balanceDegreesMinutes(movePoint)
@@ -173,20 +173,20 @@ export class CoordinatePair extends Geometry {
           minutes: balancedMovePoint.latitude.minutes,
           seconds: balancedMovePoint.latitude.seconds,
           bearing: balancedMovePoint.latitude.bearing
-        } as any)
+        })
         balancedMovePoint.longitude = new Coordinate({
           degrees: balancedMovePoint.longitude.degrees,
           minutes: balancedMovePoint.longitude.minutes,
           seconds: balancedMovePoint.longitude.seconds,
           bearing: balancedMovePoint.longitude.bearing
-        } as any)
+        })
 
         // Recalculate projection for the moved point
         try {
           const proj = balancedMovePoint.projectLatLon()
           balancedMovePoint.projection = { x: proj[0], y: proj[1] }
         } catch (e) {
-          throw new Error("proj4 failed for moved point")
+          throw new Error("proj4 failed for moved point " + e)
         }
 
         return balancedMovePoint

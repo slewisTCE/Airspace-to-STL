@@ -19,23 +19,32 @@ export function ControlPanel(props: ControlPanelProps) {
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   const [volumeNames, setVolumeNames] = useState<string[]>([])
   
+
+  const airspaces = props.airspaces.airspaces
+  
   useEffect(()=>{
-    const localesFiltered = props.airspaces.airspaces.map((thisAirspace)=>{
-      if (thisAirspace.airspaceClass.code == airspaceClassCode){
-        return thisAirspace.locale
+    async function updateAirspaceLocales() {
+      const localesFiltered = airspaces.map((thisAirspace)=>{
+        if (thisAirspace.airspaceClass.code == airspaceClassCode){
+          return thisAirspace.locale
+        }
+      })
+      const uniqueLocales = Array.from(new Set(localesFiltered)).sort()
+      if (uniqueLocales) {
+        setAirspaceLocales(uniqueLocales as string[])
       }
-    })
-    const uniqueLocales = Array.from(new Set(localesFiltered)).sort()
-    if (uniqueLocales) {
-      setAirspaceLocales(uniqueLocales as string[])
     }
-  },[airspaceClassCode])
+    updateAirspaceLocales();
+  },[airspaceClassCode, airspaces])
 
   useEffect(()=>{
-    setVolumeNames(props.volumes.map(volume=>volume.airspace.name))
+    async function updateVolumeNames() {
+      setVolumeNames(props.volumes.map(volume=>volume.airspace.name))
+    }
+    updateVolumeNames();
   },[props.volumes])
 
-  let airspaceMenuItems: string[] = []
+  const airspaceMenuItems: string[] = []
 
   const handleAccordian =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {

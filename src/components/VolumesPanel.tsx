@@ -172,9 +172,9 @@ export function VolumePanelStack(
       })
 
       props.setVolumes(newVolumes as Volume[])
-    },[envelope])
+    },[envelope, props])
       
-    const handleRemoveVolume = (name: string) => (_event: SyntheticEvent) => {
+    const handleRemoveVolume = (name: string) => () => {
       props.setVolumes(props.volumes.filter((volume) => {
         return volume.airspace.name != name
       }))

@@ -10,8 +10,11 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open: boolean, setOpen: Dispatch<SetStateAction<boolean>>}){
   const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
   useEffect(()=>{
-    const newVolumes = props.volumes.filter(volume=>volume.selected)
-    setVolumesInfo(newVolumes)
+    async function updateVolumesInfo() {
+      const newVolumes = props.volumes.filter(volume=>volume.selected)
+      setVolumesInfo(newVolumes)
+    }
+    updateVolumesInfo();
   },[props.volumes])
 
   return(

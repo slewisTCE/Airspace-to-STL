@@ -11,7 +11,6 @@ describe('Darwin CTA A1 altitudes', () => {
     const darwin = all.airspaces.find(a => a.name.toUpperCase().includes('DARWIN CTA A1 [H24]'))
     if (!darwin) {
       // Dump first 30 names for debugging
-      // eslint-disable-next-line no-console
       console.log('Airspace names (first 30):', all.airspaces.map(a=>a.name).slice(0,30))
     }
     expect(darwin).toBeDefined()

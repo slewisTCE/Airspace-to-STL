@@ -155,10 +155,6 @@ export class Arc extends Geometry {
     return {radius: radius, startAngle: angleStart, endAngle: angleEnd}
   }
 
-  public generateArcFromRadiusAnglesSvgPathSegment(_scaled=true): string {
-    throw new Error("Not yet implemented")
-  }
-
   private pointFromOriginAngleAndDistance(origin: CoordinatePair, bearing: Angle, distance: Distance){
     const destinationLatitude = new Coordinate(
       Math.asin(

@@ -1,4 +1,4 @@
-export function Error(props: {error: any}){
+export function Error(props: {error: string}){
   return (
     <div>Error: {props.error}</div>
   )
