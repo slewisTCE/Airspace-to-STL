@@ -1,7 +1,7 @@
-import { BufferGeometry, Mesh, MeshPhongMaterial, type BufferGeometryEventMap, type NormalBufferAttributes } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
+import { BufferGeometry, Mesh, MeshPhongMaterial, type BufferGeometryEventMap, type NormalBufferAttributes, type Material } from "three";
 
-export function mergeGeometries(geometries: BufferGeometry<NormalBufferAttributes, BufferGeometryEventMap>[], material?: any) {
+export async function mergeGeometries(geometries: BufferGeometry<NormalBufferAttributes, BufferGeometryEventMap>[], material?: Material): Promise<Mesh> {
+  const { BufferGeometryUtils } = await import("three/examples/jsm/Addons.js");
   const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries);
   if (material == undefined){
     material = new MeshPhongMaterial({ color: 0x00ff00 });
