@@ -76,6 +76,8 @@ export function ControlPanel(props: ControlPanelProps) {
   const handleLocaleSelect = (event: SelectChangeEvent) => {
     setAirspaceLocale(event.target.value)
   }
+
+  const classLabel = "airspace-class-label"
   
   return (
     <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')}>
@@ -109,16 +111,17 @@ export function ControlPanel(props: ControlPanelProps) {
             />
           </Box>
           <FormControl fullWidth>
-            <InputLabel id="airspace-class-label">Class</InputLabel>
+            <InputLabel id={classLabel}>Class</InputLabel>
             <Select
-              labelId="airspace-class-label"
+              labelId={classLabel}
               id="airspace-class-select"
+              name="airspace-class"
               value={airspaceClassCode}
               label="Class"
               onChange={handleClassSelect}
             >
-              {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode)=>{
-                return (<MenuItem value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode].name}`}</MenuItem>)
+              {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode, index)=>{
+                return (<MenuItem key={index} value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode].name}`}</MenuItem>)
               })}
             </Select>
           </FormControl>
@@ -127,6 +130,7 @@ export function ControlPanel(props: ControlPanelProps) {
             <Select
               labelId="airspace-locale-label"
               id="airspace-locale-select"
+              name="airspace-locale"
               value={airspaceLocale}
               label="locale"
               onChange={handleLocaleSelect}
@@ -143,6 +147,7 @@ export function ControlPanel(props: ControlPanelProps) {
             <Select
               labelId="airspace-name-label"
               id="airspace-name-select"
+              name="airspace-name"
               value={volumeNames.includes(airspaceNameSelect) ? '' : airspaceNameSelect}
               label="Name"
               onChange={handleAirspaceNameSelect}

@@ -147,32 +147,34 @@ export function VolumePanelStack(
   }){
     const floor = props.volume.airspace.floor?.value?.feet ?? 0
     const ceiling = props.volume.airspace.ceiling?.value?.feet ?? 1000
+
     const [envelope, setEnvelope] = useState<Envelope>({floor: floor, ceiling: ceiling})
+    const volumeName = props.volume.airspace.name
 
-    useEffect(()=>{
-      // Build updated volumes immutably and set Altitude.value to new Distance instances
-      const newVolumes = props.volumes.map((volume) => {
-        if (volume.airspace.name === props.volume.airspace.name){
-          return {
-            ...volume,
-            airspace: {
-              ...volume.airspace,
-              ceiling: {
-                ...volume.airspace.ceiling,
-                value: new Distance(envelope.ceiling, "feet")
-              },
-              floor: {
-                ...volume.airspace.floor,
-                value: new Distance(envelope.floor, "feet")
-              }
-            }
+    const handleEnvelopeChange = (next: Envelope) => {
+      setEnvelope(next)
+      props.setVolumes((current) =>
+        current.map((volume) => {
+          if (volume.airspace.name !== volumeName) {
+            return volume
           }
-        }
-        return volume
-      })
 
-      props.setVolumes(newVolumes as Volume[])
-    },[envelope, props])
+          volume.airspace.ceiling.value = new Distance(next.ceiling, "feet")
+          volume.airspace.floor.value = new Distance(next.floor, "feet")
+
+          return { ...volume, airspace: volume.airspace }
+        })
+      )
+    }
+
+    useEffect(() => {
+      async function updateEnvelopeFromProps() {
+        if (envelope.floor !== floor || envelope.ceiling !== ceiling) {
+          setEnvelope({ floor, ceiling })
+        }
+      }
+      updateEnvelopeFromProps()
+    }, [floor, ceiling, envelope.floor, envelope.ceiling])
       
     const handleRemoveVolume = (name: string) => () => {
       props.setVolumes(props.volumes.filter((volume) => {
@@ -188,6 +190,6 @@ export function VolumePanelStack(
         <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={handleRemoveVolume(props.volume.airspace.name)}>
           <Remove key={`removeIcon${props.index}`}/>
         </IconButton >
-        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={envelope} setEnvelope={setEnvelope} />
+        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={envelope} handleEnvelopeChange={handleEnvelopeChange} />
       </Stack>)
   }

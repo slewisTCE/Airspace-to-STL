@@ -3,7 +3,7 @@ import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Mesh as ThreeMesh } from "three";
 import { airspaceClassMap, Volume } from "../openAir";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
 
 export function ModelDisplay(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAction<Volume[]>>, size: {height: number, width: number}, setMeshes: Dispatch<SetStateAction<ThreeMesh[]>>, meshes: ThreeMesh[], zScale: number}) {
@@ -19,9 +19,12 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
   const modelScale=0.1
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
 
+  const volumes = useRef(Array.from(props.volumes))
+
   useEffect(() => {
     async function fetchProjections() {
-      const projectedCentroid = Volume.getCombinedProjectedCentroid(props.volumes)
+      console.log('Calculating projected centroid for volumes', volumes.current);
+      const projectedCentroid = Volume.getCombinedProjectedCentroid(volumes.current)
       if (projectedCentroid) {
         setCentroidOffset({
           x: -projectedCentroid.x * modelScale,
@@ -32,7 +35,7 @@ export function Scene(props: {volumes: Volume[], setVolumes: Dispatch<SetStateAc
       }
     }
     fetchProjections()
-  }, [props.volumes, modelScale])
+  }, [volumes, modelScale])
   // Re-center camera and controls to fit all meshes when meshes change
 
 
@@ -105,7 +108,8 @@ function MeshFromSvgString(
     index: number
   }){
   // const meshRef = useRef<THREE.Mesh | undefined>(undefined)
-  const meshData = useMeshFromSvgData(props.svgString, {depth: props.depth, curveSegments: 64}, props.colour)
+  const depth = props.depth
+  const meshData = useMeshFromSvgData(props.svgString, {depth: depth, curveSegments: 64}, props.colour)
   
 
   function handleClick(name: string){

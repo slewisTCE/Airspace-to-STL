@@ -4,7 +4,8 @@ import { useMemo } from "react";
 
 
 export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGeometryOptions, colour: ColorRepresentation): Mesh | undefined {
-
+  const { depth, curveSegments } = extrudeSettings;
+  
   // Rebuild shapes and geometry whenever the source SVG, the extrude depth, or colour change
   const shapes = useMemo(() => {
       console.log('Parsing SVG string to shapes');
@@ -17,7 +18,7 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
 
   const geometry = useMemo(() => {
     console.log('Building geometry from shapes');
-    const settings = Object.assign({}, extrudeSettings, { bevelEnabled: false })
+    const settings = Object.assign({}, {depth, curveSegments}, { bevelEnabled: false })
     const geometry = new ExtrudeGeometry(shapes, settings);
     try {
       geometry.computeBoundingBox()
@@ -30,7 +31,7 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
       console.warn('Failed to compute bounding box for geometry', error)
     }
     return geometry
-  },[shapes, extrudeSettings])
+  },[shapes, depth, curveSegments])
 
   const mesh = useMemo(() => {
     console.log('Creating mesh from geometry');

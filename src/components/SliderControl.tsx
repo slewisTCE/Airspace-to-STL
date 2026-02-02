@@ -1,11 +1,10 @@
 import { Box, FormControl, Grid, Input, InputAdornment, InputLabel, Slider, Typography } from "@mui/material"
-import { type Dispatch, type SetStateAction } from "react"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { formatFeet } from "../utils/utils";
 import type { Envelope } from "../openAir/openAirTypes";
 
-export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<SetStateAction<Envelope>>}) {
+export function SliderControl(props: {envelope: Envelope, handleEnvelopeChange: (next: Envelope) => void}) {
   const minDistance = 100
   const minAlt = 0
   const maxAlt = 60000
@@ -21,7 +20,7 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
     const floor = Math.min(newFloor, newCeiling - minDistance)
     const ceiling = Math.max(newCeiling, newFloor + minDistance)
 
-    props.setEnvelope({ floor, ceiling })
+    props.handleEnvelopeChange({ floor, ceiling })
   }
 
   return (
@@ -35,11 +34,11 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
       <Grid>
         <Box sx={{ '& > :not(style)': { m: 1 } }}>
           <FormControl variant="standard">
-            <InputLabel htmlFor="input-with-icon-adornment">
+            <InputLabel htmlFor="input-label-airspace-ceiling">
               Airspace Ceiling
             </InputLabel>
             <Input
-              id="input-with-icon-adornment"
+              id="input-airspace-ceiling"
               startAdornment={
                 <InputAdornment position="start">
                   <CloudDownloadIcon />
@@ -48,7 +47,7 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
               endAdornment={<InputAdornment position="end">ft</InputAdornment>}
               value={props.envelope.ceiling}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                props.setEnvelope({floor: props.envelope.floor, ceiling: Number(event.target.value)});
+                props.handleEnvelopeChange({floor: props.envelope.floor, ceiling: Number(event.target.value)});
               }}
             />
           </FormControl>
@@ -57,11 +56,11 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
           <Grid>
           <Box sx={{ '& > :not(style)': { m: 1 } }}>
             <FormControl variant="standard">
-              <InputLabel htmlFor="input-with-icon-adornment">
+              <InputLabel htmlFor="input-label-airspace-floor">
                 Airspace Floor
               </InputLabel>
               <Input
-                id="input-with-icon-adornment"
+                id="input-airspace-floor"
                 startAdornment={
                   <InputAdornment position="start">
                     <CloudUploadIcon />
@@ -70,7 +69,7 @@ export function SliderControl(props: {envelope: Envelope, setEnvelope: Dispatch<
                 endAdornment={<InputAdornment position="end">ft</InputAdornment>}
                 value={props.envelope.floor}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  props.setEnvelope({floor: Number(event.target.value), ceiling: props.envelope.ceiling});
+                  props.handleEnvelopeChange({floor: Number(event.target.value), ceiling: props.envelope.ceiling});
                 }}
               />
             </FormControl>

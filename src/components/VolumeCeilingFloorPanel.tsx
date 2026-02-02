@@ -1,10 +1,10 @@
 import { ExpandMore } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Stack, Typography } from "@mui/material";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState} from "react";
 import { SliderControl } from "./SliderControl";
 import type { Envelope } from "../openAir/openAirTypes";
 
-export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: Envelope, setEnvelope: Dispatch<SetStateAction<Envelope>>}){
+export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: Envelope, handleEnvelopeChange: (next: Envelope) => void}){
   const [expanded, setExpanded] = useState<string | false>(false);
   
   const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -24,7 +24,7 @@ export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: En
         </AccordionSummary>
         <AccordionDetails>
           <Stack direction={"column"}>
-            <SliderControl envelope={props.envelope} setEnvelope={props.setEnvelope}/>
+            <SliderControl envelope={props.envelope} handleEnvelopeChange={props.handleEnvelopeChange}/>
           </Stack>
         </AccordionDetails>
       </Accordion>
