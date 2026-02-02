@@ -2,6 +2,7 @@ import { SVGLoader, type SVGResult } from "three/examples/jsm/Addons.js";
 import { ExtrudeGeometry, Mesh, MeshBasicMaterial, type ColorRepresentation, type ExtrudeGeometryOptions, type Shape as ThreeShape } from "three";
 import { useMemo } from "react";
 import { Volume } from "../openAir";
+import { modelScale } from "../lib/settings";
 
 
 export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGeometryOptions, colour: ColorRepresentation): Mesh | undefined {
@@ -47,7 +48,6 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
 export function useMeshesFromVolumes(
   volumes: Volume[], 
   zScale: number, 
-  modelScale: number, 
   centroidOffset: {
     x: number;
     y: number;
@@ -57,7 +57,7 @@ export function useMeshesFromVolumes(
 ): Mesh[] {
     const shapesAllVolumes = useMemo(() => {
       return volumes.map((volume) => {
-        const location = Volume.scaleZ(volume, zScale, modelScale, centroidOffset)
+        const location = Volume.scaleZ(volume, zScale, centroidOffset)
         const svgString = volume.airspace.svg || ''
         const loader = new SVGLoader();
         const svgData: SVGResult = loader.parse(svgString)
@@ -65,7 +65,7 @@ export function useMeshesFromVolumes(
         svgData.paths.map((path) => shapesTemp.push(...path.toShapes(true)))
         return {shapes: shapesTemp, location: location}
       })
-    },[volumes, zScale, modelScale, centroidOffset])
+    },[volumes, zScale, centroidOffset])
 
     const geometryAllVolumes = useMemo(() => {
       return shapesAllVolumes.map((shapesOneVolume)=> {
@@ -94,7 +94,7 @@ export function useMeshesFromVolumes(
         mesh.scale.set(modelScale, modelScale, 1)
         return mesh
       })
-    },[colour, geometryAllVolumes, modelScale])
+    },[colour, geometryAllVolumes])
 
     return meshes
 }

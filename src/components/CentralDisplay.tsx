@@ -11,7 +11,6 @@ export function CentralDisplay(props:
     volumes: Volume[], 
     margins: number, 
     zScale: number,
-    modelScale: number,
     handleClickSelect: (name: string, selected: boolean) => void}){
   const { width } = useWindowSize();
   
@@ -27,7 +26,7 @@ export function CentralDisplay(props:
       sx={{ ml: marginLeft, mr: marginRight, marginTop: `64px`, marginBottom: `${padding}px` }}
     >
         {props.loading ? <Loading />:''}
-      <ModelDisplay volumes={props.volumes} handleClickSelect={props.handleClickSelect} size={modelSize} zScale={props.zScale} modelScale={props.modelScale} />
+      <ModelDisplay volumes={props.volumes} handleClickSelect={props.handleClickSelect} size={modelSize} zScale={props.zScale}/>
     </Box>
   )
 }

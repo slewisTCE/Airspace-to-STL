@@ -34,8 +34,8 @@ export function App() {
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
-  const modelScale = 0.1
-  const meshes = useMeshesFromVolumes(volumes, zScale, modelScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 12}, "red")
+  
+  const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 12}, "red")
   
   useEffect(() => {
     siteLog('fetch: start')
@@ -156,7 +156,6 @@ export function App() {
             handleClickSelect={handleClickSelect}
             margins={drawerWidth} 
             zScale={zScale}
-            modelScale={modelScale}
           />
           <DrawerRight 
             drawerWidth={drawerWidth} 

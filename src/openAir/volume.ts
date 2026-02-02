@@ -3,6 +3,7 @@ import { Arc } from "./arc"
 import { Circle } from "./circle"
 import { Polygon } from "./polygon"
 import type { CoordinatePair } from "./coordinatePair"
+import { modelScale } from "../lib/settings"
 
 export type VolumeCentroid = { lat: number, lon: number }
 export type VolumeProjectedCentroid = { x: number, y: number }
@@ -15,7 +16,7 @@ export class Volume {
     this.airspace = airspace
   }
 
-  public static scaleZ(volume: Volume, zScale: number, modelScale: number, centroidOffset: { x: number, y: number }): { floor: number, ceiling: number, depth: number, posX: number, posY: number, posZ: number } {
+  public static scaleZ(volume: Volume, zScale: number, centroidOffset: { x: number, y: number }): { floor: number, ceiling: number, depth: number, posX: number, posY: number, posZ: number } {
     let depth = 2
     let floor = 0
     let ceiling = 0

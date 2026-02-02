@@ -4,13 +4,13 @@ import { Canvas } from "@react-three/fiber";
 import { airspaceClassMap, Volume } from "../openAir";
 import { useEffect, useRef, useState } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
+import { modelScale } from "../lib/settings";
 
 export function ModelDisplay(props: 
   {
     volumes: Volume[],
     size: {height: number, width: number}, 
     zScale: number, 
-    modelScale: number,
     handleClickSelect: (name: string, selected: boolean) => void
   }) {
   return (
@@ -19,7 +19,6 @@ export function ModelDisplay(props:
         volumes={props.volumes} 
         size={props.size} 
         zScale={props.zScale} 
-        modelScale={props.modelScale}
         handleClickSelect={props.handleClickSelect}/>
     </Paper>
   )
@@ -30,7 +29,6 @@ export function Scene(props:
     volumes: Volume[], 
     size: {height: number, width: number}, 
     zScale: number,
-    modelScale: number,
     handleClickSelect: (name: string, selected: boolean) => void
   }){
   
@@ -44,15 +42,15 @@ export function Scene(props:
       const projectedCentroid = Volume.getCombinedProjectedCentroid(volumes.current)
       if (projectedCentroid) {
         setCentroidOffset({
-          x: -projectedCentroid.x * props.modelScale,
-          y: -projectedCentroid.y * props.modelScale
+          x: -projectedCentroid.x * modelScale,
+          y: -projectedCentroid.y * modelScale
         })
       } else {
         setCentroidOffset({ x: 0, y: 0 })
       }
     }
     fetchProjections()
-  }, [volumes, props.modelScale])
+  }, [volumes])
   // Re-center camera and controls to fit all meshes when meshes change
 
 
@@ -65,7 +63,7 @@ export function Scene(props:
       {
         props.volumes.map((volume, index)=>{
 
-          const location = Volume.scaleZ(volume, props.zScale, props.modelScale, centroidOffset)
+          const location = Volume.scaleZ(volume, props.zScale, centroidOffset)
           if (volume.airspace.svg){
             return (
               <MeshFromSvgString 
@@ -73,7 +71,6 @@ export function Scene(props:
                 svgString={volume.airspace.svg} 
                 depth={location.depth} 
                 position={[location.posX, location.posY, location.posZ]} 
-                scale={props.modelScale} 
                 colour={airspaceClassMap[volume.airspace.airspaceClass.code].colour}
                 volume={volume}
                 volumes={props.volumes}
@@ -93,7 +90,6 @@ function MeshFromSvgString(
     svgString: string, 
     depth: number, 
     position: [number, number, number], 
-    scale: number, 
     colour: string, 
     volume: Volume,
     volumes: Volume[],
@@ -119,7 +115,7 @@ function MeshFromSvgString(
   return (
     <mesh
       onClick={()=>handleClick(props.volume.airspace.name)}
-      scale={props.scale}
+      scale={modelScale}
       rotation={[0,0,0]}
       position={props.position}
       geometry={meshData.geometry}

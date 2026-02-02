@@ -10,6 +10,7 @@ import { downloadBlob } from "../utils/utils";
 import { Group, Box3, Vector3, Mesh, BufferGeometry } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import type { AlertSeverity } from "../types/alertTypes";
+import { envelopeDefaults } from "../lib/settings";
 
 
 export function VolumesPanel(props: VolumePanelProps) {
@@ -136,8 +137,7 @@ export function VolumePanelStack(
     handleRemoveVolume: (name: string) => () => void,
     handleAlert: (message: string, severity: AlertSeverity) => void
   }){
-    const envelopeDefaults: Envelope = { floor: 0, ceiling: 1000 };
-
+    
     useEffect(() => {
       async function updateEnvelopeFromProps() {
         if (props.envelope == undefined){
@@ -147,7 +147,7 @@ export function VolumePanelStack(
         }
       }
       updateEnvelopeFromProps()
-    }, [props])
+    },[props])
       
 
     function handleRemove(){
