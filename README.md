@@ -23,12 +23,13 @@ These instructions will get your project up and running on your local machine fo
 
 ### Prerequisites
 
-npm
+- Node.js 18+ (recommended)
+- npm
 ## Features
 
 ### **Airspace Loading & Parsing**
 - Reads Australian airspace data directly from the included OpenAir-style text file  
-  (`resources/Australian Airspace 28 November 2024_v1.txt`).  
+  (`src/assets/Australian Airspace 28 November 2024_v1.txt`).  
 - Supports AL (floor) and AH (ceiling) interpretation across feet, AGL, and flight levels.  
 - Converts geographic coordinates (lat/lon) into projected XY space using Proj4.
 
@@ -62,17 +63,19 @@ npm
 
 
 ### **Project Structure**
-*   [Features](#features)
-- `index.html`&emsp;&emsp;&emsp;&nbsp;- Favicon and front door to the application
-- `main.tsx`&emsp;&emsp;&emsp;&emsp;&nbsp;- Not alot going on here. Just adds some css and points to App.tsx
-- `App.tsx`&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;- Core visualisation logic, scene management, controls
-- `openAir.ts`&emsp;&emsp;&emsp;&nbsp;- The class that does most of the heavy lifting with respect to scraping
-- `public/`&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;- Home of the favicon
-- `src/assets/`&emsp;&emsp;&ensp;- Airspace dataset + image files
-- `src/components/`&ensp;- React components
-- `src/styles/`&emsp;&emsp;&ensp;&nbsp;- Theme and style files
-- `src/types/`&emsp;&emsp;&emsp;&nbsp;- Typescript type files
-- `src/utils/`&emsp;&emsp;&emsp;&nbsp;- Utility functions
+- `index.html` — App entry HTML
+- `vite.config.ts` — Vite config
+- `package.json` — Scripts and dependencies
+- `public/` — Static assets (favicon, etc.)
+- `src/main.tsx` — App bootstrap
+- `src/App.tsx` — App shell and state management
+- `src/assets/` — Airspace dataset + images
+- `src/components/` — UI and scene components
+- `src/hooks/` — Shared hooks
+- `src/openAir/` — OpenAir parsing, geometry, and domain logic
+- `src/styles/` — Theme and CSS
+- `src/types/` — TypeScript types
+- `src/utils/` — Utility helpers
 
 
 
