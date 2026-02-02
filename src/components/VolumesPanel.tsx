@@ -1,25 +1,20 @@
-import { useEffect, useState, type Dispatch, type SetStateAction, type SyntheticEvent } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
 import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Stack, Typography } from "@mui/material";
 import { ExpandMore, Remove } from "@mui/icons-material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
-import type { AlertSeverity } from "../types/alertTypes";
-import { AlertWithSeverity } from "./Alert";
 import type { Envelope } from "../openAir/openAirTypes";
 import type { Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
 import { downloadBlob } from "../utils/utils";
 import { Group, Box3, Vector3, Mesh, BufferGeometry } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
-import { Distance } from "../openAir/distance";
+import type { AlertSeverity } from "../types/alertTypes";
 
 
 export function VolumesPanel(props: VolumePanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
-  const [openAlert, setOpenAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('')
-  const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
-  
+
   const handleAccordianChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
   }
@@ -28,9 +23,7 @@ export function VolumesPanel(props: VolumePanelProps) {
     const exporter = new STLExporter();
     // Build a single merged geometry from all scene meshes as a safe fallback
     if (!props.meshes || props.meshes.length === 0) {
-      setAlertMessage('No meshes available to export')
-      setAlertSeverity('warning')
-      setOpenAlert(true)
+      props.handleAlert('No meshes available to export', 'warning')
       return
     }
 
@@ -56,9 +49,7 @@ export function VolumesPanel(props: VolumePanelProps) {
 
     let exportTarget: Group | Mesh
     if (geometries.length === 0){
-      setAlertMessage('No valid geometries collected for export')
-      setAlertSeverity('warning')
-      setOpenAlert(true)
+      props.handleAlert('No valid geometries collected for export', 'warning')
       return
     }
     try {
@@ -117,16 +108,16 @@ export function VolumesPanel(props: VolumePanelProps) {
                     volume={volume} 
                     index={index} 
                     volumes={props.volumes} 
-                    setVolumes={props.setVolumes} 
-                    setAlertMessage={setAlertMessage} 
-                    setAlertSeverity={setAlertSeverity} 
-                    setOpenAlert={setOpenAlert} 
+                    handleRemoveVolume={props.handleRemoveVolume}
+                    envelope={props.envelope}
+                    handleEnvelopeChange={props.handleEnvelopeChange}
+                    handleAlert={props.handleAlert} 
                   />)
               })}
             </Stack>
           </Stack>
         </AccordionDetails>
-        <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
+        
       </Accordion>
       <Button variant="outlined" onClick={()=>handleDownloadModel()}>
         Download Model
@@ -140,56 +131,35 @@ export function VolumePanelStack(
     volume: Volume, 
     index: number, 
     volumes: Volume[], 
-    setVolumes: Dispatch<SetStateAction<Volume[]>>, 
-    setAlertMessage: Dispatch<SetStateAction<string>>, 
-    setAlertSeverity: Dispatch<SetStateAction<AlertSeverity>>, 
-    setOpenAlert: Dispatch<SetStateAction<boolean>>
+    envelope?: Envelope,
+    handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void, 
+    handleRemoveVolume: (name: string) => () => void,
+    handleAlert: (message: string, severity: AlertSeverity) => void
   }){
-    const floor = props.volume.airspace.floor?.value?.feet ?? 0
-    const ceiling = props.volume.airspace.ceiling?.value?.feet ?? 1000
-
-    const [envelope, setEnvelope] = useState<Envelope>({floor: floor, ceiling: ceiling})
-    const volumeName = props.volume.airspace.name
-
-    const handleEnvelopeChange = (next: Envelope) => {
-      setEnvelope(next)
-      props.setVolumes((current) =>
-        current.map((volume) => {
-          if (volume.airspace.name !== volumeName) {
-            return volume
-          }
-
-          volume.airspace.ceiling.value = new Distance(next.ceiling, "feet")
-          volume.airspace.floor.value = new Distance(next.floor, "feet")
-
-          return { ...volume, airspace: volume.airspace }
-        })
-      )
-    }
+    const envelopeDefaults: Envelope = { floor: 0, ceiling: 1000 };
 
     useEffect(() => {
       async function updateEnvelopeFromProps() {
-        if (envelope.floor !== floor || envelope.ceiling !== ceiling) {
-          setEnvelope({ floor, ceiling })
+        if (props.envelope == undefined){
+          const floor = props.volume.airspace.floor?.value?.feet ?? envelopeDefaults.floor
+          const ceiling = props.volume.airspace.ceiling?.value?.feet ?? envelopeDefaults.ceiling
+          props.handleEnvelopeChange({ floor, ceiling }, props.volume.airspace.name)
         }
       }
       updateEnvelopeFromProps()
-    }, [floor, ceiling, envelope.floor, envelope.ceiling])
+    }, [props])
       
-    const handleRemoveVolume = (name: string) => () => {
-      props.setVolumes(props.volumes.filter((volume) => {
-        return volume.airspace.name != name
-      }))
-      props.setAlertMessage(`Removed "${name}" volume`)
-      props.setAlertSeverity('success')
-      props.setOpenAlert(true)
+
+    function handleRemove(){
+      props.handleRemoveVolume(props.volume.airspace.name)()
+      props.handleAlert(`Removed "${props.volume.airspace.name}" volume`, 'success')
     }
 
     return(
       <Stack key={`stack${props.index}`} spacing={1} direction={"row"} >
-        <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={handleRemoveVolume(props.volume.airspace.name)}>
+        <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={() => handleRemove()}>
           <Remove key={`removeIcon${props.index}`}/>
         </IconButton >
-        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={envelope} handleEnvelopeChange={handleEnvelopeChange} />
+        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={props.envelope ?? envelopeDefaults} handleEnvelopeChange={props.handleEnvelopeChange} />
       </Stack>)
   }

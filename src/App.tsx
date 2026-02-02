@@ -13,7 +13,11 @@ import { DrawerRight } from './components/DrawerRight'
 import { DrawerLeft } from './components/DrawerLeft'
 import { CentralDisplay } from './components/CentralDisplay'
 import { Error } from './components/Error'
-import type { Mesh } from 'three'
+import type { Envelope } from './openAir/openAirTypes'
+import { Distance } from './openAir/distance'
+import { AlertWithSeverity } from './components/Alert'
+import type { AlertSeverity } from './types/alertTypes'
+import { useMeshesFromVolumes } from './hooks/geometry'
 
 const drawerWidth = 320;
 
@@ -23,9 +27,15 @@ export function App() {
   const [allAirspacesData, setAllAirspacesData] = useState<OpenAirAirspaces>()
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
   const [volumes, setVolumes] = useState<Volume[]>([])
-  const [meshes, setMeshes] = useState<Mesh[]>([])
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
   const [zScale, setZScale] = useState(1)
+  const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
+  
+  const modelScale = 0.1
+  const meshes = useMeshesFromVolumes(volumes, zScale, modelScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 12}, "red")
   
   useEffect(() => {
     siteLog('fetch: start')
@@ -45,6 +55,68 @@ export function App() {
       .finally(()=>{ siteLog('fetch: finished'); setLoading(false) })
   }, [])
 
+  const handleEnvelopeChange = (newEnvelope: Envelope, volumeName: string) => {
+    setEnvelope(newEnvelope)
+    setVolumes((current) =>
+      current.map((volume) => {
+        if (volume.airspace.name !== volumeName) {
+          return volume
+        }
+
+        volume.airspace.ceiling.value = new Distance(newEnvelope.ceiling, "feet")
+        volume.airspace.floor.value = new Distance(newEnvelope.floor, "feet")
+
+        return { ...volume, airspace: volume.airspace }
+      })
+    )
+  }
+
+  const handleRemoveVolume = (name: string) => () => {
+    try {
+      setVolumes(volumes.filter((volume) => {
+        return volume.airspace.name != name
+      }))
+      handleAlert(`Removed "${name}" volume`, 'success')
+    } catch (error) {
+      console.error('Error removing volume:', error)
+      handleAlert(`Error removing "${name}" volume: ${String(error)}`, 'error')
+    }
+    
+  }
+
+  function handleAddVolume(volume: Volume){
+    setVolumes(volumes.concat(volume))
+    handleAlert(`Added "${volume.airspace.name}" volume`, 'success')
+  }
+
+  function handleAlert(message: string, severity: AlertSeverity){
+    setAlertMessage(message)
+    setAlertSeverity(severity)
+    setOpenAlert(true)
+  }
+
+  function handleClickSelect(name: string, newSelected: boolean){
+    const newVolumes = volumes.map((_volume)=>{
+      if(_volume.airspace.name == name){
+        return {
+          selected: newSelected,
+          airspace: _volume.airspace
+        }
+      } else {
+        return _volume
+      }
+    })
+    setVolumes(newVolumes)
+  }
+
+  function handleRightDrawerOpen(open: boolean){
+    setRightDrawerOpen(open)
+  }
+
+  function handleZScaleChange(newZScale: number){
+    const nextValue = Array.isArray(newZScale) ? newZScale[0] : newZScale
+    setZScale(Math.min(50, Math.max(1, nextValue)))
+  }
 
   if (loading){
     return (<Loading/>)
@@ -60,26 +132,42 @@ export function App() {
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar drawerWidth={drawerWidth} setRightDrawerOpen={setRightDrawerOpen}/>
+        <TopBar drawerWidth={drawerWidth} handleRightDrawerOpen={handleRightDrawerOpen}/>
         {allAirspacesData ? 
         <>
-        <DrawerLeft 
-          drawerWidth={drawerWidth} 
-          airspaces={allAirspacesData} 
-          volumes={volumes} 
-          setVolumes={setVolumes} 
-          airspaceSelect={airspaceSelect} 
-          setAirspaceSelect={setAirspaceSelect}
-          meshes={meshes}
-          zScale={zScale}
-          setZScale={setZScale}
-          
+          <DrawerLeft 
+            drawerWidth={drawerWidth} 
+            airspaces={allAirspacesData} 
+            volumes={volumes}
+            envelope={envelope}
+            handleEnvelopeChange={handleEnvelopeChange} 
+            handleRemoveVolume={handleRemoveVolume}
+            handleAddVolume={handleAddVolume}
+            airspaceSelect={airspaceSelect} 
+            setAirspaceSelect={setAirspaceSelect}
+            meshes={meshes}
+            zScale={zScale}
+            handleZScaleChange={handleZScaleChange}
+            handleAlert={handleAlert}
           />
-        <CentralDisplay loading={loading} volumes={volumes} setVolumes={setVolumes} airspaces={allAirspacesData} margins={drawerWidth} meshes={meshes} setMeshes={setMeshes} zScale={zScale}/> 
-        <DrawerRight drawerWidth={drawerWidth} volumes={volumes} setOpen={setRightDrawerOpen} open={rightDrawerOpen}/>       
+          <CentralDisplay 
+            loading={loading} 
+            volumes={volumes} 
+            handleClickSelect={handleClickSelect}
+            margins={drawerWidth} 
+            zScale={zScale}
+            modelScale={modelScale}
+          />
+          <DrawerRight 
+            drawerWidth={drawerWidth} 
+            volumes={volumes} 
+            handleRightDrawerOpen={handleRightDrawerOpen} 
+            open={rightDrawerOpen}
+          />       
         </>
         : <></>}
       </Box>
+      <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
     </ThemeProvider>
   )
 }

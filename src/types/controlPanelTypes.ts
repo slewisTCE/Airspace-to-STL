@@ -1,11 +1,13 @@
 import type { OpenAirAirspace, OpenAirAirspaces, Volume } from "../openAir"
+import type { AlertSeverity } from "./alertTypes"
 
 export interface ControlPanelProps {
     airspaces: OpenAirAirspaces
     volumes: Volume[]
-    setVolumes: React.Dispatch<React.SetStateAction<Volume[]>>
+    handleAddVolume: (volume: Volume) => void
+    handleAlert: (message: string, severity: AlertSeverity) => void
     airspaceSelect: OpenAirAirspace | undefined
     setAirspaceSelect: React.Dispatch<React.SetStateAction<OpenAirAirspace | undefined>>
     zScale: number
-    setZScale: React.Dispatch<React.SetStateAction<number>>
+    handleZScaleChange: (newZScale: number) => void
 }

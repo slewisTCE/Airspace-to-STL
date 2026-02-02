@@ -5,8 +5,6 @@ import { useEffect, useState } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
-import type { AlertSeverity } from "../types/alertTypes";
-import { AlertWithSeverity } from "./Alert";
 
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -14,9 +12,7 @@ export function ControlPanel(props: ControlPanelProps) {
   const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
   const [airspaceLocales, setAirspaceLocales] = useState<string[]>([])
-  const [openAlert, setOpenAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('')
-  const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
+
   const [volumeNames, setVolumeNames] = useState<string[]>([])
   
 
@@ -65,11 +61,11 @@ export function ControlPanel(props: ControlPanelProps) {
 
   const handleVolumeAddClick = () => {
     if(props.airspaceSelect){
-      props.setVolumes(props.volumes.concat(new Volume(props.airspaceSelect)))
+      props.handleAddVolume(new Volume(props.airspaceSelect))
       props.setAirspaceSelect(undefined)
-      setAlertMessage(`Added "${props.airspaceSelect.name}" volume`)
-      setAlertSeverity("success")
-      setOpenAlert(true)
+      props.handleAlert(`Added "${props.airspaceSelect.name}" volume`, 'success')
+    } else {
+      props.handleAlert(`No airspace selected to add as volume`, 'error')
     }
   }
 
@@ -99,10 +95,7 @@ export function ControlPanel(props: ControlPanelProps) {
             </Typography>
             <Slider
               value={props.zScale}
-              onChange={(_event, value) => {
-                const nextValue = Array.isArray(value) ? value[0] : value
-                props.setZScale(Math.min(50, Math.max(1, nextValue)))
-              }}
+              onChange={(_event, value) => {props.handleZScaleChange(value)}}
               min={1}
               max={50}
               step={1}
@@ -161,8 +154,7 @@ export function ControlPanel(props: ControlPanelProps) {
               )}
             </Select>
           </FormControl>
-          <Button onClick={handleVolumeAddClick}>Add Volume</Button>
-          <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
+          <Button onClick={() => handleVolumeAddClick()}>Add Volume</Button>
         </Stack>
       </AccordionDetails>
     </Accordion>

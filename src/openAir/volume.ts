@@ -15,6 +15,25 @@ export class Volume {
     this.airspace = airspace
   }
 
+  public static scaleZ(volume: Volume, zScale: number, modelScale: number, centroidOffset: { x: number, y: number }): { floor: number, ceiling: number, depth: number, posX: number, posY: number, posZ: number } {
+    let depth = 2
+    let floor = 0
+    let ceiling = 0
+    // Ensure kiloMetres are numeric (0 is valid) before using them
+    const ceilingKM = volume.airspace.ceiling?.value?.kiloMetres
+    const floorKM = volume.airspace.floor?.value?.kiloMetres
+    if (typeof ceilingKM === 'number' && typeof floorKM === 'number'){
+      floor  = floorKM
+      ceiling = ceilingKM
+      depth = (ceiling - floor) * zScale
+    }
+    // Position must be in the same units as the scaled geometry
+    const posX = centroidOffset.x
+    const posY = centroidOffset.y  * modelScale
+    const posZ = floor * modelScale * zScale
+    return { floor, ceiling, depth, posX, posY, posZ }
+  }
+
   private static addLatLon(point: CoordinatePair | undefined, accumulator: { latSum: number, lonSum: number, count: number }){
     if (point && point.latitude && point.longitude && typeof point.latitude.degreesDecimal === 'number'){
       accumulator.latSum += point.latitude.degreesDecimal

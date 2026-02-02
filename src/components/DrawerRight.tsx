@@ -5,9 +5,9 @@ import { Disclaimer } from "./Disclaimer";
 import { GithubLink } from "./GithubLink";
 import { Volume } from "../openAir";
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState } from "react";
 
-export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open: boolean, setOpen: Dispatch<SetStateAction<boolean>>}){
+export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open: boolean, handleRightDrawerOpen: ( open: boolean) => void}){
   const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
   useEffect(()=>{
     async function updateVolumesInfo() {
@@ -24,8 +24,8 @@ export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: props.drawerWidth,
-          boxSizing: 'border-box',
-           display: 'flex',
+            boxSizing: 'border-box',
+            display: 'flex',
           justifyContent: 'space-between',
         },
       }}
@@ -41,7 +41,7 @@ export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open
         }}
       >
         <Toolbar sx={{py:3, justifyContent: 'left', height: 20}}>
-          <IconButton onClick={()=>props.setOpen(false)}>
+          <IconButton onClick={()=>props.handleRightDrawerOpen(false)}>
             <KeyboardDoubleArrowRightIcon />
           </IconButton>
         </Toolbar>

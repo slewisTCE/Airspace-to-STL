@@ -1,8 +1,13 @@
 import type { Mesh } from "three"
 import type { Volume } from "../openAir"
+import type { Envelope } from "../openAir/openAirTypes"
+import type { AlertSeverity } from "./alertTypes"
 
 export interface VolumePanelProps {
     volumes: Volume[]
-    setVolumes: React.Dispatch<React.SetStateAction<Volume[]>>
+    envelope: Envelope,
+    handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
+    handleRemoveVolume: (name: string) => () => void
+    handleAlert: (message: string, severity: AlertSeverity) => void
     meshes: Mesh[]
 }

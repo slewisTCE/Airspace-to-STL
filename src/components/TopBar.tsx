@@ -1,8 +1,7 @@
 import { AppBar, IconButton, Toolbar, Typography } from "@mui/material";
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-import type { Dispatch, SetStateAction } from "react";
 
-export function TopBar(props: {drawerWidth: number, setRightDrawerOpen: Dispatch<SetStateAction<boolean>>}){         
+export function TopBar(props: {drawerWidth: number, handleRightDrawerOpen: (open: boolean) => void}){         
   return (
     <AppBar
         position="fixed"
@@ -20,7 +19,7 @@ export function TopBar(props: {drawerWidth: number, setRightDrawerOpen: Dispatch
           <Typography variant="h6" noWrap component="div">
             DAH Volume Modeller
           </Typography>
-          <IconButton onClick={()=>props.setRightDrawerOpen(true)}>
+          <IconButton onClick={()=>props.handleRightDrawerOpen(true)}>
             <KeyboardDoubleArrowLeftIcon />
           </IconButton>
         </Toolbar>

@@ -1,6 +1,7 @@
 import { SVGLoader, type SVGResult } from "three/examples/jsm/Addons.js";
 import { ExtrudeGeometry, Mesh, MeshBasicMaterial, type ColorRepresentation, type ExtrudeGeometryOptions, type Shape as ThreeShape } from "three";
 import { useMemo } from "react";
+import { Volume } from "../openAir";
 
 
 export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGeometryOptions, colour: ColorRepresentation): Mesh | undefined {
@@ -41,4 +42,59 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
   },[colour, geometry])
 
   return mesh
+}
+
+export function useMeshesFromVolumes(
+  volumes: Volume[], 
+  zScale: number, 
+  modelScale: number, 
+  centroidOffset: {
+    x: number;
+    y: number;
+  }, 
+  extrudeSettings: ExtrudeGeometryOptions, 
+  colour: ColorRepresentation
+): Mesh[] {
+    const shapesAllVolumes = useMemo(() => {
+      return volumes.map((volume) => {
+        const location = Volume.scaleZ(volume, zScale, modelScale, centroidOffset)
+        const svgString = volume.airspace.svg || ''
+        const loader = new SVGLoader();
+        const svgData: SVGResult = loader.parse(svgString)
+        const shapesTemp: ThreeShape[] = []
+        svgData.paths.map((path) => shapesTemp.push(...path.toShapes(true)))
+        return {shapes: shapesTemp, location: location}
+      })
+    },[volumes, zScale, modelScale, centroidOffset])
+
+    const geometryAllVolumes = useMemo(() => {
+      return shapesAllVolumes.map((shapesOneVolume)=> {
+        const settings = Object.assign({}, {depth: shapesOneVolume.location.depth, curveSegments: extrudeSettings.curveSegments}, { bevelEnabled: false })
+        const geometryOneVolume = new ExtrudeGeometry(shapesOneVolume.shapes, settings);
+        try {
+          geometryOneVolume.computeBoundingBox()
+          const bb = geometryOneVolume.boundingBox
+          if (bb) {
+            const minZ = bb.min.z || 0
+            if (minZ !== 0) geometryOneVolume.translate(0, 0, -minZ)
+          }
+        } catch (error) {
+          console.warn('Failed to compute bounding box for geometry', error)
+        }
+        return {geometry: geometryOneVolume, location: shapesOneVolume.location }
+      })
+    },[shapesAllVolumes, extrudeSettings.curveSegments])
+
+    const meshes = useMemo(() => {
+      console.log('Creating mesh from geometry');
+      return geometryAllVolumes.map((geometryOneVolume)=>{
+        const material = new MeshBasicMaterial({ color: colour });
+        const mesh = new Mesh(geometryOneVolume.geometry, material)
+        mesh.position.set(geometryOneVolume.location.posX, geometryOneVolume.location.posY, geometryOneVolume.location.posZ)
+        mesh.scale.set(modelScale, modelScale, 1)
+        return mesh
+      })
+    },[colour, geometryAllVolumes, modelScale])
+
+    return meshes
 }
