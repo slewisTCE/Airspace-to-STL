@@ -1,7 +1,7 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, InputLabel, MenuItem, Select, Slider, Stack, Typography, type SelectChangeEvent } from "@mui/material";
 import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
@@ -9,29 +9,28 @@ import { airspaceFromName } from "../openAir/utils";
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [airspaceNameSelect, setAirspaceNameSelect] = useState<string>('')
-  const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
-  const [airspaceLocales, setAirspaceLocales] = useState<string[]>([])
+  const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
 
   const [volumeNames, setVolumeNames] = useState<string[]>([])
   
 
   const airspaces = props.airspaces.airspaces
   
-  useEffect(()=>{
-    async function updateAirspaceLocales() {
-      const localesFiltered = airspaces.map((thisAirspace)=>{
-        if (thisAirspace.airspaceClass.code == airspaceClassCode){
-          return thisAirspace.locale
-        }
-      })
-      const uniqueLocales = Array.from(new Set(localesFiltered)).sort()
-      if (uniqueLocales) {
-        setAirspaceLocales(uniqueLocales as string[])
-      }
-    }
-    updateAirspaceLocales();
-  },[airspaceClassCode, airspaces])
+  const airspaceLocales = useMemo(() => {
+    return Array.from(new Set(airspaces.map((thisAirspace) => thisAirspace.locale))).sort()
+  }, [airspaces])
+
+  const airspaceClassCodes = useMemo(() => {
+    if (!airspaceLocale) return [] as OpenAirClassCode[]
+    return Array.from(
+      new Set(
+        airspaces
+          .filter((thisAirspace) => thisAirspace.locale === airspaceLocale)
+          .map((thisAirspace) => thisAirspace.airspaceClass.code)
+      )
+    ).sort() as OpenAirClassCode[]
+  }, [airspaceLocale, airspaces])
 
   useEffect(()=>{
     async function updateVolumeNames() {
@@ -49,6 +48,8 @@ export function ControlPanel(props: ControlPanelProps) {
 
   const handleClassSelect = (event: SelectChangeEvent) => {
       setAirspaceClassCode(event.target.value as OpenAirClassCode);
+      setAirspaceNameSelect('')
+      props.setAirspaceSelect(undefined)
     };
 
   const handleAirspaceNameSelect = (event: SelectChangeEvent) =>{
@@ -70,7 +71,18 @@ export function ControlPanel(props: ControlPanelProps) {
   }
 
   const handleLocaleSelect = (event: SelectChangeEvent) => {
-    setAirspaceLocale(event.target.value)
+    const newLocale = event.target.value
+    setAirspaceLocale(newLocale)
+    const classCodesForLocale = Array.from(
+      new Set(
+        airspaces
+          .filter((thisAirspace) => thisAirspace.locale === newLocale)
+          .map((thisAirspace) => thisAirspace.airspaceClass.code)
+      )
+    ).sort() as OpenAirClassCode[]
+    setAirspaceClassCode(classCodesForLocale[0] ?? "A")
+    setAirspaceNameSelect('')
+    props.setAirspaceSelect(undefined)
   }
 
   const classLabel = "airspace-class-label"
@@ -104,21 +116,6 @@ export function ControlPanel(props: ControlPanelProps) {
             />
           </Box>
           <FormControl fullWidth>
-            <InputLabel id={classLabel}>Class</InputLabel>
-            <Select
-              labelId={classLabel}
-              id="airspace-class-select"
-              name="airspace-class"
-              value={airspaceClassCode}
-              label="Class"
-              onChange={handleClassSelect}
-            >
-              {Array.from(new Set(props.airspaces.airspaces.map((airspace: OpenAirAirspace) => airspace.airspaceClass.code))).sort().map((airspaceClassCode, index)=>{
-                return (<MenuItem key={index} value={airspaceClassCode}>{`${airspaceClassCode}: ${airspaceClassMap[airspaceClassCode].name}`}</MenuItem>)
-              })}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
             <InputLabel id="airspace-locale-label">Locale</InputLabel>
             <Select
               labelId="airspace-locale-label"
@@ -136,6 +133,26 @@ export function ControlPanel(props: ControlPanelProps) {
             </Select>
           </FormControl>
           <FormControl fullWidth>
+            <InputLabel id={classLabel}>Class</InputLabel>
+            <Select
+              labelId={classLabel}
+              id="airspace-class-select"
+              name="airspace-class"
+              value={airspaceClassCode}
+              label="Class"
+              onChange={handleClassSelect}
+              disabled={!airspaceLocale || airspaceClassCodes.length === 0}
+            >
+              {airspaceClassCodes.map((code, index) => {
+                return (
+                  <MenuItem key={index} value={code}>
+                    {`${code}: ${airspaceClassMap[code].name}`}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
             <InputLabel id="airspace-name-label">Name</InputLabel>
             <Select
               labelId="airspace-name-label"
@@ -144,6 +161,7 @@ export function ControlPanel(props: ControlPanelProps) {
               value={volumeNames.includes(airspaceNameSelect) ? '' : airspaceNameSelect}
               label="Name"
               onChange={handleAirspaceNameSelect}
+              disabled={!airspaceLocale || !airspaceClassCode}
             >
               <MenuItem>{airspaceMenuItems}</MenuItem>
               {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
