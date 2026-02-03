@@ -10,16 +10,14 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
   
   // Rebuild shapes and geometry whenever the source SVG, the extrude depth, or colour change
   const shapes = useMemo(() => {
-      console.log('Parsing SVG string to shapes');
-      const loader = new SVGLoader();
-      const svgData: SVGResult = loader.parse(svgString)
-      const shapesTemp: ThreeShape[] = []
-      svgData.paths.map((path) => shapesTemp.push(...path.toShapes(true)))
-      return shapesTemp
+    const loader = new SVGLoader();
+    const svgData: SVGResult = loader.parse(svgString)
+    const shapesTemp: ThreeShape[] = []
+    svgData.paths.map((path) => shapesTemp.push(...path.toShapes(true)))
+    return shapesTemp
   },[svgString])
 
   const geometry = useMemo(() => {
-    console.log('Building geometry from shapes');
     const settings = Object.assign({}, {depth, curveSegments}, { bevelEnabled: false })
     const geometry = new ExtrudeGeometry(shapes, settings);
     try {
@@ -36,7 +34,6 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
   },[shapes, depth, curveSegments])
 
   const mesh = useMemo(() => {
-    console.log('Creating mesh from geometry');
     const material = new MeshBasicMaterial({ color: colour });
     const mesh = new Mesh(geometry, material)
     return mesh
@@ -86,7 +83,6 @@ export function useMeshesFromVolumes(
     },[shapesAllVolumes, extrudeSettings.curveSegments])
 
     const meshes = useMemo(() => {
-      console.log('Creating mesh from geometry');
       return geometryAllVolumes.map((geometryOneVolume)=>{
         const material = new MeshBasicMaterial({ color: colour });
         const mesh = new Mesh(geometryOneVolume.geometry, material)
