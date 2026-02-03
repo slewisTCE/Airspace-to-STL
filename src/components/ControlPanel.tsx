@@ -173,6 +173,15 @@ export function ControlPanel(props: ControlPanelProps) {
     )
   }, [airspaceLocale, airspaceClassCode, airspaces, volumeNames])
 
+  const safeAirspaceState = availableStates.includes(airspaceState) ? airspaceState : ""
+  const safeAirspaceLocale = localesForState.includes(airspaceLocale) ? airspaceLocale : ""
+  const safeAirspaceClassCode = airspaceClassCodes.includes(airspaceClassCode)
+    ? airspaceClassCode
+    : ("" as OpenAirClassCode | "")
+  const safeAirspaceNameSelect = addableNames.some((airspace) => airspace.name === airspaceNameSelect)
+    ? airspaceNameSelect
+    : ''
+
   const handleStateSelect = (event: SelectChangeEvent) => {
     const newState = event.target.value as AustralianState
     setAirspaceState(newState)
@@ -236,7 +245,7 @@ export function ControlPanel(props: ControlPanelProps) {
               labelId="airspace-state-label"
               id="airspace-state-select"
               name="airspace-state"
-              value={airspaceState}
+              value={safeAirspaceState}
               label="State"
               onChange={handleStateSelect}
             >
@@ -255,7 +264,7 @@ export function ControlPanel(props: ControlPanelProps) {
               labelId="airspace-locale-label"
               id="airspace-locale-select"
               name="airspace-locale"
-              value={airspaceLocale}
+              value={safeAirspaceLocale}
               label="Locale"
               onChange={handleLocaleSelect}
               disabled={!airspaceState || localesForState.length === 0}
@@ -273,7 +282,7 @@ export function ControlPanel(props: ControlPanelProps) {
               labelId={classLabel}
               id="airspace-class-select"
               name="airspace-class"
-              value={airspaceClassCode}
+              value={safeAirspaceClassCode}
               label="Class"
               onChange={handleClassSelect}
               disabled={!airspaceLocale || airspaceClassCodes.length === 0}
@@ -298,7 +307,7 @@ export function ControlPanel(props: ControlPanelProps) {
               labelId="airspace-name-label"
               id="airspace-name-select"
               name="airspace-name"
-              value={volumeNames.includes(airspaceNameSelect) ? '' : airspaceNameSelect}
+              value={safeAirspaceNameSelect}
               label="Name"
               onChange={handleAirspaceNameSelect}
               disabled={!airspaceLocale || !airspaceClassCode || addableNames.length === 0}
