@@ -5,6 +5,9 @@ import { airspaceClassMap, Volume } from "../openAir";
 import { useEffect, useState } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
 import { modelScale } from "../lib/settings";
+import { Arc } from "../openAir/arc";
+import { Circle } from "../openAir/circle";
+import { Polygon } from "../openAir/polygon";
 
 export function ModelDisplay(props: 
   {
@@ -36,6 +39,46 @@ export function Scene(props:
   }){
   
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+  const [gridSize, setGridSize] = useState(500)
+  const [gridDivisions, setGridDivisions] = useState(20)
+  const [gridCenter, setGridCenter] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+
+  const getProjectedBounds = (volumes: Volume[]) => {
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+
+    const expand = (x: number, y: number) => {
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+
+    volumes.forEach((volume) => {
+      volume.airspace.shapes.forEach((shape) => {
+        if (shape instanceof Polygon) {
+          expand(shape.points.projection.x, shape.points.projection.y)
+        } else if (shape instanceof Circle) {
+          const radius = shape.radius.value.kiloMetres
+          const cx = shape.center.projection.x
+          const cy = shape.center.projection.y
+          expand(cx - radius, cy - radius)
+          expand(cx + radius, cy + radius)
+        } else if (shape instanceof Arc) {
+          const radius = shape.radius.value.kiloMetres
+          const cx = shape.center.projection.x
+          const cy = shape.center.projection.y
+          expand(cx - radius, cy - radius)
+          expand(cx + radius, cy + radius)
+        }
+      })
+    })
+
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) return undefined
+    return { minX, minY, maxX, maxY }
+  }
 
   useEffect(() => {
     async function fetchProjections() {
@@ -53,6 +96,27 @@ export function Scene(props:
   }, [props.volumes])
   // Re-center camera and controls to fit all meshes when meshes change
 
+  useEffect(() => {
+    const bounds = getProjectedBounds(props.volumes)
+    if (!bounds) {
+      setGridSize(500)
+      setGridDivisions(20)
+      return
+    }
+
+    const minX = (bounds.minX + centroidOffset.x) * modelScale
+    const maxX = (bounds.maxX + centroidOffset.x) * modelScale
+    const minY = (bounds.minY + centroidOffset.y) * modelScale
+    const maxY = (bounds.maxY + centroidOffset.y) * modelScale
+    const spanX = Math.abs(maxX - minX)
+    const spanY = Math.abs(maxY - minY)
+    const maxSpan = Math.max(spanX, spanY)
+    const padded = Math.max(100, maxSpan * 1.2)
+    setGridSize(padded)
+    setGridDivisions(Math.max(10, Math.round(padded / 10)))
+    setGridCenter({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 })
+  }, [props.volumes, centroidOffset])
+
 
   return (
     <Canvas 
@@ -61,32 +125,34 @@ export function Scene(props:
       style={{width: props.size.width, height: props.size.height}}
       onPointerMissed={() => props.handleClearSelection()}
     >
-      <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
+      <gridHelper position={[gridCenter.x, gridCenter.y, 0]} rotation-x={Math.PI / 2} args={[gridSize, gridDivisions, 0x888888, 0x333333]} />
       <ambientLight intensity={1} color={0xffffff} />
       <hemisphereLight intensity={0.6} color={0xffffff} groundColor={0x444444} />
       <directionalLight position={[0, -250, 250]} intensity={1} color={0xffffff} />
       <OrbitControls enableDamping={false}/>
-      {
-        props.volumes.map((volume, index)=>{
+      <group>
+        {
+          props.volumes.map((volume, index)=>{
 
-          const location = Volume.scaleZ(volume, props.zScale, centroidOffset)
-          if (volume.airspace.svg){
-            return (
-              <MeshFromSvgString 
-                key={index} 
-                svgString={volume.airspace.svg} 
-                depth={location.depth} 
-                position={[location.posX, location.posY, location.posZ]} 
-                colour={airspaceClassMap[volume.airspace.airspaceClass.code].colour}
-                volume={volume}
-                volumes={props.volumes}
-                index={index}
-                handleClickSelect={props.handleClickSelect}
-              />
-            )
-          }
-        })
-      }
+            const location = Volume.scaleZ(volume, props.zScale, centroidOffset)
+            if (volume.airspace.svg){
+              return (
+                <MeshFromSvgString 
+                  key={index} 
+                  svgString={volume.airspace.svg} 
+                  depth={location.depth} 
+                  position={[location.posX, location.posY, location.posZ]} 
+                  colour={airspaceClassMap[volume.airspace.airspaceClass.code].colour}
+                  volume={volume}
+                  volumes={props.volumes}
+                  index={index}
+                  handleClickSelect={props.handleClickSelect}
+                />
+              )
+            }
+          })
+        }
+      </group>
     </Canvas>
   )
 }
