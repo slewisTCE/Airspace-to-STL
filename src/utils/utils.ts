@@ -7,7 +7,7 @@ export function removeHeader(airspaceText: string): string {
 }
 
 export function formatFeet(value: number): string {
-  return `${value} ft`;
+  return `${Math.round(value)} ft`;
 }
 
   // Normalize to 500×500 SVG space
