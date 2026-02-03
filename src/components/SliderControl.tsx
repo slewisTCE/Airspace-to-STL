@@ -1,16 +1,20 @@
-import { Box, FormControl, Grid, Input, InputAdornment, InputLabel, Slider, Typography } from "@mui/material"
+import { Box, FormControl, Grid, IconButton, Input, InputAdornment, InputLabel, Slider, Stack, Typography, Tooltip } from "@mui/material"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { formatFeet } from "../utils/utils";
 import type { Envelope } from "../openAir/openAirTypes";
 
-export function SliderControl(props: {envelope: Envelope, handleEnvelopeChange: (next: Envelope) => void}) {
+export function SliderControl(props: {envelope: Envelope, initialEnvelope: Envelope, handleEnvelopeChange: (next: Envelope) => void}) {
   const minDistance = 100
   const minAlt = 0
   const maxAlt = 60000
   const stepSize = 1000
   const majorStep1 = Math.floor(((maxAlt-minAlt)*(1/3)) / 1000) * 1000
   const majorStep2 = Math.floor(((maxAlt-minAlt)*(2/3)) / 1000) * 1000
+  const displayFloor = Math.round(props.envelope.floor)
+  const displayCeiling = Math.round(props.envelope.ceiling)
+  const isDirty = props.envelope.floor !== props.initialEnvelope.floor || props.envelope.ceiling !== props.initialEnvelope.ceiling
 
   const handleChange = (_event: Event, newValue: number | number[]) => {
     const vals = Array.isArray(newValue) ? newValue : [props.envelope.floor, props.envelope.ceiling]
@@ -27,9 +31,23 @@ export function SliderControl(props: {envelope: Envelope, handleEnvelopeChange: 
     <>
       <Grid container>
         <Grid>
-          <Typography id="input-slider" gutterBottom>
-            Set Floor & Ceiling
-          </Typography>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+            <Typography id="input-slider" gutterBottom>
+              Set Floor & Ceiling
+            </Typography>
+            <Tooltip title="Reset to initial values" disabled={!isDirty}>
+              <span>
+              <IconButton
+                size="small"
+                aria-label="Reset floor and ceiling"
+                onClick={() => props.handleEnvelopeChange(props.initialEnvelope)}
+                disabled={!isDirty}
+              >
+                <RestartAltIcon fontSize="small" />
+              </IconButton>
+              </span>
+            </Tooltip>
+          </Stack>
         </Grid>
       <Grid>
         <Box sx={{ '& > :not(style)': { m: 1 } }}>
@@ -45,7 +63,7 @@ export function SliderControl(props: {envelope: Envelope, handleEnvelopeChange: 
                 </InputAdornment>
               }
               endAdornment={<InputAdornment position="end">ft</InputAdornment>}
-              value={props.envelope.ceiling}
+              value={displayCeiling}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 props.handleEnvelopeChange({floor: props.envelope.floor, ceiling: Number(event.target.value)});
               }}
@@ -67,7 +85,7 @@ export function SliderControl(props: {envelope: Envelope, handleEnvelopeChange: 
                   </InputAdornment>
                 }
                 endAdornment={<InputAdornment position="end">ft</InputAdornment>}
-                value={props.envelope.floor}
+                value={displayFloor}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                   props.handleEnvelopeChange({floor: Number(event.target.value), ceiling: props.envelope.ceiling});
                 }}
