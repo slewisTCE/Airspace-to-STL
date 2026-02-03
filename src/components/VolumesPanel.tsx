@@ -1,4 +1,4 @@
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
 import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Stack, Typography } from "@mui/material";
 import { ExpandMore, Remove } from "@mui/icons-material";
@@ -137,17 +137,26 @@ export function VolumePanelStack(
     handleRemoveVolume: (name: string) => () => void,
     handleAlert: (message: string, severity: AlertSeverity) => void
   }){
-    
+    const initialFloor = props.volume.airspace.floor?.value?.feet ?? envelopeDefaults.floor
+    const initialCeiling = props.volume.airspace.ceiling?.value?.feet ?? envelopeDefaults.ceiling
+    const initialEnvelopeRef = useRef<Envelope>({ floor: initialFloor, ceiling: initialCeiling })
+    const [localEnvelope, setLocalEnvelope] = useState<Envelope>({
+      floor: initialFloor,
+      ceiling: initialCeiling
+    })
+
     useEffect(() => {
-      async function updateEnvelopeFromProps() {
-        if (props.envelope == undefined){
-          const floor = props.volume.airspace.floor?.value?.feet ?? envelopeDefaults.floor
-          const ceiling = props.volume.airspace.ceiling?.value?.feet ?? envelopeDefaults.ceiling
-          props.handleEnvelopeChange({ floor, ceiling }, props.volume.airspace.name)
-        }
+      const nextFloor = props.volume.airspace.floor?.value?.feet ?? envelopeDefaults.floor
+      const nextCeiling = props.volume.airspace.ceiling?.value?.feet ?? envelopeDefaults.ceiling
+      if (localEnvelope.floor !== nextFloor || localEnvelope.ceiling !== nextCeiling) {
+        setLocalEnvelope({ floor: nextFloor, ceiling: nextCeiling })
       }
-      updateEnvelopeFromProps()
-    },[props])
+    }, [props.volume, localEnvelope.floor, localEnvelope.ceiling])
+
+    const handleLocalEnvelopeChange = (newEnvelope: Envelope) => {
+      setLocalEnvelope(newEnvelope)
+      props.handleEnvelopeChange(newEnvelope, props.volume.airspace.name)
+    }
       
 
     function handleRemove(){
@@ -160,6 +169,6 @@ export function VolumePanelStack(
         <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={() => handleRemove()}>
           <Remove key={`removeIcon${props.index}`}/>
         </IconButton >
-        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={props.envelope ?? envelopeDefaults} handleEnvelopeChange={props.handleEnvelopeChange} />
+        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={localEnvelope} initialEnvelope={initialEnvelopeRef.current} handleEnvelopeChange={handleLocalEnvelopeChange} />
       </Stack>)
   }
