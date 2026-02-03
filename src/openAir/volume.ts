@@ -1,4 +1,5 @@
 import type { OpenAirAirspace } from "./openAirAirspace"
+import type { Envelope } from "./openAirTypes"
 import { Arc } from "./arc"
 import { Circle } from "./circle"
 import { Polygon } from "./polygon"
@@ -11,9 +12,16 @@ export type VolumeProjectedCentroid = { x: number, y: number }
 export class Volume {
   airspace: OpenAirAirspace
   selected: boolean = false
+  originalEnvelope: Envelope
 
   constructor(airspace: OpenAirAirspace){
     this.airspace = airspace
+    const floorFeet = airspace.floor?.value?.feet ?? 0
+    const ceilingFeet = airspace.ceiling?.value?.feet ?? 0
+    this.originalEnvelope = {
+      floor: floorFeet,
+      ceiling: ceilingFeet
+    }
   }
 
   public static scaleZ(volume: Volume, zScale: number, centroidOffset: { x: number, y: number }): { floor: number, ceiling: number, depth: number, posX: number, posY: number, posZ: number } {

@@ -6,6 +6,7 @@ import type { AlertSeverity } from "./alertTypes"
 export interface VolumePanelProps {
     volumes: Volume[]
     envelope: Envelope,
+    zScale: number,
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
     handleRemoveVolume: (name: string) => () => void
     handleClearAllVolumes: () => void

@@ -47,6 +47,7 @@ export function DrawerLeft(props: DrawerLeftProps){
         <VolumesPanel 
           volumes={props.volumes}
           envelope={props.envelope}
+          zScale={props.zScale}
           handleEnvelopeChange={props.handleEnvelopeChange} 
           handleRemoveVolume={props.handleRemoveVolume} 
           handleClearAllVolumes={props.handleClearAllVolumes}
