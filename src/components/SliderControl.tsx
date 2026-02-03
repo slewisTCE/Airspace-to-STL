@@ -35,7 +35,7 @@ export function SliderControl(props: {envelope: Envelope, initialEnvelope: Envel
             <Typography id="input-slider" gutterBottom>
               Set Floor & Ceiling
             </Typography>
-            <Tooltip title="Reset to initial values" disabled={!isDirty}>
+            <Tooltip title="Reset to initial values">
               <span>
               <IconButton
                 size="small"
