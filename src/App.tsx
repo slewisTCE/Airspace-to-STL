@@ -97,16 +97,28 @@ export function App() {
 
   function handleClickSelect(name: string, newSelected: boolean){
     const newVolumes = volumes.map((_volume)=>{
-      if(_volume.airspace.name == name){
+      if(_volume.airspace.name === name){
         return {
           selected: newSelected,
           airspace: _volume.airspace
         }
-      } else {
-        return _volume
+      }
+
+      return {
+        selected: false,
+        airspace: _volume.airspace
       }
     })
     setVolumes(newVolumes)
+  }
+
+  function handleClearSelection(){
+    setVolumes((current) =>
+      current.map((volume) => ({
+        selected: false,
+        airspace: volume.airspace
+      }))
+    )
   }
 
   function handleRightDrawerOpen(open: boolean){
@@ -154,7 +166,8 @@ export function App() {
             loading={loading} 
             volumes={volumes} 
             handleClickSelect={handleClickSelect}
-            margins={drawerWidth} 
+              margins={drawerWidth}
+              handleClearSelection={handleClearSelection}
             zScale={zScale}
           />
           <DrawerRight 

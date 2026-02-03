@@ -2,7 +2,7 @@ import { Paper } from "@mui/material";
 import { OrbitControls, Outlines } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { airspaceClassMap, Volume } from "../openAir";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMeshFromSvgData } from "../hooks/geometry";
 import { modelScale } from "../lib/settings";
 
@@ -11,7 +11,8 @@ export function ModelDisplay(props:
     volumes: Volume[],
     size: {height: number, width: number}, 
     zScale: number, 
-    handleClickSelect: (name: string, selected: boolean) => void
+    handleClickSelect: (name: string, selected: boolean) => void,
+    handleClearSelection: () => void
   }) {
   return (
     <Paper sx={{ justifyContent: 'center', width:1 }}>
@@ -19,7 +20,8 @@ export function ModelDisplay(props:
         volumes={props.volumes} 
         size={props.size} 
         zScale={props.zScale} 
-        handleClickSelect={props.handleClickSelect}/>
+        handleClickSelect={props.handleClickSelect}
+        handleClearSelection={props.handleClearSelection}/>
     </Paper>
   )
 }
@@ -29,33 +31,36 @@ export function Scene(props:
     volumes: Volume[], 
     size: {height: number, width: number}, 
     zScale: number,
-    handleClickSelect: (name: string, selected: boolean) => void
+    handleClickSelect: (name: string, selected: boolean) => void,
+    handleClearSelection: () => void
   }){
   
   const [centroidOffset, setCentroidOffset] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
 
-  const volumes = useRef(Array.from(props.volumes))
-
   useEffect(() => {
     async function fetchProjections() {
-      console.log('Calculating projected centroid for volumes', volumes.current);
-      const projectedCentroid = Volume.getCombinedProjectedCentroid(volumes.current)
+      const projectedCentroid = Volume.getCombinedProjectedCentroid(props.volumes)
       if (projectedCentroid) {
         setCentroidOffset({
-          x: -projectedCentroid.x * modelScale,
-          y: -projectedCentroid.y * modelScale
+          x: -projectedCentroid.x,
+          y: -projectedCentroid.y
         })
       } else {
         setCentroidOffset({ x: 0, y: 0 })
       }
     }
     fetchProjections()
-  }, [volumes])
+  }, [props.volumes])
   // Re-center camera and controls to fit all meshes when meshes change
 
 
   return (
-    <Canvas frameloop="demand" camera={{ position: [0, -120, 120] }} style={{width: props.size.width, height: props.size.height}}>
+    <Canvas 
+      frameloop="demand" 
+      camera={{ position: [0, -120, 120] }} 
+      style={{width: props.size.width, height: props.size.height}}
+      onPointerMissed={() => props.handleClearSelection()}
+    >
       <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
       <ambientLight intensity={1} color={0xffffff} />
       <directionalLight position={[0, -250, 250]} intensity={1} color={0xffffff} />
@@ -96,16 +101,11 @@ function MeshFromSvgString(
     handleClickSelect: (name: string, selected: boolean) => void,
     index: number
   }){
-  const [selected, setSelected] = useState(Array(props.volumes.length).fill(false))
   const depth = props.depth
   const meshData = useMeshFromSvgData(props.svgString, {depth: depth, curveSegments: 64}, props.colour)
   
   function handleClick(name: string){
-    const newSelected = !selected[props.index]
-    const newArray = Array(selected.length).fill(false)
-    setSelected(newArray)
-    newArray[props.index] = newSelected
-    setSelected(newArray)
+    const newSelected = !props.volume.selected
     props.handleClickSelect(name, newSelected)
   }
 
@@ -123,10 +123,10 @@ function MeshFromSvgString(
       <meshPhongMaterial
         transparent={true}
         flatShading={false}
-        color={selected[props.index] ? "white": props.colour}
+        color={props.volume.selected ? "white": props.colour}
         opacity={props.volumes.length > 1 ? 0.75 : 1}
       />
-      {selected[props.index] ? 
+      {props.volume.selected ? 
       <Outlines thickness={0.5}
         color="black"
         screenspace={true}
