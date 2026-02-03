@@ -26,6 +26,7 @@ export function AlertWithSeverity(props: {
       autoHideDuration={6000}
       onClose={handleCloseAlert}
       action={<SnackAction handleCloseAlert={handleCloseAlert}/>}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
       <Alert
         onClose={handleCloseAlert}
