@@ -258,7 +258,7 @@ export function ControlPanel(props: ControlPanelProps) {
             </Tooltip>
           </Box>
           <Box>
-            <Button variant="outlined" fullWidth onClick={props.handleResetView}>
+            <Button variant="contained" fullWidth onClick={props.handleResetView}>
               Reset view
             </Button>
           </Box>
@@ -325,7 +325,7 @@ export function ControlPanel(props: ControlPanelProps) {
             </Select>
           </FormControl>
           {canAddClassVolumes ? (
-            <Button onClick={() => handleAddClassVolumes()}>
+            <Button variant="contained" onClick={() => handleAddClassVolumes()}>
               Add All {addableClassCount} in Class
             </Button>
           ) : null}
@@ -348,7 +348,7 @@ export function ControlPanel(props: ControlPanelProps) {
               ))}
             </Select>
           </FormControl>
-          <Button onClick={() => handleVolumeAddClick()}>Add Volume</Button>
+          <Button variant="contained" onClick={() => handleVolumeAddClick()}>Add Volume</Button>
         </Stack>
         </Paper>
       </AccordionDetails>
