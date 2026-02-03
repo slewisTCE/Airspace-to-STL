@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import airspaceDataRaw from './assets/Australian Airspace 28 November 2024_v1.txt'
 import { Box } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider } from '@mui/material/styles'
-import { darkTheme } from './styles/themes'
+import { ThemeProvider, type Theme } from '@mui/material/styles'
+import { darkTheme, lightTheme } from './styles/themes'
 import { Loading } from './components/Loading'
 import { siteLog } from './utils/siteLog'
 import { type OpenAirAirspace, OpenAirAirspaces, Volume } from './openAir'
@@ -34,7 +34,7 @@ export function App() {
   const [alertMessage, setAlertMessage] = useState('')
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
-  
+  const storageKey = 'dah-volume-modeller-theme-preference'
   const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 64}, "red")
   
   useEffect(() => {
@@ -54,6 +54,41 @@ export function App() {
       })
       .finally(()=>{ siteLog('fetch: finished'); setLoading(false) })
   }, [])
+
+  const [theme, setTheme] = useState<Theme>(lightTheme)
+  const [darkModeActive, setDarkModeActive] = useState<boolean>(true)
+
+  useEffect(() => {
+    async function determineInitialTheme() {
+      const storedTheme = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+      if (storedTheme === 'dark' || storedTheme === 'light') {
+        setDarkModeActive(storedTheme === 'dark')
+        return
+      }
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setDarkModeActive(prefersDark)
+      }
+    } 
+    determineInitialTheme()
+  }, [])
+  
+  useEffect(()=>{
+    async function getPrefersColorScheme(){
+      if(darkModeActive){
+        setTheme(darkTheme)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, 'dark')
+        }
+      } else {
+        setTheme(lightTheme)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, 'light')
+        }
+      }
+    }
+    getPrefersColorScheme()
+  },[darkModeActive])
 
   const handleEnvelopeChange = (newEnvelope: Envelope, volumeName: string) => {
     setEnvelope(newEnvelope)
@@ -103,13 +138,15 @@ export function App() {
       if(_volume.airspace.name === name){
         return {
           selected: newSelected,
-          airspace: _volume.airspace
+          airspace: _volume.airspace,
+          originalEnvelope: _volume.originalEnvelope
         }
       }
 
       return {
         selected: false,
-        airspace: _volume.airspace
+        airspace: _volume.airspace,
+        originalEnvelope: _volume.originalEnvelope
       }
     })
     setVolumes(newVolumes)
@@ -119,7 +156,8 @@ export function App() {
     setVolumes((current) =>
       current.map((volume) => ({
         selected: false,
-        airspace: volume.airspace
+        airspace: volume.airspace,
+        originalEnvelope: volume.originalEnvelope
       }))
     )
   }
@@ -141,6 +179,8 @@ export function App() {
     setFocusRequest((current) => current + 1)
   }
 
+
+
   if (loading){
     return (<Loading/>)
   } 
@@ -152,10 +192,10 @@ export function App() {
   }
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar handleRightDrawerOpen={handleRightDrawerOpen}/>
+        <TopBar handleRightDrawerOpen={handleRightDrawerOpen} rightDrawerOpen={rightDrawerOpen} setDarkModeActiveAction={setDarkModeActive} darkModeActive={darkModeActive}/>
         {allAirspacesData ? 
         <>
           <DrawerLeft 
