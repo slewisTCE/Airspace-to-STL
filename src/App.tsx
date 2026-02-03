@@ -85,7 +85,7 @@ export function App() {
   }
 
   function handleAddVolume(volume: Volume){
-    setVolumes(volumes.concat(volume))
+    setVolumes((current) => current.concat(volume))
     handleAlert(`Added "${volume.airspace.name}" volume`, 'success')
   }
 
