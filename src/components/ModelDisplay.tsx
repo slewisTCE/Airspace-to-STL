@@ -101,24 +101,27 @@ export function Scene(props:
   // Re-center camera and controls to fit all meshes when meshes change
 
   useEffect(() => {
-    const bounds = getProjectedBounds(props.volumes)
-    if (!bounds) {
-      setGridSize(500)
-      setGridDivisions(20)
-      return
-    }
+    async function fetchGridProperties() {
+      const bounds = getProjectedBounds(props.volumes)
+      if (!bounds) {
+        setGridSize(500)
+        setGridDivisions(20)
+        return
+      }
 
-    const minX = (bounds.minX + centroidOffset.x) * modelScale
-    const maxX = (bounds.maxX + centroidOffset.x) * modelScale
-    const minY = (bounds.minY + centroidOffset.y) * modelScale
-    const maxY = (bounds.maxY + centroidOffset.y) * modelScale
-    const spanX = Math.abs(maxX - minX)
-    const spanY = Math.abs(maxY - minY)
-    const maxSpan = Math.max(spanX, spanY)
-    const padded = Math.max(100, maxSpan * 1.2)
-    setGridSize(padded)
-    setGridDivisions(Math.max(10, Math.round(padded / 10)))
-    setGridCenter({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 })
+      const minX = (bounds.minX + centroidOffset.x) * modelScale
+      const maxX = (bounds.maxX + centroidOffset.x) * modelScale
+      const minY = (bounds.minY + centroidOffset.y) * modelScale
+      const maxY = (bounds.maxY + centroidOffset.y) * modelScale
+      const spanX = Math.abs(maxX - minX)
+      const spanY = Math.abs(maxY - minY)
+      const maxSpan = Math.max(spanX, spanY)
+      const padded = Math.max(100, maxSpan * 1.2)
+      setGridSize(padded)
+      setGridDivisions(Math.max(10, Math.round(padded / 10)))
+      setGridCenter({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 })
+    }
+    fetchGridProperties()
   }, [props.volumes, centroidOffset])
 
 
@@ -229,8 +232,8 @@ function CameraFocus(props: {
   prevVolumeCountRef: React.MutableRefObject<number>
 }){
   const { camera } = useThree()
-  const defaultCameraPosition = new Vector3(0, -120, 120)
-  const defaultTarget = new Vector3(0, 0, 0)
+  const { volumes, zScale, centroidOffset, controlsRef, prevVolumeCountRef } = props
+  
 
   const getProjectedBoundsForVolume = (volume: Volume) => {
     let minX = Infinity
@@ -268,32 +271,34 @@ function CameraFocus(props: {
   }
 
   useEffect(() => {
-    const nextCount = props.volumes.length
+    const defaultCameraPosition = new Vector3(0, -120, 120)
+    const defaultTarget = new Vector3(0, 0, 0)
+    const nextCount = volumes.length
     if (nextCount === 0) {
       camera.position.copy(defaultCameraPosition)
       camera.lookAt(defaultTarget)
-      props.controlsRef.current?.target.copy(defaultTarget)
-      props.controlsRef.current?.update()
-      props.prevVolumeCountRef.current = nextCount
+      controlsRef.current?.target.copy(defaultTarget)
+      controlsRef.current?.update()
+      prevVolumeCountRef.current = nextCount
       return
     }
-    if (nextCount <= props.prevVolumeCountRef.current) {
-      props.prevVolumeCountRef.current = nextCount
+    if (nextCount <= prevVolumeCountRef.current) {
+      prevVolumeCountRef.current = nextCount
       return
     }
 
-    const latestVolume = props.volumes[nextCount - 1]
-    const location = Volume.scaleZ(latestVolume, props.zScale, props.centroidOffset)
+    const latestVolume = volumes[nextCount - 1]
+    const location = Volume.scaleZ(latestVolume, zScale, centroidOffset)
     const bounds = getProjectedBoundsForVolume(latestVolume)
     const depthWorld = location.depth * modelScale
     let target = new Vector3(location.posX, location.posY, location.posZ + depthWorld / 2)
     let distance = Math.max(80, Math.max(depthWorld, 20) * 3)
 
     if (bounds) {
-      const minX = (bounds.minX + props.centroidOffset.x) * modelScale
-      const maxX = (bounds.maxX + props.centroidOffset.x) * modelScale
-      const minY = (bounds.minY + props.centroidOffset.y) * modelScale
-      const maxY = (bounds.maxY + props.centroidOffset.y) * modelScale
+      const minX = (bounds.minX + centroidOffset.x) * modelScale
+      const maxX = (bounds.maxX + centroidOffset.x) * modelScale
+      const minY = (bounds.minY + centroidOffset.y) * modelScale
+      const maxY = (bounds.maxY + centroidOffset.y) * modelScale
       const centerX = (minX + maxX) / 2
       const centerY = (minY + maxY) / 2
       const spanX = Math.abs(maxX - minX)
@@ -306,10 +311,10 @@ function CameraFocus(props: {
     const newCameraPos = new Vector3(target.x, target.y - distance, target.z + distance)
     camera.position.copy(newCameraPos)
     camera.lookAt(target)
-    props.controlsRef.current?.target.copy(target)
-    props.controlsRef.current?.update()
-    props.prevVolumeCountRef.current = nextCount
-  }, [props.volumes, props.zScale, props.centroidOffset, props.prevVolumeCountRef, props.controlsRef, camera])
+    controlsRef.current?.target.copy(target)
+    controlsRef.current?.update()
+    prevVolumeCountRef.current = nextCount
+  }, [volumes, zScale, centroidOffset, prevVolumeCountRef, controlsRef, camera])
 
   return null
 }
