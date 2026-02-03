@@ -28,7 +28,7 @@ export function App() {
   const [airspaceSelect, setAirspaceSelect] = useState<OpenAirAirspace>()
   const [volumes, setVolumes] = useState<Volume[]>([])
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
-  const [zScale, setZScale] = useState(1)
+  const [zScale, setZScale] = useState(25)
   const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('')
