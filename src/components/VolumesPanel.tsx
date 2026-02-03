@@ -86,6 +86,16 @@ export function VolumesPanel(props: VolumePanelProps) {
     downloadBlob(blob, `airspace-combined-${date}.stl`)
   } 
 
+  function handleClearAll(){
+    if (!props.volumes || props.volumes.length === 0) {
+      props.handleAlert('No volumes to clear', 'info')
+      return
+    }
+
+    props.handleClearAllVolumes()
+    props.handleAlert('Cleared all volumes', 'success')
+  }
+
   
   return (
     <Stack direction={"column"} spacing={2}>
@@ -101,6 +111,13 @@ export function VolumesPanel(props: VolumePanelProps) {
         </AccordionSummary>
         <AccordionDetails>
           <Stack direction={"column"} spacing={2}>
+            {props.volumes.length > 0 ? (
+              <Stack direction={"row"} spacing={1} justifyContent={"center"}>
+                <Button variant="outlined" color="warning" onClick={handleClearAll}>
+                  Clear All
+                </Button>
+              </Stack>
+            ) : null}
             <Stack spacing={1} direction={"column"} >
               {props.volumes.map((volume, index)=>{
                 return (

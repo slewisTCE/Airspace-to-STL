@@ -45,6 +45,7 @@ export function DrawerLeft(props: DrawerLeftProps){
           envelope={props.envelope}
           handleEnvelopeChange={props.handleEnvelopeChange} 
           handleRemoveVolume={props.handleRemoveVolume} 
+          handleClearAllVolumes={props.handleClearAllVolumes}
           handleAlert={props.handleAlert} 
           meshes={props.meshes}
         /> 

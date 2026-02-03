@@ -81,7 +81,10 @@ export function App() {
       console.error('Error removing volume:', error)
       handleAlert(`Error removing "${name}" volume: ${String(error)}`, 'error')
     }
-    
+  }
+
+  function handleClearAllVolumes(){
+    setVolumes([])
   }
 
   function handleAddVolume(volume: Volume){
@@ -152,6 +155,7 @@ export function App() {
             airspaces={allAirspacesData} 
             volumes={volumes}
             envelope={envelope}
+            handleClearAllVolumes={handleClearAllVolumes}
             handleEnvelopeChange={handleEnvelopeChange} 
             handleRemoveVolume={handleRemoveVolume}
             handleAddVolume={handleAddVolume}
@@ -166,8 +170,9 @@ export function App() {
             loading={loading} 
             volumes={volumes} 
             handleClickSelect={handleClickSelect}
-              margins={drawerWidth}
-              handleClearSelection={handleClearSelection}
+            margins={drawerWidth}
+            rightDrawerOpen={rightDrawerOpen}
+            handleClearSelection={handleClearSelection}
             zScale={zScale}
           />
           <DrawerRight 

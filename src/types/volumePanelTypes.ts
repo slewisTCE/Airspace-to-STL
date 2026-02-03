@@ -8,6 +8,7 @@ export interface VolumePanelProps {
     envelope: Envelope,
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
     handleRemoveVolume: (name: string) => () => void
+    handleClearAllVolumes: () => void
     handleAlert: (message: string, severity: AlertSeverity) => void
     meshes: Mesh[]
 }
