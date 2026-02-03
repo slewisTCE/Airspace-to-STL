@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
-import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Stack, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Stack, Typography, Paper } from "@mui/material";
 import { ExpandMore, Remove } from "@mui/icons-material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { Envelope } from "../openAir/openAirTypes";
@@ -165,10 +165,13 @@ export function VolumePanelStack(
     }
 
     return(
-      <Stack key={`stack${props.index}`} spacing={1} direction={"row"} >
-        <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={() => handleRemove()}>
-          <Remove key={`removeIcon${props.index}`}/>
-        </IconButton >
-        <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={localEnvelope} initialEnvelope={initialEnvelopeRef.current} handleEnvelopeChange={handleLocalEnvelopeChange} />
-      </Stack>)
+      <Paper elevation={3} sx={{padding: "10px", flexGrow: 1}}>
+        <Stack key={`stack${props.index}`} spacing={1} direction={"row"} >
+          <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={() => handleRemove()}>
+            <Remove key={`removeIcon${props.index}`}/>
+          </IconButton >
+          <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={localEnvelope} initialEnvelope={initialEnvelopeRef.current} handleEnvelopeChange={handleLocalEnvelopeChange} />
+        </Stack>
+      </Paper>
+    )
   }
