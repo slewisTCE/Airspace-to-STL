@@ -3,24 +3,25 @@ import { ControlPanel } from "./ControlPanel";
 import { VolumesPanel } from "./VolumesPanel";
 import EdgyLogo from '../assets/edgy.png'
 import type { DrawerLeftProps } from "../types/drawerLeftTypes";
+import { drawerWidth, logoBarHeight } from "../lib/settings";
 
 
 export function DrawerLeft(props: DrawerLeftProps){
   return (
     <Drawer
       sx={{
-        width: props.drawerWidth,
+        width: drawerWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: props.drawerWidth,
+          width: drawerWidth,
           boxSizing: 'border-box',
         },
       }}
       variant="permanent"
       anchor="left"
     >
-      <Toolbar sx={{py:3, justifyContent: 'center', height: 140}}>
-        <img src={EdgyLogo}/>
+      <Toolbar sx={{py:3, justifyContent: 'center', height: logoBarHeight}}>
+        <img src={EdgyLogo} alt="Edgy Logo"/>
       </Toolbar>
       <Divider />
       <Stack

@@ -19,8 +19,6 @@ import { AlertWithSeverity } from './components/Alert'
 import type { AlertSeverity } from './types/alertTypes'
 import { useMeshesFromVolumes } from './hooks/geometry'
 
-const drawerWidth = 320;
-
 export function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -147,11 +145,10 @@ export function App() {
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
-        <TopBar drawerWidth={drawerWidth} handleRightDrawerOpen={handleRightDrawerOpen}/>
+        <TopBar handleRightDrawerOpen={handleRightDrawerOpen}/>
         {allAirspacesData ? 
         <>
           <DrawerLeft 
-            drawerWidth={drawerWidth} 
             airspaces={allAirspacesData} 
             volumes={volumes}
             envelope={envelope}
@@ -170,13 +167,11 @@ export function App() {
             loading={loading} 
             volumes={volumes} 
             handleClickSelect={handleClickSelect}
-            margins={drawerWidth}
             rightDrawerOpen={rightDrawerOpen}
             handleClearSelection={handleClearSelection}
             zScale={zScale}
           />
           <DrawerRight 
-            drawerWidth={drawerWidth} 
             volumes={volumes} 
             handleRightDrawerOpen={handleRightDrawerOpen} 
             open={rightDrawerOpen}

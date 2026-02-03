@@ -6,8 +6,9 @@ import { GithubLink } from "./GithubLink";
 import { Volume } from "../openAir";
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { useEffect, useState } from "react";
+import { drawerWidth } from "../lib/settings";
 
-export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open: boolean, handleRightDrawerOpen: ( open: boolean) => void}){
+export function DrawerRight(props: {volumes: Volume[], open: boolean, handleRightDrawerOpen: ( open: boolean) => void}){
   const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
   useEffect(()=>{
     async function updateVolumesInfo() {
@@ -20,10 +21,10 @@ export function DrawerRight(props: {drawerWidth: number, volumes: Volume[], open
   return(
     <Drawer
       sx={{
-        width: props.drawerWidth,
+        width: drawerWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: props.drawerWidth,
+          width: drawerWidth,
             boxSizing: 'border-box',
             display: 'flex',
           justifyContent: 'space-between',
