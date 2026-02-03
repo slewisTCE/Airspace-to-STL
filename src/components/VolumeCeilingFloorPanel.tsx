@@ -18,7 +18,7 @@ export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: En
           aria-controls={`${props.volumeName}-content`}
           id={`${props.volumeName}-header`}
         >
-          <Typography component="span" sx={{ width: '100%', flexShrink: 0 }}>
+          <Typography variant="body2" component="span" sx={{ width: '100%', flexShrink: 0 }}>
             {props.volumeName}
           </Typography>
         </AccordionSummary>
