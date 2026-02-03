@@ -29,8 +29,8 @@ export class Volume {
       depth = (ceiling - floor) * zScale
     }
     // Position must be in the same units as the scaled geometry
-    const posX = centroidOffset.x
-    const posY = centroidOffset.y  * modelScale
+    const posX = centroidOffset.x * modelScale
+    const posY = centroidOffset.y * modelScale
     const posZ = floor * modelScale * zScale
     return { floor, ceiling, depth, posX, posY, posZ }
   }

@@ -87,7 +87,7 @@ export function useMeshesFromVolumes(
         const material = new MeshBasicMaterial({ color: colour });
         const mesh = new Mesh(geometryOneVolume.geometry, material)
         mesh.position.set(geometryOneVolume.location.posX, geometryOneVolume.location.posY, geometryOneVolume.location.posZ)
-        mesh.scale.set(modelScale, modelScale, 1)
+        mesh.scale.set(modelScale, modelScale, modelScale)
         return mesh
       })
     },[colour, geometryAllVolumes])
