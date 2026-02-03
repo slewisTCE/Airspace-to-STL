@@ -1,14 +1,13 @@
-import { Divider, Drawer, IconButton, Stack, Toolbar } from "@mui/material";
+import { Divider, Drawer, Stack, Toolbar } from "@mui/material";
 import { AirSpaceInfoBox } from "./AirspaceInfoBox";
 import { SvgPreviewBox } from "./SvgPreviewBox";
 import { Disclaimer } from "./Disclaimer";
 import { GithubLink } from "./GithubLink";
 import { Volume } from "../openAir";
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { useEffect, useState } from "react";
 import { drawerWidth } from "../lib/settings";
 
-export function DrawerRight(props: {volumes: Volume[], open: boolean, handleRightDrawerOpen: ( open: boolean) => void}){
+export function DrawerRight(props: {volumes: Volume[], open: boolean, handleRightDrawerOpen: ( open: boolean) => void}) {
   const [volumesInfo, setVolumesInfo] = useState<Volume[]>([])
   useEffect(()=>{
     async function updateVolumesInfo() {
@@ -41,11 +40,7 @@ export function DrawerRight(props: {volumes: Volume[], open: boolean, handleRigh
           justifyContent: "space-evenly",
         }}
       >
-        <Toolbar sx={{py:3, justifyContent: 'left', height: 20}}>
-          <IconButton onClick={()=>props.handleRightDrawerOpen(false)}>
-            <KeyboardDoubleArrowRightIcon />
-          </IconButton>
-        </Toolbar>
+        <Toolbar sx={{py:3, justifyContent: 'left', height: 20}}></Toolbar>       
         <Divider />
         <AirSpaceInfoBox volumes={volumesInfo}/>
       </Stack>
