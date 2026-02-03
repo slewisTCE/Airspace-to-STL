@@ -1,4 +1,4 @@
-import { SVGLoader, type SVGResult } from "three/examples/jsm/Addons.js";
+import { SVGLoader, type SVGResult, BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { ExtrudeGeometry, Mesh, MeshBasicMaterial, type ColorRepresentation, type ExtrudeGeometryOptions, type Shape as ThreeShape } from "three";
 import { useMemo } from "react";
 import { Volume } from "../openAir";
@@ -27,6 +27,9 @@ export function useMeshFromSvgData(svgString: string, extrudeSettings: ExtrudeGe
         const minZ = bb.min.z || 0
         if (minZ !== 0) geometry.translate(0, 0, -minZ)
       }
+      const merged = BufferGeometryUtils.mergeVertices(geometry, 1e-4)
+      merged.computeVertexNormals()
+      return merged
     } catch (error) {
       console.warn('Failed to compute bounding box for geometry', error)
     }
@@ -75,6 +78,9 @@ export function useMeshesFromVolumes(
             const minZ = bb.min.z || 0
             if (minZ !== 0) geometryOneVolume.translate(0, 0, -minZ)
           }
+          const merged = BufferGeometryUtils.mergeVertices(geometryOneVolume, 1e-4)
+          merged.computeVertexNormals()
+          return {geometry: merged, location: shapesOneVolume.location }
         } catch (error) {
           console.warn('Failed to compute bounding box for geometry', error)
         }

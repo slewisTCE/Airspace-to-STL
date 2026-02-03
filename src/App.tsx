@@ -35,7 +35,7 @@ export function App() {
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
   
-  const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 12}, "red")
+  const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 64}, "red")
   
   useEffect(() => {
     siteLog('fetch: start')

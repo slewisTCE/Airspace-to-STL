@@ -63,6 +63,7 @@ export function Scene(props:
     >
       <gridHelper position={[0,0,0]} rotation-x={Math.PI / 2} args={[500, 20, 0x888888, 0x333333]} />
       <ambientLight intensity={1} color={0xffffff} />
+      <hemisphereLight intensity={0.6} color={0xffffff} groundColor={0x444444} />
       <directionalLight position={[0, -250, 250]} intensity={1} color={0xffffff} />
       <OrbitControls enableDamping={false}/>
       {
@@ -102,7 +103,7 @@ function MeshFromSvgString(
     index: number
   }){
   const depth = props.depth
-  const meshData = useMeshFromSvgData(props.svgString, {depth: depth, curveSegments: 64}, props.colour)
+  const meshData = useMeshFromSvgData(props.svgString, {depth: depth, curveSegments: 128}, props.colour)
   
   function handleClick(name: string){
     const newSelected = !props.volume.selected
@@ -120,11 +121,12 @@ function MeshFromSvgString(
       position={props.position}
       geometry={meshData.geometry}
     >
-      <meshPhongMaterial
+      <meshStandardMaterial
         transparent={true}
-        flatShading={false}
         color={props.volume.selected ? "white": props.colour}
         opacity={props.volumes.length > 1 ? 0.75 : 1}
+        roughness={1}
+        metalness={0}
       />
       {props.volume.selected ? 
       <Outlines thickness={0.5}
