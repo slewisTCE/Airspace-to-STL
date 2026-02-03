@@ -1,16 +1,18 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
-import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Stack, Typography, Paper } from "@mui/material";
-import { ExpandMore, Remove } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Badge, Button, Stack, Typography, Paper, Tooltip } from "@mui/material";
+import { ExpandMore } from "@mui/icons-material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { Envelope } from "../openAir/openAirTypes";
 import type { Volume } from "../openAir";
 import { STLExporter } from "three/examples/jsm/Addons.js";
-import { downloadBlob } from "../utils/utils";
+import JSZip from "jszip";
+import { downloadBlob, formatFeet } from "../utils/utils";
 import { Group, Box3, Vector3, Mesh, BufferGeometry } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import type { AlertSeverity } from "../types/alertTypes";
 import { envelopeDefaults } from "../lib/settings";
+import { drawerWidth } from "../lib/settings";
 
 
 export function VolumesPanel(props: VolumePanelProps) {
@@ -20,7 +22,7 @@ export function VolumesPanel(props: VolumePanelProps) {
       setExpanded(isExpanded ? panel : false);
   }
 
-  function handleDownloadModel(){
+  async function handleDownloadModel(){
     const exporter = new STLExporter();
     // Build a single merged geometry from all scene meshes as a safe fallback
     if (!props.meshes || props.meshes.length === 0) {
@@ -81,9 +83,49 @@ export function VolumesPanel(props: VolumePanelProps) {
 
     // Export as binary STL for smaller files and compatibility with slicers
     const stlBuffer = exporter.parse(exportTarget, { binary: true }) as DataView<ArrayBuffer>;
-    const blob = new Blob([stlBuffer], { type: 'application/octet-stream' });
     const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    downloadBlob(blob, `airspace-combined-${date}.stl`)
+    const zScaleValue = Number.isFinite(props.zScale) ? props.zScale : 1
+    const baseFileName = `airspace-combined-z${zScaleValue}-${date}`
+
+    const lines: string[] = []
+    lines.push(`zScale: ${zScaleValue}`)
+    lines.push(`Volumes: ${props.volumes.length}`)
+    lines.push('')
+    props.volumes.forEach((volume, index) => {
+      const classCode = volume.airspace.airspaceClass.code
+      const className = volume.airspace.airspaceClass.name
+      const originalEnvelope = volume.originalEnvelope ?? {
+        floor: volume.airspace.floor?.value?.feet ?? 0,
+        ceiling: volume.airspace.ceiling?.value?.feet ?? 0
+      }
+      const currentEnvelope = {
+        floor: volume.airspace.floor?.value?.feet ?? 0,
+        ceiling: volume.airspace.ceiling?.value?.feet ?? 0
+      }
+      const envelopeChanged =
+        originalEnvelope.floor !== currentEnvelope.floor ||
+        originalEnvelope.ceiling !== currentEnvelope.ceiling
+
+      lines.push(`${index + 1}. ${volume.airspace.name}`)
+      lines.push(`   Class: ${classCode} (${className})`)
+      lines.push(
+        `   Original envelope: floor ${formatFeet(originalEnvelope.floor)}, ceiling ${formatFeet(originalEnvelope.ceiling)}`
+      )
+      if (envelopeChanged) {
+        lines.push(
+          `   New envelope: floor ${formatFeet(currentEnvelope.floor)}, ceiling ${formatFeet(currentEnvelope.ceiling)}`
+        )
+      } else {
+        lines.push(`   New envelope: unchanged`)
+      }
+      lines.push('')
+    })
+    const zip = new JSZip()
+    const stlBytes = new Uint8Array(stlBuffer.buffer, stlBuffer.byteOffset, stlBuffer.byteLength)
+    zip.file(`${baseFileName}.stl`, stlBytes, { binary: true })
+    zip.file(`${baseFileName}.txt`, lines.join('\n'))
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    downloadBlob(zipBlob, `${baseFileName}.zip`)
   } 
 
   function handleClearAll(){
@@ -113,11 +155,12 @@ export function VolumesPanel(props: VolumePanelProps) {
           <Stack direction={"column"} spacing={2}>
             {props.volumes.length > 0 ? (
               <Stack direction={"row"} spacing={1} justifyContent={"center"}>
-                <Button variant="outlined" color="warning" onClick={handleClearAll}>
+                <Button variant="contained" color="warning" onClick={handleClearAll}>
                   Clear All
                 </Button>
               </Stack>
             ) : null}
+            <Paper elevation={8} sx={{padding: "10px"}}>
             <Stack spacing={1} direction={"column"} >
               {props.volumes.map((volume, index)=>{
                 return (
@@ -133,13 +176,16 @@ export function VolumesPanel(props: VolumePanelProps) {
                   />)
               })}
             </Stack>
+            </Paper>
           </Stack>
         </AccordionDetails>
         
       </Accordion>
-      <Button variant="outlined" onClick={()=>handleDownloadModel()}>
-        Download Model
-      </Button>
+      <Paper elevation={8} sx={{padding: "20px", display: "flex", justifyContent: "center"}}>
+        <Button variant="contained" sx={{width: `${drawerWidth-100}px`}} onClick={()=>handleDownloadModel()}>
+          Download Model
+        </Button>
+      </Paper>
     </Stack>
   )
 }
@@ -188,13 +234,31 @@ export function VolumePanelStack(
     }
 
     return(
-      <Paper elevation={3} sx={{padding: "10px", flexGrow: 1}}>
-        <Stack key={`stack${props.index}`} spacing={1} direction={"row"} >
-          <IconButton sx={{maxHeight: "40px", alignSelf: "center"}} key={`iconButton${props.index}`} value={props.volume.airspace.name} onClick={() => handleRemove()}>
-            <Remove key={`removeIcon${props.index}`}/>
-          </IconButton >
+      // <Paper elevation={3} sx={{padding: "10px", flexGrow: 1}}>
+      <>
+        {/* <Stack key={`stack${props.index}`} spacing={1} direction={"row"} > */}
+        <Tooltip title="Remove Volume" placement="top">
+          <Badge
+            badgeContent={"X"}
+            // variant="dot"
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            sx={{
+              cursor: "pointer",
+              "& .MuiBadge-badge": {
+                backgroundColor: "#b71c1c",
+                color: "#fff",
+                cursor: "pointer",
+                transform: "translate(-50%, 0%)"
+              }
+            }}
+            onClick={() => handleRemove()}
+          />
+          </Tooltip>
+            {/* <Remove key={`removeIcon${props.index}`} /> */}
+          
           <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={localEnvelope} initialEnvelope={initialEnvelope} handleEnvelopeChange={handleLocalEnvelopeChange} />
-        </Stack>
-      </Paper>
+        
+        {/* </Stack> */}
+      </>
     )
   }

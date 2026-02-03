@@ -17,6 +17,7 @@
     "@mui/material": "^7.3.6",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "jszip": "^3.10.1",
     "mgrs": "^2.1.0",
     "proj4": "^2.20.2",
     "react": "^19.2.3",
