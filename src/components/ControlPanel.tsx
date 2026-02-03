@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, InputLabel, MenuItem, Select, Slider, Stack, Typography, type SelectChangeEvent } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tooltip, Typography, type SelectChangeEvent } from "@mui/material";
 import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
 import { useMemo, useState, useEffect } from "react";
@@ -224,11 +224,14 @@ export function ControlPanel(props: ControlPanelProps) {
         <Divider/>
       </AccordionSummary>
       <AccordionDetails sx={{py:3}}>
+        <Paper elevation={8} sx={{p:2}}>
         <Stack spacing={2}>
           <Box>
-            <Typography gutterBottom>
-              Z Scale ({props.zScale}×)
-            </Typography>
+            <Tooltip title="Airspaces are often relatively flat (small Z) compared to their other dimensions (X and Y). Use this slider to scale the Z axis of the 3D model to assist with visibility.">
+              <Typography gutterBottom>
+                Z Scale
+              </Typography>
+            </Tooltip>
             <Slider
               value={props.zScale}
               onChange={(_event, value) => {props.handleZScaleChange(value)}}
@@ -237,8 +240,14 @@ export function ControlPanel(props: ControlPanelProps) {
               step={1}
               valueLabelDisplay="auto"
               aria-label="Z axis scale"
+              marks={[{value:1, label:'1x'}, {value:12, label:'12x'}, {value:25, label:'25x'}, {value:36, label:'36x'}, {value:50, label:'50x'}]}
             />
           </Box>
+          </Stack>
+        </Paper>
+        <Divider sx={{my:2}}/>
+        <Paper elevation={8} sx={{p:2}}>
+          <Stack spacing={2}>
           <FormControl fullWidth>
             <InputLabel id="airspace-state-label">State</InputLabel>
             <Select
@@ -322,6 +331,7 @@ export function ControlPanel(props: ControlPanelProps) {
           </FormControl>
           <Button onClick={() => handleVolumeAddClick()}>Add Volume</Button>
         </Stack>
+        </Paper>
       </AccordionDetails>
     </Accordion>
   )
