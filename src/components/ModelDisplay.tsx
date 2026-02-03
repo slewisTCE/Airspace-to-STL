@@ -16,6 +16,9 @@ export function ModelDisplay(props:
     volumes: Volume[],
     size: {height: number, width: number}, 
     zScale: number, 
+    autoRotate: boolean,
+    handleAutoRotateChange: (autoRotate: boolean) => void,
+    focusRequest: number,
     handleClickSelect: (name: string, selected: boolean) => void,
     handleClearSelection: () => void
   }) {
@@ -25,6 +28,9 @@ export function ModelDisplay(props:
         volumes={props.volumes} 
         size={props.size} 
         zScale={props.zScale} 
+        autoRotate={props.autoRotate}
+        handleAutoRotateChange={props.handleAutoRotateChange}
+        focusRequest={props.focusRequest}
         handleClickSelect={props.handleClickSelect}
         handleClearSelection={props.handleClearSelection}/>
     </Paper>
@@ -36,6 +42,9 @@ export function Scene(props:
     volumes: Volume[], 
     size: {height: number, width: number}, 
     zScale: number,
+    autoRotate: boolean,
+    handleAutoRotateChange: (autoRotate: boolean) => void,
+    focusRequest: number,
     handleClickSelect: (name: string, selected: boolean) => void,
     handleClearSelection: () => void
   }){
@@ -126,6 +135,7 @@ export function Scene(props:
 
 
 
+
   return (
     <Canvas 
       frameloop="demand" 
@@ -137,13 +147,23 @@ export function Scene(props:
       <ambientLight intensity={1} color={0xffffff} />
       <hemisphereLight intensity={0.6} color={0xffffff} groundColor={0x444444} />
       <directionalLight position={[0, -250, 250]} intensity={1} color={0xffffff} />
-      <OrbitControls ref={controlsRef} enableDamping={false}/>
+      <OrbitControls
+        ref={controlsRef}
+        enableDamping={false}
+        autoRotate={props.autoRotate}
+        onStart={() => {
+          if (props.autoRotate) {
+            props.handleAutoRotateChange(false)
+          }
+        }}
+      />
       <CameraFocus
         volumes={props.volumes}
         zScale={props.zScale}
         centroidOffset={centroidOffset}
         controlsRef={controlsRef}
         prevVolumeCountRef={prevVolumeCount}
+        focusRequest={props.focusRequest}
       />
       <group>
         {
@@ -230,9 +250,11 @@ function CameraFocus(props: {
   centroidOffset: { x: number; y: number }
   controlsRef: React.MutableRefObject<OrbitControlsImpl | null>
   prevVolumeCountRef: React.MutableRefObject<number>
+  focusRequest: number
 }){
   const { camera } = useThree()
-  const { volumes, zScale, centroidOffset, controlsRef, prevVolumeCountRef } = props
+  const { volumes, zScale, centroidOffset, controlsRef, prevVolumeCountRef, focusRequest } = props
+  const lastFocusRequest = useRef(focusRequest)
   
 
   const getProjectedBoundsForVolume = (volume: Volume) => {
@@ -273,16 +295,22 @@ function CameraFocus(props: {
   useEffect(() => {
     const defaultCameraPosition = new Vector3(0, -120, 120)
     const defaultTarget = new Vector3(0, 0, 0)
+    camera.up.set(0, 0, 1)
     const nextCount = volumes.length
+    const forceFocus = focusRequest !== lastFocusRequest.current
+    if (forceFocus) {
+      lastFocusRequest.current = focusRequest
+    }
     if (nextCount === 0) {
       camera.position.copy(defaultCameraPosition)
       camera.lookAt(defaultTarget)
+      controlsRef.current?.object.up.set(0, 0, 1)
       controlsRef.current?.target.copy(defaultTarget)
       controlsRef.current?.update()
       prevVolumeCountRef.current = nextCount
       return
     }
-    if (nextCount <= prevVolumeCountRef.current) {
+    if (nextCount <= prevVolumeCountRef.current && !forceFocus) {
       prevVolumeCountRef.current = nextCount
       return
     }
@@ -308,13 +336,19 @@ function CameraFocus(props: {
       distance = Math.max(20, maxSpan * 1.1)
     }
 
-    const newCameraPos = new Vector3(target.x, target.y - distance, target.z + distance)
+    const focusYOffsetFactor = 1.6
+    const newCameraPos = new Vector3(
+      target.x,
+      target.y - distance * focusYOffsetFactor,
+      target.z + distance
+    )
     camera.position.copy(newCameraPos)
     camera.lookAt(target)
+    controlsRef.current?.object.up.set(0, 0, 1)
     controlsRef.current?.target.copy(target)
     controlsRef.current?.update()
     prevVolumeCountRef.current = nextCount
-  }, [volumes, zScale, centroidOffset, prevVolumeCountRef, controlsRef, camera])
+  }, [volumes, zScale, centroidOffset, prevVolumeCountRef, controlsRef, camera, focusRequest])
 
   return null
 }

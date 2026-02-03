@@ -40,6 +40,9 @@ export function DrawerLeft(props: DrawerLeftProps){
           handleAlert={props.handleAlert}
           zScale={props.zScale} 
           handleZScaleChange={props.handleZScaleChange}
+          autoRotate={props.autoRotate}
+          handleAutoRotateChange={props.handleAutoRotateChange}
+          handleResetView={props.handleResetView}
         />
         <VolumesPanel 
           volumes={props.volumes}

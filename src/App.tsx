@@ -27,6 +27,8 @@ export function App() {
   const [volumes, setVolumes] = useState<Volume[]>([])
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
   const [zScale, setZScale] = useState(25)
+  const [autoRotate, setAutoRotate] = useState(false)
+  const [focusRequest, setFocusRequest] = useState(0)
   const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('')
@@ -131,6 +133,14 @@ export function App() {
     setZScale(Math.min(50, Math.max(1, nextValue)))
   }
 
+  function handleAutoRotateChange(nextValue: boolean){
+    setAutoRotate(nextValue)
+  }
+
+  function handleResetView(){
+    setFocusRequest((current) => current + 1)
+  }
+
   if (loading){
     return (<Loading/>)
   } 
@@ -161,6 +171,9 @@ export function App() {
             meshes={meshes}
             zScale={zScale}
             handleZScaleChange={handleZScaleChange}
+            autoRotate={autoRotate}
+            handleAutoRotateChange={handleAutoRotateChange}
+            handleResetView={handleResetView}
             handleAlert={handleAlert}
           />
           <CentralDisplay 
@@ -170,6 +183,9 @@ export function App() {
             rightDrawerOpen={rightDrawerOpen}
             handleClearSelection={handleClearSelection}
             zScale={zScale}
+            autoRotate={autoRotate}
+            handleAutoRotateChange={handleAutoRotateChange}
+            focusRequest={focusRequest}
           />
           <DrawerRight 
             volumes={volumes} 

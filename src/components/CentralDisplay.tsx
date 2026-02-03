@@ -12,6 +12,9 @@ export function CentralDisplay(props:
     volumes: Volume[], 
     rightDrawerOpen: boolean,
     zScale: number,
+    autoRotate: boolean,
+    handleAutoRotateChange: (autoRotate: boolean) => void,
+    focusRequest: number,
     handleClickSelect: (name: string, selected: boolean) => void,
     handleClearSelection: () => void}){
   const { width, height } = useWindowSize();
@@ -39,6 +42,9 @@ export function CentralDisplay(props:
         handleClearSelection={props.handleClearSelection}
         size={modelSize}
         zScale={props.zScale}
+        autoRotate={props.autoRotate}
+        handleAutoRotateChange={props.handleAutoRotateChange}
+        focusRequest={props.focusRequest}
       />
     </Box>
   )

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tooltip, Typography, type SelectChangeEvent } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Slider, Stack, Switch, Tooltip, Typography, type SelectChangeEvent } from "@mui/material";
 import { airspaceClassMap, Volume, type OpenAirAirspace } from "../openAir";
 import { ExpandMore } from "@mui/icons-material";
 import { useMemo, useState, useEffect } from "react";
@@ -242,6 +242,25 @@ export function ControlPanel(props: ControlPanelProps) {
               aria-label="Z axis scale"
               marks={[{value:1, label:'1x'}, {value:12, label:'12x'}, {value:25, label:'25x'}, {value:36, label:'36x'}, {value:50, label:'50x'}]}
             />
+          </Box>
+          <Box>
+            <Tooltip title="Automatically rotate the 3D view.">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={props.autoRotate}
+                    onChange={(_event, checked) => props.handleAutoRotateChange(checked)}
+                    inputProps={{ "aria-label": "Auto-rotate camera" }}
+                  />
+                }
+                label="Auto-rotate"
+              />
+            </Tooltip>
+          </Box>
+          <Box>
+            <Button variant="outlined" fullWidth onClick={props.handleResetView}>
+              Reset view
+            </Button>
           </Box>
           </Stack>
         </Paper>
