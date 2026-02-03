@@ -5,10 +5,12 @@ import { useMemo, useState, useEffect } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
+import { localeStateMap, type AustralianState } from "../assets/stateMap";
 
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [airspaceNameSelect, setAirspaceNameSelect] = useState<string>('')
+  const [airspaceState, setAirspaceState] = useState<AustralianState | "">("")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
   const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
 
@@ -21,16 +23,70 @@ export function ControlPanel(props: ControlPanelProps) {
     return Array.from(new Set(airspaces.map((thisAirspace) => thisAirspace.locale))).sort()
   }, [airspaces])
 
+  const availableStates = useMemo(() => {
+    const localeToState = new Map<string, AustralianState>(
+      localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
+    )
+    const knownStates = new Set<AustralianState>(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"])
+    const statesWithAddable = new Set<AustralianState>()
+
+    airspaces.forEach((thisAirspace) => {
+      if (volumeNames.includes(thisAirspace.name)) return
+      const state = localeToState.get(thisAirspace.locale)
+      if (state && knownStates.has(state)) {
+        statesWithAddable.add(state)
+      } else if (!state || (state !== "OTHER" && !knownStates.has(state))) {
+        statesWithAddable.add("UNKNOWN")
+      }
+    })
+
+    return Array.from(statesWithAddable).sort() as (AustralianState | "")[]
+  }, [airspaces, volumeNames])
+
+  const localesForState = useMemo(() => {
+    if (!airspaceState) return []
+    const localeToState = new Map<string, AustralianState>(
+      localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
+    )
+    const knownStates = new Set<AustralianState>(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"])
+    if (airspaceState === "UNKNOWN") {
+      return airspaceLocales.filter((locale) => {
+        const state = localeToState.get(locale)
+        const isUnknownState = !state || (!knownStates.has(state) && state !== "OTHER")
+        if (!isUnknownState) return false
+        return airspaces.some((thisAirspace) =>
+          thisAirspace.locale === locale &&
+          !volumeNames.includes(thisAirspace.name)
+        )
+      })
+    }
+    const localesInState = new Set(
+      localeStateMap
+        .filter((entry) => entry.state === airspaceState)
+        .map((entry) => entry.locale)
+    )
+    return airspaceLocales.filter((locale) => {
+      if (!localesInState.has(locale)) return false
+      return airspaces.some((thisAirspace) =>
+        thisAirspace.locale === locale &&
+        !volumeNames.includes(thisAirspace.name)
+      )
+    })
+  }, [airspaceState, airspaceLocales, airspaces, volumeNames])
+
   const airspaceClassCodes = useMemo(() => {
     if (!airspaceLocale) return [] as OpenAirClassCode[]
     return Array.from(
       new Set(
         airspaces
-          .filter((thisAirspace) => thisAirspace.locale === airspaceLocale)
+          .filter((thisAirspace) =>
+            thisAirspace.locale === airspaceLocale &&
+            !volumeNames.includes(thisAirspace.name)
+          )
           .map((thisAirspace) => thisAirspace.airspaceClass.code)
       )
     ).sort() as OpenAirClassCode[]
-  }, [airspaceLocale, airspaces])
+  }, [airspaceLocale, airspaces, volumeNames])
 
   useEffect(()=>{
     async function updateVolumeNames() {
@@ -70,13 +126,72 @@ export function ControlPanel(props: ControlPanelProps) {
     }
   }
 
+  const handleAddClassVolumes = () => {
+    if (!airspaceLocale || !airspaceClassCode) {
+      props.handleAlert('Select a locale and class first', 'error')
+      return
+    }
+
+    const toAdd = airspaces.filter((thisAirspace) =>
+      thisAirspace.locale === airspaceLocale &&
+      thisAirspace.airspaceClass.code === airspaceClassCode &&
+      !volumeNames.includes(thisAirspace.name)
+    )
+
+    if (toAdd.length === 0) {
+      props.handleAlert('No additional airspaces to add for this class', 'warning')
+      return
+    }
+
+    toAdd.forEach((thisAirspace) => props.handleAddVolume(new Volume(thisAirspace)))
+    props.setAirspaceSelect(undefined)
+    props.handleAlert(`Added ${toAdd.length} volumes for class ${airspaceClassCode}`, 'success')
+  }
+
+  const canAddClassVolumes = airspaceLocale && airspaceClassCode
+    ? airspaces.some((thisAirspace) =>
+        thisAirspace.locale === airspaceLocale &&
+        thisAirspace.airspaceClass.code === airspaceClassCode &&
+        !volumeNames.includes(thisAirspace.name)
+      )
+    : false
+
+  const addableClassCount = airspaceLocale && airspaceClassCode
+    ? airspaces.filter((thisAirspace) =>
+        thisAirspace.locale === airspaceLocale &&
+        thisAirspace.airspaceClass.code === airspaceClassCode &&
+        !volumeNames.includes(thisAirspace.name)
+      ).length
+    : 0
+
+  const addableNames = useMemo(() => {
+    if (!airspaceLocale || !airspaceClassCode) return [] as OpenAirAirspace[]
+    return airspaces.filter((thisAirspace) =>
+      thisAirspace.locale === airspaceLocale &&
+      thisAirspace.airspaceClass.code === airspaceClassCode &&
+      !volumeNames.includes(thisAirspace.name)
+    )
+  }, [airspaceLocale, airspaceClassCode, airspaces, volumeNames])
+
+  const handleStateSelect = (event: SelectChangeEvent) => {
+    const newState = event.target.value as AustralianState
+    setAirspaceState(newState)
+    setAirspaceLocale('')
+    setAirspaceClassCode("A")
+    setAirspaceNameSelect('')
+    props.setAirspaceSelect(undefined)
+  }
+
   const handleLocaleSelect = (event: SelectChangeEvent) => {
     const newLocale = event.target.value
     setAirspaceLocale(newLocale)
     const classCodesForLocale = Array.from(
       new Set(
         airspaces
-          .filter((thisAirspace) => thisAirspace.locale === newLocale)
+          .filter((thisAirspace) =>
+            thisAirspace.locale === newLocale &&
+            !volumeNames.includes(thisAirspace.name)
+          )
           .map((thisAirspace) => thisAirspace.airspaceClass.code)
       )
     ).sort() as OpenAirClassCode[]
@@ -116,17 +231,37 @@ export function ControlPanel(props: ControlPanelProps) {
             />
           </Box>
           <FormControl fullWidth>
+            <InputLabel id="airspace-state-label">State</InputLabel>
+            <Select
+              labelId="airspace-state-label"
+              id="airspace-state-select"
+              name="airspace-state"
+              value={airspaceState}
+              label="State"
+              onChange={handleStateSelect}
+            >
+              {availableStates.filter((state) => state).map((state, index) => {
+                return (
+                  <MenuItem key={index} value={state}>
+                    {state}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
             <InputLabel id="airspace-locale-label">Locale</InputLabel>
             <Select
               labelId="airspace-locale-label"
               id="airspace-locale-select"
               name="airspace-locale"
               value={airspaceLocale}
-              label="locale"
+              label="Locale"
               onChange={handleLocaleSelect}
+              disabled={!airspaceState || localesForState.length === 0}
             >
               { 
-                airspaceLocales.map((locale: string, index: number) => {
+                localesForState.map((locale: string, index: number) => {
                   return (<MenuItem key={index} value={locale}>{locale}</MenuItem>)
                 })
               }
@@ -152,6 +287,11 @@ export function ControlPanel(props: ControlPanelProps) {
               })}
             </Select>
           </FormControl>
+          {canAddClassVolumes ? (
+            <Button onClick={() => handleAddClassVolumes()}>
+              Add All {addableClassCount} in Class
+            </Button>
+          ) : null}
           <FormControl fullWidth>
             <InputLabel id="airspace-name-label">Name</InputLabel>
             <Select
@@ -161,15 +301,14 @@ export function ControlPanel(props: ControlPanelProps) {
               value={volumeNames.includes(airspaceNameSelect) ? '' : airspaceNameSelect}
               label="Name"
               onChange={handleAirspaceNameSelect}
-              disabled={!airspaceLocale || !airspaceClassCode}
+              disabled={!airspaceLocale || !airspaceClassCode || addableNames.length === 0}
             >
               <MenuItem>{airspaceMenuItems}</MenuItem>
-              {props.airspaces.airspaces.map((thisAirspace: OpenAirAirspace, index: number)=>{
-                if (thisAirspace.locale == airspaceLocale && thisAirspace.airspaceClass.code == airspaceClassCode && !volumeNames.includes(thisAirspace.name)){
-                  return (<MenuItem key={index} value={thisAirspace.name}>{thisAirspace.name}</MenuItem>)
-                }
-              }
-              )}
+              {addableNames.map((thisAirspace, index) => (
+                <MenuItem key={index} value={thisAirspace.name}>
+                  {thisAirspace.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <Button onClick={() => handleVolumeAddClick()}>Add Volume</Button>
