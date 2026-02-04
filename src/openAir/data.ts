@@ -1,5 +1,5 @@
 export const airspaceClassMap = {
-  R: {name: "Restricted", colour: "#f2ff61"},
+  R: {name: "Restricted", colour: "#2596be"},
   Q: {name: "Danger", colour: "#ff6b61"},
   P: {name: "Prohibited", colour: "#ffd261"},
   A: {name: "Class A", colour: "#61ffdf"},
@@ -10,10 +10,10 @@ export const airspaceClassMap = {
   F: {name: "Class F", colour: "#b5ff61"},
   G: {name: "Class G", colour: "#6176ff"},
   GP: {name: "Glider Prohibited", colour: "#6176ff"},
-  CTR: {name: "CTR", colour: ""},
+  CTR: {name: "CTR", colour: "#f2ff61"},
   W: {name: "Wave window", colour: "#b7f2aa"},
-  RMZ: {name: "Radio Mandatory Zone", colour: "#aacaf2"},
-  UNKNOWN: {name: "UNKNOWN", colour: "#f2f3f5"}
+  RMZ: {name: "Radio Mandatory Zone", colour: "#307800"},
+  UNKNOWN: {name: "UNKNOWN", colour: "#9b5a00"}
 }
 
 export const commandMap = {
