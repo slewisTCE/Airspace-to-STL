@@ -27,6 +27,7 @@ export function App() {
   const [volumes, setVolumes] = useState<Volume[]>([])
   const [rightDrawerOpen, setRightDrawerOpen] = useState(true)
   const [zScale, setZScale] = useState(25)
+  const [meshOpacityPercent, setMeshOpacityPercent] = useState(95)
   const [autoRotate, setAutoRotate] = useState(false)
   const [focusRequest, setFocusRequest] = useState(0)
   const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
@@ -171,6 +172,11 @@ export function App() {
     setZScale(Math.min(50, Math.max(1, nextValue)))
   }
 
+  function handleMeshOpacityChange(newOpacityPercent: number){
+    const nextValue = Array.isArray(newOpacityPercent) ? newOpacityPercent[0] : newOpacityPercent
+    setMeshOpacityPercent(Math.min(100, Math.max(1, nextValue)))
+  }
+
   function handleAutoRotateChange(nextValue: boolean){
     setAutoRotate(nextValue)
   }
@@ -211,6 +217,8 @@ export function App() {
             meshes={meshes}
             zScale={zScale}
             handleZScaleChange={handleZScaleChange}
+            meshOpacityPercent={meshOpacityPercent}
+            handleMeshOpacityChange={handleMeshOpacityChange}
             autoRotate={autoRotate}
             handleAutoRotateChange={handleAutoRotateChange}
             handleResetView={handleResetView}
@@ -223,6 +231,7 @@ export function App() {
             rightDrawerOpen={rightDrawerOpen}
             handleClearSelection={handleClearSelection}
             zScale={zScale}
+            meshOpacityPercent={meshOpacityPercent}
             autoRotate={autoRotate}
             handleAutoRotateChange={handleAutoRotateChange}
             focusRequest={focusRequest}

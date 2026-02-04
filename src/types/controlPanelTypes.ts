@@ -10,6 +10,8 @@ export interface ControlPanelProps {
     setAirspaceSelect: React.Dispatch<React.SetStateAction<OpenAirAirspace | undefined>>
     zScale: number
     handleZScaleChange: (newZScale: number) => void
+    meshOpacityPercent: number
+    handleMeshOpacityChange: (meshOpacityPercent: number) => void
     autoRotate: boolean
     handleAutoRotateChange: (autoRotate: boolean) => void
     handleResetView: () => void

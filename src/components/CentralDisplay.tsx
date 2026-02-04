@@ -12,6 +12,7 @@ export function CentralDisplay(props:
     volumes: Volume[], 
     rightDrawerOpen: boolean,
     zScale: number,
+    meshOpacityPercent: number,
     autoRotate: boolean,
     handleAutoRotateChange: (autoRotate: boolean) => void,
     focusRequest: number,
@@ -42,6 +43,7 @@ export function CentralDisplay(props:
         handleClearSelection={props.handleClearSelection}
         size={modelSize}
         zScale={props.zScale}
+        meshOpacityPercent={props.meshOpacityPercent}
         autoRotate={props.autoRotate}
         handleAutoRotateChange={props.handleAutoRotateChange}
         focusRequest={props.focusRequest}

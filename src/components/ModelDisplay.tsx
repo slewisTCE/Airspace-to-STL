@@ -16,6 +16,7 @@ export function ModelDisplay(props:
     volumes: Volume[],
     size: {height: number, width: number}, 
     zScale: number, 
+    meshOpacityPercent: number,
     autoRotate: boolean,
     handleAutoRotateChange: (autoRotate: boolean) => void,
     focusRequest: number,
@@ -28,6 +29,7 @@ export function ModelDisplay(props:
         volumes={props.volumes} 
         size={props.size} 
         zScale={props.zScale} 
+        meshOpacityPercent={props.meshOpacityPercent}
         autoRotate={props.autoRotate}
         handleAutoRotateChange={props.handleAutoRotateChange}
         focusRequest={props.focusRequest}
@@ -42,6 +44,7 @@ export function Scene(props:
     volumes: Volume[], 
     size: {height: number, width: number}, 
     zScale: number,
+    meshOpacityPercent: number,
     autoRotate: boolean,
     handleAutoRotateChange: (autoRotate: boolean) => void,
     focusRequest: number,
@@ -180,6 +183,7 @@ export function Scene(props:
                   colour={airspaceClassMap[volume.airspace.airspaceClass.code].colour}
                   volume={volume}
                   volumes={props.volumes}
+                  meshOpacity={props.meshOpacityPercent / 100}
                   index={index}
                   handleClickSelect={props.handleClickSelect}
                 />
@@ -200,6 +204,7 @@ function MeshFromSvgString(
     colour: string, 
     volume: Volume,
     volumes: Volume[],
+    meshOpacity: number,
     handleClickSelect: (name: string, selected: boolean) => void,
     index: number
   }){
@@ -225,7 +230,7 @@ function MeshFromSvgString(
       <meshStandardMaterial
         transparent={true}
         color={props.volume.selected ? "white": props.colour}
-        opacity={props.volumes.length > 1 ? 0.95 : 1}
+        opacity={props.meshOpacity}
         roughness={1}
         metalness={0}
       />

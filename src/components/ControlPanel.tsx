@@ -253,6 +253,23 @@ export function ControlPanel(props: ControlPanelProps) {
             />
           </Box>
           <Box>
+            <Tooltip title="Adjust the opacity of the airspace meshes in the 3D view.">
+              <Typography gutterBottom>
+                Mesh Opacity
+              </Typography>
+            </Tooltip>
+            <Slider
+              value={props.meshOpacityPercent}
+              onChange={(_event, value) => {props.handleMeshOpacityChange(value)}}
+              min={1}
+              max={100}
+              step={1}
+              valueLabelDisplay="auto"
+              aria-label="Mesh opacity percentage"
+              marks={[{value:1, label:'1%'}, {value:50, label:'50%'}, {value:100, label:'100%'}]}
+            />
+          </Box>
+          <Box>
             <Tooltip title="Automatically rotate the 3D view.">
               <FormControlLabel
                 control={
