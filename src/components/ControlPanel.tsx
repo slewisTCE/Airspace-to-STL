@@ -118,10 +118,18 @@ export function ControlPanel(props: ControlPanelProps) {
   }
 
   const handleVolumeAddClick = () => {
-    if(props.airspaceSelect){
-      props.handleAddVolume(new Volume(props.airspaceSelect))
+    const selectedAirspace = props.airspaceSelect
+      ?? (airspaceNameSelect ? airspaceFromName(props.airspaces.airspaces, airspaceNameSelect) : undefined)
+
+    if (selectedAirspace && addableNames.some((airspace) => airspace.name === selectedAirspace.name)) {
+      props.handleAddVolume(new Volume(selectedAirspace))
       props.setAirspaceSelect(undefined)
-      props.handleAlert(`Added "${props.airspaceSelect.name}" volume`, 'success')
+      props.handleAlert(`Added "${selectedAirspace.name}" volume`, 'success')
+      return
+    }
+
+    if (selectedAirspace) {
+      props.handleAlert(`Selected airspace is not available to add`, 'error')
     } else {
       props.handleAlert(`No airspace selected to add as volume`, 'error')
     }
