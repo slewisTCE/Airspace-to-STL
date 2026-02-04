@@ -154,7 +154,6 @@ export function ControlPanel(props: ControlPanelProps) {
 
     toAdd.forEach((thisAirspace) => props.handleAddVolume(new Volume(thisAirspace)))
     props.setAirspaceSelect(undefined)
-    props.handleAlert(`Added ${toAdd.length} volumes for class ${airspaceClassCode}`, 'success')
   }
 
   const canAddClassVolumes = airspaceLocale && airspaceClassCode
@@ -173,14 +172,13 @@ export function ControlPanel(props: ControlPanelProps) {
       ).length
     : 0
 
-  const addableNames = useMemo(() => {
-    if (!airspaceLocale || !airspaceClassCode) return [] as OpenAirAirspace[]
-    return airspaces.filter((thisAirspace) =>
-      thisAirspace.locale === airspaceLocale &&
-      thisAirspace.airspaceClass.code === airspaceClassCode &&
-      !volumeNames.includes(thisAirspace.name)
-    )
-  }, [airspaceLocale, airspaceClassCode, airspaces, volumeNames])
+  const addableNames = (!airspaceLocale || !airspaceClassCode)
+    ? [] as OpenAirAirspace[]
+    : airspaces.filter((thisAirspace) =>
+        thisAirspace.locale === airspaceLocale &&
+        thisAirspace.airspaceClass.code === airspaceClassCode &&
+        !volumeNames.includes(thisAirspace.name)
+      )
 
   const safeAirspaceState = availableStates.includes(airspaceState) ? airspaceState : ""
   const safeAirspaceLocale = localesForState.includes(airspaceLocale) ? airspaceLocale : ""
