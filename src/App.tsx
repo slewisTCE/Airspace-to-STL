@@ -15,9 +15,9 @@ import { CentralDisplay } from './components/CentralDisplay'
 import { Error } from './components/Error'
 import type { Envelope } from './openAir/openAirTypes'
 import { Distance } from './openAir/distance'
-import { AlertWithSeverity } from './components/Alert'
 import type { AlertSeverity } from './types/alertTypes'
 import { useMeshesFromVolumes } from './hooks/geometry'
+import { type VariantType, useSnackbar } from 'notistack'
 
 export function App() {
   const [loading, setLoading] = useState(true)
@@ -31,12 +31,10 @@ export function App() {
   const [autoRotate, setAutoRotate] = useState(false)
   const [focusRequest, setFocusRequest] = useState(0)
   const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
-  const [openAlert, setOpenAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('')
-  const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>("success")
   
   const storageKey = 'dah-volume-modeller-theme-preference'
   const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 64}, "red")
+  const { enqueueSnackbar } = useSnackbar();
   
   useEffect(() => {
     siteLog('fetch: start')
@@ -91,6 +89,12 @@ export function App() {
     getPrefersColorScheme()
   },[darkModeActive])
 
+  function handleAlert(message: string, severity: VariantType){
+    const baseDurationMs = 3000
+    const autoHideDuration = severity === 'warning' ? baseDurationMs * 3 : baseDurationMs
+    enqueueSnackbar(message, { variant: severity as AlertSeverity, autoHideDuration })
+  }
+
   const handleEnvelopeChange = (newEnvelope: Envelope, volumeName: string) => {
     setEnvelope(newEnvelope)
     setVolumes((current) =>
@@ -123,15 +127,25 @@ export function App() {
     setVolumes([])
   }
 
-  function handleAddVolume(volume: Volume){
-    setVolumes((current) => current.concat(volume))
-    handleAlert(`Added "${volume.airspace.name}" volume`, 'success')
+  function checkVolumeAltitude(volume: Volume): Volume {
+    if (volume.airspace.ceiling.value.feet <= volume.airspace.floor.value.feet) {
+      if (volume.airspace.ceiling.value.feet === 0) {
+        const defaultCeilingFeet = volume.airspace.floor.value.feet + 1000
+        handleAlert(`Adjusted ceiling of "${volume.airspace.name}" volume to ${defaultCeilingFeet} feet. Raw value: ${volume.airspace.ceiling.value.feet}`, 'warning')
+        volume.airspace.ceiling.value = new Distance(defaultCeilingFeet, "feet")
+      } else {
+        const defaultFloorFeet = Math.max(0, volume.airspace.ceiling.value.feet - 1000)
+        handleAlert(`Adjusted floor of "${volume.airspace.name}" volume to ${defaultFloorFeet} feet. Raw value: ${volume.airspace.floor.value.feet}`, 'warning')
+        volume.airspace.floor.value = new Distance(defaultFloorFeet, "feet")
+      }
+    }
+    return volume
   }
 
-  function handleAlert(message: string, severity: AlertSeverity){
-    setAlertMessage(message)
-    setAlertSeverity(severity)
-    setOpenAlert(true)
+  function handleAddVolume(volume: Volume){
+    const checkedVolume = checkVolumeAltitude(volume)
+    setVolumes((current) => current.concat(checkedVolume))
+    handleAlert(`Added "${checkedVolume.airspace.name}" volume`, 'success')
   }
 
   function handleClickSelect(name: string, newSelected: boolean){
@@ -185,8 +199,6 @@ export function App() {
     setFocusRequest((current) => current + 1)
   }
 
-
-
   if (loading){
     return (<Loading/>)
   } 
@@ -199,6 +211,7 @@ export function App() {
 
   return (
     <ThemeProvider theme={theme}>
+
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
         <TopBar handleRightDrawerOpen={handleRightDrawerOpen} rightDrawerOpen={rightDrawerOpen} setDarkModeActiveAction={setDarkModeActive} darkModeActive={darkModeActive}/>
@@ -243,8 +256,8 @@ export function App() {
           />       
         </>
         : <></>}
+
       </Box>
-      <AlertWithSeverity open={openAlert} setOpen={setOpenAlert} message={alertMessage} severity={alertSeverity}/>
     </ThemeProvider>
   )
 }
