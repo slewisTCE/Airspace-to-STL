@@ -933,7 +933,18 @@ const rawLocaleStateMap: {state: AustralianState | "", locale: string}[] = [
   { state: 'NT', locale: 'YUENDUMU NT' },
 ]
 
-
+export const australianStates: AustralianState[] = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+  "OTHER",
+  "UNKNOWN",
+]
 export type AustralianState =
   | "ACT"
   | "NSW"

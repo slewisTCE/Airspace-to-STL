@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
-import { localeStateMap, type AustralianState } from "../assets/stateMap";
+import { australianStates, localeStateMap, type AustralianState } from "../assets/stateMap";
 
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -27,7 +27,8 @@ export function ControlPanel(props: ControlPanelProps) {
     const localeToState = new Map<string, AustralianState>(
       localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
     )
-    const knownStates = new Set<AustralianState>(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"])
+
+    const knownStates = new Set<AustralianState>(australianStates)
     const statesWithAddable = new Set<AustralianState>()
 
     airspaces.forEach((thisAirspace) => {
@@ -35,7 +36,7 @@ export function ControlPanel(props: ControlPanelProps) {
       const state = localeToState.get(thisAirspace.locale)
       if (state && knownStates.has(state)) {
         statesWithAddable.add(state)
-      } else if (!state || (state !== "OTHER" && !knownStates.has(state))) {
+      } else if (!state || !knownStates.has(state)) {
         statesWithAddable.add("UNKNOWN")
       }
     })
@@ -48,11 +49,11 @@ export function ControlPanel(props: ControlPanelProps) {
     const localeToState = new Map<string, AustralianState>(
       localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
     )
-    const knownStates = new Set<AustralianState>(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"])
+    const knownStates = new Set<AustralianState>(australianStates)
     if (airspaceState === "UNKNOWN") {
       return airspaceLocales.filter((locale) => {
         const state = localeToState.get(locale)
-        const isUnknownState = !state || (!knownStates.has(state) && state !== "OTHER")
+        const isUnknownState = !state || !knownStates.has(state)
         if (!isUnknownState) return false
         return airspaces.some((thisAirspace) =>
           thisAirspace.locale === locale &&
