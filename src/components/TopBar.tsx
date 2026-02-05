@@ -20,7 +20,12 @@ export function TopBar(props: {handleRightDrawerOpen: (open: boolean) => void, r
             borderRadius: 1,
             height: topBarHeight
           }}>
-          <Typography variant="h6" noWrap component="div">
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ ml: props.rightDrawerOpen ? `${drawerWidth-20}px` : 0 }}
+          >
             DAH Volume Modeller
           </Typography>
           <Box>
