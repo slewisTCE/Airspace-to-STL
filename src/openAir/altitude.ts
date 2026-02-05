@@ -7,6 +7,7 @@ export class Altitude {
   flightLevel?: number
   pressureReference?: PressureReference
   value: Distance
+  notam: boolean = false
   reference?: AltitudeReference
 
   constructor(line: string){
@@ -32,6 +33,8 @@ export class Altitude {
       altitude.valueFeet = 0
     } else if(words[1].toUpperCase().trim() == "UNL" || words[1].toUpperCase().trim() == "UNLIMITED"){
       altitude.valueFeet = this.maxAltitude.feet
+    } else if(words[1].toUpperCase().trim() == "NOTAM"){
+      this.notam = true
     }
     return altitude
   }

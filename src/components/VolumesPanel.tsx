@@ -137,7 +137,6 @@ export function VolumesPanel(props: VolumePanelProps) {
     props.handleClearAllVolumes()
     props.handleAlert('Cleared all volumes', 'success')
   }
-
   
   return (
     <Stack direction={"column"} spacing={2}>
@@ -179,7 +178,6 @@ export function VolumesPanel(props: VolumePanelProps) {
             </Paper>
           </Stack>
         </AccordionDetails>
-        
       </Accordion>
       <Paper elevation={8} sx={{padding: "20px", display: "flex", justifyContent: "center"}}>
         <Button variant="contained" sx={{width: `${drawerWidth-100}px`}} onClick={()=>handleDownloadModel()}>
@@ -254,11 +252,16 @@ export function VolumePanelStack(
             onClick={() => handleRemove()}
           />
           </Tooltip>
-            {/* <Remove key={`removeIcon${props.index}`} /> */}
-          
-          <VolumeCeilingFloorPanel volumeName={props.volume.airspace.name} envelope={localEnvelope} initialEnvelope={initialEnvelope} handleEnvelopeChange={handleLocalEnvelopeChange} />
-        
-        {/* </Stack> */}
+          <VolumeCeilingFloorPanel 
+            volumeName={props.volume.airspace.name} 
+            envelope={localEnvelope} 
+            initialEnvelope={initialEnvelope} 
+            handleEnvelopeChange={handleLocalEnvelopeChange} 
+            floorNotam={props.volume.airspace.floor?.notam ?? false} 
+            ceilingNotam={props.volume.airspace.ceiling?.notam ?? false}
+            floorRawValue={props.volume.airspace.floor.raw}
+            ceilingRawValue={props.volume.airspace.ceiling.raw}
+          />
       </>
     )
   }

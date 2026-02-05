@@ -4,7 +4,18 @@ import { useState} from "react";
 import { SliderControl } from "./SliderControl";
 import type { Envelope } from "../openAir/openAirTypes";
 
-export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: Envelope, initialEnvelope: Envelope, handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void}){
+export function VolumeCeilingFloorPanel(props: 
+  {
+    volumeName: string, 
+    envelope: Envelope, 
+    initialEnvelope: Envelope, 
+    handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
+    floorNotam: boolean,
+    ceilingNotam: boolean,
+    floorRawValue: string,
+    ceilingRawValue: string
+   }
+  ){
   const [expanded, setExpanded] = useState<string | false>(false);
   
   const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -24,7 +35,15 @@ export function VolumeCeilingFloorPanel(props: {volumeName: string, envelope: En
         </AccordionSummary>
         <AccordionDetails>
           <Stack direction={"column"}>
-            <SliderControl envelope={props.envelope} initialEnvelope={props.initialEnvelope} handleEnvelopeChange={(newEnvelope) => props.handleEnvelopeChange(newEnvelope, props.volumeName)}/>
+            <SliderControl 
+              envelope={props.envelope} 
+              initialEnvelope={props.initialEnvelope} 
+              handleEnvelopeChange={(newEnvelope) => props.handleEnvelopeChange(newEnvelope, props.volumeName)} 
+              floorNotam={props.floorNotam} 
+              ceilingNotam={props.ceilingNotam} 
+              floorRawValue={props.floorRawValue}
+              ceilingRawValue={props.ceilingRawValue}
+            />
           </Stack>
         </AccordionDetails>
       </Accordion>

@@ -5,7 +5,9 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { formatFeet } from "../utils/utils";
 import type { Envelope } from "../openAir/openAirTypes";
 
-export function SliderControl(props: {envelope: Envelope, initialEnvelope: Envelope, handleEnvelopeChange: (next: Envelope) => void}) {
+export function SliderControl(props: 
+  {
+    envelope: Envelope, initialEnvelope: Envelope, handleEnvelopeChange: (next: Envelope) => void, floorNotam: boolean, ceilingNotam: boolean, floorRawValue: string, ceilingRawValue: string}) {
   const minDistance = 100
   const minAlt = 0
   const maxAlt = 60000
@@ -58,6 +60,12 @@ export function SliderControl(props: {envelope: Envelope, initialEnvelope: Envel
             <Input
               id="input-airspace-ceiling"
               startAdornment={
+                props.ceilingNotam ?
+                <Tooltip title={`Adjusted ceiling to be visible as original values are: F:${props.floorRawValue}, C:${props.ceilingRawValue}. Please check value.`}>
+                  <InputAdornment position="start">
+                    <CloudDownloadIcon color="warning"/>
+                  </InputAdornment>
+                </Tooltip> :
                 <InputAdornment position="start">
                   <CloudDownloadIcon />
                 </InputAdornment>
@@ -80,6 +88,12 @@ export function SliderControl(props: {envelope: Envelope, initialEnvelope: Envel
               <Input
                 id="input-airspace-floor"
                 startAdornment={
+                  props.floorNotam ?
+                  <Tooltip title={`Adjusted floor to be visible as original values are: F:${props.floorRawValue}, C:${props.ceilingRawValue}. Please check value.`}>
+                    <InputAdornment position="start">
+                      <CloudUploadIcon color="warning"/>
+                    </InputAdornment>
+                  </Tooltip> :
                   <InputAdornment position="start">
                     <CloudUploadIcon />
                   </InputAdornment>

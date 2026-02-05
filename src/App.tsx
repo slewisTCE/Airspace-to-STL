@@ -127,14 +127,24 @@ export function App() {
     setVolumes([])
   }
 
+  function getDefaultFloorFeet(volume: Volume): number {
+    const ceilingFeet = volume.airspace.ceiling.value.feet
+    return Math.max(0, ceilingFeet - 1000)
+  }
+
+  function getDefaultCeilingFeet(volume: Volume): number {
+    const floorFeet = volume.airspace.floor.value.feet
+    return floorFeet + 1000
+  }
+
   function checkVolumeAltitude(volume: Volume): Volume {
     if (volume.airspace.ceiling.value.feet <= volume.airspace.floor.value.feet) {
       if (volume.airspace.ceiling.value.feet === 0) {
-        const defaultCeilingFeet = volume.airspace.floor.value.feet + 1000
+        const defaultCeilingFeet = getDefaultCeilingFeet(volume)
         handleAlert(`Adjusted ceiling of "${volume.airspace.name}" volume to ${defaultCeilingFeet} feet. Raw value: ${volume.airspace.ceiling.value.feet}`, 'warning')
         volume.airspace.ceiling.value = new Distance(defaultCeilingFeet, "feet")
       } else {
-        const defaultFloorFeet = Math.max(0, volume.airspace.ceiling.value.feet - 1000)
+        const defaultFloorFeet = getDefaultFloorFeet(volume)
         handleAlert(`Adjusted floor of "${volume.airspace.name}" volume to ${defaultFloorFeet} feet. Raw value: ${volume.airspace.floor.value.feet}`, 'warning')
         volume.airspace.floor.value = new Distance(defaultFloorFeet, "feet")
       }
