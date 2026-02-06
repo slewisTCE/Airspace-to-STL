@@ -3,7 +3,7 @@ import type { Volume } from "../openAir";
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
 
-export function AirSpaceInfoBox(props: {volumes: Volume[]}) {
+export function AirSpaceInfoBox(props: {volumes: Volume[], disable: boolean}) {
   const [expanded, setExpanded] = useState<string | false>(false);
 
   const handleChange =
@@ -21,7 +21,7 @@ export function AirSpaceInfoBox(props: {volumes: Volume[]}) {
   }, [props.volumes])
 
   return (
-      <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+      <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')} disabled={props.disable}>
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1bh-content"

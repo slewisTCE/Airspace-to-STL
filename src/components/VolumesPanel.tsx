@@ -179,7 +179,7 @@ export function VolumesPanel(props: VolumePanelProps) {
   
   return (
     <Stack direction={"column"} spacing={2}>
-      <Accordion expanded={expanded === 'panel1'} onChange={handleAccordianChange('panel1')}>
+      <Accordion expanded={expanded === 'panel1'} onChange={handleAccordianChange('panel1')} disabled={props.disable}>
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1bh-content"
@@ -193,7 +193,7 @@ export function VolumesPanel(props: VolumePanelProps) {
           <Stack direction={"column"} spacing={2}>
             {props.volumes.length > 0 ? (
               <Stack direction={"row"} spacing={1} justifyContent={"center"}>
-                <Button variant="contained" color="warning" onClick={handleClearAll}>
+                <Button variant="contained" color="warning" onClick={handleClearAll} disabled={props.disable}>
                   Clear All
                 </Button>
               </Stack>
@@ -238,7 +238,7 @@ export function VolumesPanel(props: VolumePanelProps) {
         </AccordionDetails>
       </Accordion>
       <Paper elevation={8} sx={{padding: "20px", display: "flex", justifyContent: "center"}}>
-        <Button variant="contained" sx={{width: `${drawerWidth-100}px`}} onClick={()=>handleDownloadModel()}>
+        <Button variant="contained" sx={{width: `${drawerWidth-100}px`}} onClick={()=>handleDownloadModel()} disabled={props.disable || props.meshes.length === 0}>
           Download Model
         </Button>
       </Paper>

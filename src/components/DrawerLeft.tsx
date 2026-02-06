@@ -48,6 +48,7 @@ export function DrawerLeft(props: DrawerLeftProps){
           autoRotate={props.autoRotate}
           handleAutoRotateChange={props.handleAutoRotateChange}
           handleResetView={props.handleResetView}
+          disable={props.disable}
         />
         <VolumesPanel 
           volumes={props.volumes}
@@ -58,6 +59,7 @@ export function DrawerLeft(props: DrawerLeftProps){
           handleClearAllVolumes={props.handleClearAllVolumes}
           handleAlert={props.handleAlert} 
           meshes={props.meshes}
+          disable={props.disable}
         /> 
       </Stack>
     </Drawer>

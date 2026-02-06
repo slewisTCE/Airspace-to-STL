@@ -15,4 +15,5 @@ export interface ControlPanelProps {
     autoRotate: boolean
     handleAutoRotateChange: (autoRotate: boolean) => void
     handleResetView: () => void
+    disable: boolean
 }

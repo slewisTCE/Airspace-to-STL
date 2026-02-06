@@ -6,17 +6,18 @@ import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
 import { australianStates, localeStateMap, type AustralianState } from "../assets/stateMap";
+import { StartHere } from "./StartHere";
 
 export function ControlPanel(props: ControlPanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
+  const [startHereVisible, setStartHereVisible] = useState(false);
+  const [startHereDismissed, setStartHereDismissed] = useState(false);
   const [airspaceNameSelect, setAirspaceNameSelect] = useState<string>('')
   const [airspaceState, setAirspaceState] = useState<AustralianState | "">("")
   const [airspaceLocale, setAirspaceLocale] = useState<string>('')
   const [airspaceClassCode, setAirspaceClassCode] = useState<OpenAirClassCode>("A")
-
   const [volumeNames, setVolumeNames] = useState<string[]>([])
   
-
   const airspaces = props.airspaces.airspaces
   
   const airspaceLocales = useMemo(() => {
@@ -96,11 +97,29 @@ export function ControlPanel(props: ControlPanelProps) {
     updateVolumeNames();
   },[props.volumes])
 
+  useEffect(() => {
+    async function manageStartHereVisibility() {
+      if (props.disable || startHereDismissed) {
+        setStartHereVisible(false)
+        return
+      }
+      const timer = window.setTimeout(() => {
+        setStartHereVisible(true)
+      }, 3000)
+      return () => window.clearTimeout(timer)
+    }
+      manageStartHereVisibility();
+  }, [props.disable, startHereDismissed])
+
   const airspaceMenuItems: string[] = []
 
   const handleAccordian =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
+      if (startHereVisible) {
+        setStartHereVisible(false);
+      }
+      setStartHereDismissed(true);
     };
 
   const handleClassSelect = (event: SelectChangeEvent) => {
@@ -219,15 +238,17 @@ export function ControlPanel(props: ControlPanelProps) {
   const classLabel = "airspace-class-label"
   
   return (
-    <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')}>
+    <Accordion expanded={expanded === 'controlsPanel'} onChange={handleAccordian('controlsPanel')} disabled={props.disable}>
       <AccordionSummary
         expandIcon={<ExpandMore />}
         aria-controls="controlsPanel-content"
         id="controlsPanel-header"
+        sx={{ position: 'relative' }}
       >
         <Typography component="span" sx={{ width: '100%', flexShrink: 0 }}>
           Controls
         </Typography>
+        <StartHere visible={startHereVisible} />
         <Divider/>
       </AccordionSummary>
       <AccordionDetails sx={{py:3}}>
@@ -248,6 +269,7 @@ export function ControlPanel(props: ControlPanelProps) {
               valueLabelDisplay="auto"
               aria-label="Z axis scale"
               marks={[{value:1, label:'1x'}, {value:12, label:'12x'}, {value:25, label:'25x'}, {value:36, label:'36x'}, {value:50, label:'50x'}]}
+              disabled={props.disable}
             />
           </Box>
           <Box>

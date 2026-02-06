@@ -18,6 +18,7 @@ import { Distance } from './openAir/distance'
 import type { AlertSeverity } from './types/alertTypes'
 import { useMeshesFromVolumes } from './hooks/geometry'
 import { type VariantType, useSnackbar } from 'notistack'
+import { DisclaimerDialogue } from './components/Disclaimer'
 
 export function App() {
   const [loading, setLoading] = useState(true)
@@ -31,6 +32,9 @@ export function App() {
   const [autoRotate, setAutoRotate] = useState(false)
   const [focusRequest, setFocusRequest] = useState(0)
   const [envelope, setEnvelope] = useState<Envelope>({ceiling: 0, floor: 0})
+  const [openDisclaimer, setOpenDisclaimer] = useState(true)
+  const [disclaimerAgree, setDisclaimerAgree] = useState(false)
+  
   
   const storageKey = 'dah-volume-modeller-theme-preference'
   const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 64}, "red")
@@ -209,6 +213,11 @@ export function App() {
     setFocusRequest((current) => current + 1)
   }
 
+  function handleDisclaimerAgree(){
+    setDisclaimerAgree(true)
+    setOpenDisclaimer(false)
+  }
+
   if (loading){
     return (<Loading/>)
   } 
@@ -225,7 +234,8 @@ export function App() {
       <Box sx={{ flexGrow: 1 }}>
         <CssBaseline />
         <TopBar handleRightDrawerOpen={handleRightDrawerOpen} rightDrawerOpen={rightDrawerOpen} setDarkModeActiveAction={setDarkModeActive} darkModeActive={darkModeActive}/>
-        {allAirspacesData ? 
+        <DisclaimerDialogue open={openDisclaimer} handleAgree={handleDisclaimerAgree} handleDisagree={()=>setOpenDisclaimer(false)} />
+        {allAirspacesData? 
         <>
           <DrawerLeft 
             airspaces={allAirspacesData} 
@@ -246,6 +256,7 @@ export function App() {
             handleAutoRotateChange={handleAutoRotateChange}
             handleResetView={handleResetView}
             handleAlert={handleAlert}
+            disable={!disclaimerAgree}
           />
           <CentralDisplay 
             loading={loading} 
@@ -263,6 +274,7 @@ export function App() {
             volumes={volumes} 
             handleRightDrawerOpen={handleRightDrawerOpen} 
             open={rightDrawerOpen}
+            disable={!disclaimerAgree}
           />       
         </>
         : <></>}

@@ -12,4 +12,5 @@ export interface VolumePanelProps {
     handleClearAllVolumes: () => void
     handleAlert: (message: string, severity: AlertSeverity) => void
     meshes: Mesh[]
+    disable: boolean
 }
