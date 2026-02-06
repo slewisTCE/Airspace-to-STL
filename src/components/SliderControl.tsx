@@ -63,6 +63,11 @@ export function SliderControl(props:
                 props.ceilingNotam ?
                 <Tooltip title={`Adjusted ceiling to be visible as original values are: F:${props.floorRawValue}, C:${props.ceilingRawValue}. Please check value.`}>
                   <InputAdornment position="start">
+                    <CloudDownloadIcon color="error"/>
+                  </InputAdornment>
+                </Tooltip> : props.envelope.ceiling != props.initialEnvelope.ceiling ? 
+                <Tooltip title={`Ceiling has been changed from original value`}>
+                  <InputAdornment position="start">
                     <CloudDownloadIcon color="warning"/>
                   </InputAdornment>
                 </Tooltip> :
@@ -91,9 +96,14 @@ export function SliderControl(props:
                   props.floorNotam ?
                   <Tooltip title={`Adjusted floor to be visible as original values are: F:${props.floorRawValue}, C:${props.ceilingRawValue}. Please check value.`}>
                     <InputAdornment position="start">
-                      <CloudUploadIcon color="warning"/>
+                      <CloudUploadIcon color="error"/>
                     </InputAdornment>
-                  </Tooltip> :
+                  </Tooltip> : props.envelope.floor != props.initialEnvelope.floor ? 
+                <Tooltip title={`Floor has been changed from original value`}>
+                  <InputAdornment position="start">
+                    <CloudUploadIcon color="warning"/>
+                  </InputAdornment>
+                </Tooltip> :
                   <InputAdornment position="start">
                     <CloudUploadIcon />
                   </InputAdornment>
