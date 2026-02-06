@@ -1,6 +1,5 @@
 import { ExpandMore } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Stack, Typography } from "@mui/material";
-import { useState} from "react";
 import { SliderControl } from "./SliderControl";
 import type { Envelope } from "../openAir/openAirTypes";
 
@@ -10,20 +9,19 @@ export function VolumeCeilingFloorPanel(props:
     envelope: Envelope, 
     initialEnvelope: Envelope, 
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
+    expanded: boolean,
+    handleExpandedChange: (expanded: boolean) => void,
     floorNotam: boolean,
     ceilingNotam: boolean,
     floorRawValue: string,
     ceilingRawValue: string
    }
   ){
-  const [expanded, setExpanded] = useState<string | false>(false);
-  
-  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    }
-
     return (
-      <Accordion expanded={expanded === props.volumeName} onChange={handleChange(props.volumeName)}>
+      <Accordion
+        expanded={props.expanded}
+        onChange={(_event, isExpanded) => props.handleExpandedChange(isExpanded)}
+      >
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls={`${props.volumeName}-content`}

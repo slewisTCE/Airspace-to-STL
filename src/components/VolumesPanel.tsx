@@ -1,4 +1,4 @@
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
 import { Accordion, AccordionDetails, AccordionSummary, Badge, Button, Stack, Typography, Paper, Tooltip } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
@@ -17,10 +17,49 @@ import { drawerWidth } from "../lib/settings";
 
 export function VolumesPanel(props: VolumePanelProps) {
   const [expanded, setExpanded] = useState<string | false>(false);
+  const [expandedVolumes, setExpandedVolumes] = useState<Set<string>>(new Set());
+  const volumeRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const selectedVolumeName = useMemo(() => {
+    const selectedVolume = props.volumes.find((volume) => volume.selected)
+    return selectedVolume?.airspace.name
+  }, [props.volumes])
 
   const handleAccordianChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
   }
+
+  useEffect(() => {
+    async function scrollToSelectedVolume() {
+      if (!selectedVolumeName) return
+      setExpandedVolumes(new Set([selectedVolumeName]))
+      if (expanded !== 'panel1') {
+        setExpanded('panel1')
+        return
+      }
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const target = volumeRefs.current[selectedVolumeName]
+          if (!target) return
+          const drawer = target.closest('.MuiDrawer-paper') as HTMLElement | null
+          if (drawer) {
+            let offsetTop = 0
+            let node: HTMLElement | null = target
+            while (node && node !== drawer) {
+              offsetTop += node.offsetTop
+              node = node.offsetParent as HTMLElement | null
+            }
+            const targetCenter = offsetTop + target.offsetHeight / 2
+            const targetScrollTop = Math.max(0, targetCenter - drawer.clientHeight / 2)
+            drawer.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
+          } else {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 500)
+      })
+    }
+  scrollToSelectedVolume()
+  }, [selectedVolumeName, expanded])
 
   async function handleDownloadModel(){
     const exporter = new STLExporter();
@@ -163,16 +202,35 @@ export function VolumesPanel(props: VolumePanelProps) {
             <Stack spacing={1} direction={"column"} >
               {props.volumes.map((volume, index)=>{
                 return (
-                  <VolumePanelStack 
-                    key={`volumepanelstack${index}`} 
-                    volume={volume} 
-                    index={index} 
-                    volumes={props.volumes} 
-                    handleRemoveVolume={props.handleRemoveVolume}
-                    envelope={props.envelope}
-                    handleEnvelopeChange={props.handleEnvelopeChange}
-                    handleAlert={props.handleAlert} 
-                  />)
+                  <div
+                    key={`volumepanelwrap${index}`}
+                    ref={(node) => {
+                      volumeRefs.current[volume.airspace.name] = node
+                    }}
+                  >
+                    <VolumePanelStack 
+                      key={`volumepanelstack${index}`} 
+                      volume={volume} 
+                      index={index} 
+                      volumes={props.volumes} 
+                      handleRemoveVolume={props.handleRemoveVolume}
+                      envelope={props.envelope}
+                      handleEnvelopeChange={props.handleEnvelopeChange}
+                      handleAlert={props.handleAlert} 
+                      expanded={expandedVolumes.has(volume.airspace.name)}
+                      handleExpandedChange={(nextExpanded) => {
+                        setExpandedVolumes((current) => {
+                          const next = new Set(current)
+                          if (nextExpanded) {
+                            next.add(volume.airspace.name)
+                          } else {
+                            next.delete(volume.airspace.name)
+                          }
+                          return next
+                        })
+                      }}
+                    />
+                  </div>)
               })}
             </Stack>
             </Paper>
@@ -194,6 +252,8 @@ export function VolumePanelStack(
     index: number, 
     volumes: Volume[], 
     envelope?: Envelope,
+    expanded: boolean,
+    handleExpandedChange: (expanded: boolean) => void,
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void, 
     handleRemoveVolume: (name: string) => () => void,
     handleAlert: (message: string, severity: AlertSeverity) => void
@@ -261,6 +321,8 @@ export function VolumePanelStack(
             ceilingNotam={props.volume.airspace.ceiling?.notam ?? false}
             floorRawValue={props.volume.airspace.floor.raw}
             ceilingRawValue={props.volume.airspace.ceiling.raw}
+            expanded={props.expanded}
+            handleExpandedChange={props.handleExpandedChange}
           />
       </>
     )

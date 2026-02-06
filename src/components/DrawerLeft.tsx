@@ -15,6 +15,9 @@ export function DrawerLeft(props: DrawerLeftProps){
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
+          height: '100%',
+          overflowY: 'auto',
+          scrollBehavior: 'smooth'
         },
       }}
       variant="permanent"
