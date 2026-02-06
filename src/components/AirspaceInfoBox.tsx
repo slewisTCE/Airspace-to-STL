@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import type { Volume } from "../openAir";
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
@@ -10,6 +10,15 @@ export function AirSpaceInfoBox(props: {volumes: Volume[]}) {
     (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
+
+  useEffect(() => {
+    async function updateExpanded() {
+      if (props.volumes.length > 0) {
+        setExpanded('panel1')
+      }
+    }
+    updateExpanded();
+  }, [props.volumes])
 
   return (
       <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
