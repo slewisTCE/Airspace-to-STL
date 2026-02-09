@@ -1,76 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-	<head>
-		<title>DAH Volume Modeller Tool</title>
-    
-    <link rel="icon" type="image/x-icon" href="resources/favicon.png"/>
-
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="resources/main.css">
-        <!-- <script async src="https://unpkg.com/es-module-shims@2.6.2/dist/es-module-shims.js"></script> -->
-        <!-- <script async src="./resources/unpkg/es-module-shims.js"></script> -->
-
-              <!--
-              "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
-              "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/",
-
-              "proj4": "https://cdn.jsdelivr.net/npm/proj4@2.20.2/+esm",
-              "mgrs": "https://cdn.jsdelivr.net/npm/mgrs@1.0.0/+esm",
-              "wkt-parser": "https://cdn.jsdelivr.net/npm/wkt-parser@1.5.2/+esm"
-              -->
-
-        <script type="importmap">
-          {
-            "imports": {
-              "three": "./resources/unpkg/three.module.js",
-              "three/addons/": "./resources/unpkg/addons/",
-
-              "proj4": "./resources/npm/proj4js/proj4.esm.js",
-              "/npm/mgrs@1.0.0/+esm": "./resources/npm/mgrs/mgrs.esm.js",
-              "/npm/wkt-parser@1.5.2/+esm": "./resources/npm/wkt-parser/wkt-parser.esm.js"
-            }
-          }
-        </script>
-
-	</head>
-	<body>		
-    <!-- <div id="airspace-info-box"><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">...</pre></div> -->
-    <div id="airspace-info-box"><div id="airspace-info-header">For information on the used syntax, visit: 
-<a href="https://xcaustralia.org/doc/openair/winpilot_Airspace-OpenAir-Format_2018.htm" target="_blank">OpenAir Format Reference
-</a></div><button id="toggle-info-box">HIDE AIRSPACE DATA</button><pre id="airspace-info-content">Select an airspace...</pre></div>
-
-<div id="svg-preview-box">
-  <svg id="svg-preview" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-    <g id="LWPOLYLINE">
-      <path id="svg-preview-path" d="" fill="solid" stroke="#6abfff" stroke-width="10"/>
-    </g>
-  </svg>
-</div>
-
-<div id="disclaimer">
-  Data source provided by 
-  <a href="https://xcaustralia.org/download/" target="_blank">XcAustralia</a> using Airspace data valid from 
-  28th November 2024 
-  <a href="https://xcaustralia.org/doc/dah/DAH_28NOV2024.pdf" target="_blank">Airservices DAH</a> &amp; 
-  <a href="https://xcaustralia.org/doc/ersa/ersa_rds_index_28NOV2024.pdf" target="_blank">Airservices ERSA</a>
-</div>
-<div id="licences">
-  Technologies utilised include (click for Licences) :
-  <a href="resources/unpkg/three.LICENSE.md" target="_blank">three.js</a>,
-  <a href="resources/npm/proj4js/proj4js.LICENSE.md" target="_blank">proj4js</a>,
-  <a href="resources/npm/mgrs/mgrs.license.md" target="_blank">mgrs</a>, and
-  <a href="resources/npm/wkt-parser/wkt-parser.LICENSE.md" target="_blank">wkt-parser</a>
-</div>
-
-<div id="github-link">
-  <a href="https://github.com/slewisTCE/Airspace-to-STL" target="_blank">
-    <svg height="32" aria-hidden="true" viewBox="0 0 24 24" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github v-align-middle">
-      <path d="M12 1C5.923 1 1 5.923 1 12c0 4.867 3.149 8.979 7.521 10.436.55.096.756-.233.756-.522 0-.262-.013-1.128-.013-2.049-2.764.509-3.479-.674-3.699-1.292-.124-.317-.66-1.293-1.127-1.554-.385-.207-.936-.715-.014-.729.866-.014 1.485.797 1.691 1.128.99 1.663 2.571 1.196 3.204.907.096-.715.385-1.196.701-1.471-2.448-.275-5.005-1.224-5.005-5.432 0-1.196.426-2.186 1.128-2.956-.111-.275-.496-1.402.11-2.915 0 0 .921-.288 3.024 1.128a10.193 10.193 0 0 1 2.75-.371c.936 0 1.871.123 2.75.371 2.104-1.43 3.025-1.128 3.025-1.128.605 1.513.221 2.64.111 2.915.701.77 1.127 1.747 1.127 2.956 0 4.222-2.571 5.157-5.019 5.432.399.344.743 1.004.743 2.035 0 1.471-.014 2.654-.014 3.025 0 .289.206.632.756.522C19.851 20.979 23 16.854 23 12c0-6.077-4.922-11-11-11Z"></path>
-    </svg>
-  </a>
-</div>
-    <script type="module" src="resources/main.js"></script>
-    <!-- <script type="module" src="/proxy/3000/resources/main.js"></script> -->
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>airspace2stl</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
