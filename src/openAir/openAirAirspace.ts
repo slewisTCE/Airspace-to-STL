@@ -180,8 +180,13 @@ export class OpenAirAirspace {
 
   private parseAirspaceClass(line: string): OpenAirAirspaceClass{
     const code = line.slice(3).trim() as OpenAirClassCode
-    const name = airspaceClassMap[code].name as OpenAirClassName
-    return { name: name, code: code }
+    if (code in airspaceClassMap) {
+      const name = airspaceClassMap[code].name as OpenAirClassName
+      return { name: name, code: code }
+    } else {
+      console.error(`Error parsing airspace class for code "${code}": Not found in airspace class map.`)
+      return { name: "UNKNOWN" as OpenAirClassName, code: "UNKNOWN" as OpenAirClassCode }
+    }
   }
 }
  
