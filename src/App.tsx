@@ -1,6 +1,5 @@
 import './styles/App.css'
 import { useEffect, useState } from 'react'
-import airspaceDataRaw from './assets/Australian Airspace 28 November 2024_v1.txt'
 import { Box } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider, type Theme } from '@mui/material/styles'
@@ -39,6 +38,9 @@ export function App() {
   const storageKey = 'dah-volume-modeller-theme-preference'
   const meshes = useMeshesFromVolumes(volumes, zScale, { x: 0, y: 0 }, {depth: 1, curveSegments: 64}, "red")
   const { enqueueSnackbar } = useSnackbar();
+
+  const airspaceDataRaw = import.meta.env.VITE_OPENAIR_SOURCE_FILE
+
   
   useEffect(() => {
     siteLog('fetch: start')
