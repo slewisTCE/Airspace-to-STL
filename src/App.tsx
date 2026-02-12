@@ -58,7 +58,7 @@ export function App() {
         console.error('Error fetching', reason)
       })
       .finally(()=>{ siteLog('fetch: finished'); setLoading(false) })
-  }, [])
+  }, [airspaceDataRaw])
 
   const [theme, setTheme] = useState<Theme>(lightTheme)
   const [darkModeActive, setDarkModeActive] = useState<boolean>(true)
