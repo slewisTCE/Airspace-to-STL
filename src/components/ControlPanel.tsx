@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from "react";
 import type { ControlPanelProps } from "../types/controlPanelTypes";
 import type { OpenAirClassCode } from "../openAir/openAirTypes";
 import { airspaceFromName } from "../openAir/utils";
-import { australianStates, localeStateMap, type AustralianState } from "../assets/stateMap";
+import type { AustralianState } from "../assets/stateMap";
 import { StartHere } from "./StartHere";
 
 export function ControlPanel(props: ControlPanelProps) {
@@ -25,21 +25,11 @@ export function ControlPanel(props: ControlPanelProps) {
   }, [airspaces])
 
   const availableStates = useMemo(() => {
-    const localeToState = new Map<string, AustralianState>(
-      localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
-    )
-
-    const knownStates = new Set<AustralianState>(australianStates)
     const statesWithAddable = new Set<AustralianState>()
 
     airspaces.forEach((thisAirspace) => {
       if (volumeNames.includes(thisAirspace.name)) return
-      const state = localeToState.get(thisAirspace.locale)
-      if (state && knownStates.has(state)) {
-        statesWithAddable.add(state)
-      } else if (!state || !knownStates.has(state)) {
-        statesWithAddable.add("UNKNOWN")
-      }
+      statesWithAddable.add(thisAirspace.state)
     })
 
     return Array.from(statesWithAddable).sort() as (AustralianState | "")[]
@@ -47,33 +37,13 @@ export function ControlPanel(props: ControlPanelProps) {
 
   const localesForState = useMemo(() => {
     if (!airspaceState) return []
-    const localeToState = new Map<string, AustralianState>(
-      localeStateMap.map((entry) => [entry.locale, entry.state as AustralianState])
-    )
-    const knownStates = new Set<AustralianState>(australianStates)
-    if (airspaceState === "UNKNOWN") {
-      return airspaceLocales.filter((locale) => {
-        const state = localeToState.get(locale)
-        const isUnknownState = !state || !knownStates.has(state)
-        if (!isUnknownState) return false
-        return airspaces.some((thisAirspace) =>
-          thisAirspace.locale === locale &&
-          !volumeNames.includes(thisAirspace.name)
-        )
-      })
-    }
-    const localesInState = new Set(
-      localeStateMap
-        .filter((entry) => entry.state === airspaceState)
-        .map((entry) => entry.locale)
-    )
-    return airspaceLocales.filter((locale) => {
-      if (!localesInState.has(locale)) return false
-      return airspaces.some((thisAirspace) =>
+    return airspaceLocales.filter((locale) =>
+      airspaces.some((thisAirspace) =>
         thisAirspace.locale === locale &&
+        thisAirspace.state === airspaceState &&
         !volumeNames.includes(thisAirspace.name)
       )
-    })
+    )
   }, [airspaceState, airspaceLocales, airspaces, volumeNames])
 
   const airspaceClassCodes = useMemo(() => {
