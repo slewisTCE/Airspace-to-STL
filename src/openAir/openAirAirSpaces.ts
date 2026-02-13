@@ -57,8 +57,9 @@ export class OpenAirAirspaces {
   scalingFactor: number = 1
 
   constructor(airspacesText: string){
-    const airspaceDataSplit = this.splitRawAirspaceData(airspacesText)
-    this.airspaces = airspaceDataSplit.splice(1).map((airspaceData)=>{
+    let airspaceDataSplit = this.splitRawAirspaceData(airspacesText)
+    airspaceDataSplit = this.removeHeader(airspaceDataSplit)
+    this.airspaces = airspaceDataSplit.map((airspaceData)=>{
       const airspace = new OpenAirAirspace(airspaceData)
       this.maxProjection = Math.max(this.maxProjection, airspace.maxProjection)
       this.minProjection = Math.min(this.minProjection, airspace.minProjection)
@@ -118,9 +119,15 @@ export class OpenAirAirspaces {
     return airspaceData.split(/\n\s*\n/)
   }
 
-
   public airspaceFromName(name: string): OpenAirAirspace | undefined {
     return this.airspaces.find((airspace: OpenAirAirspace) => airspace.name === name)
   }
 
+  private removeHeader(airspaceDataSplit: string[]): string[] {
+    if (airspaceDataSplit.length > 0 && airspaceDataSplit[0].startsWith('AC')) {
+      return airspaceDataSplit
+    }
+    airspaceDataSplit.splice(0, 1)
+    return airspaceDataSplit
+  }
 }

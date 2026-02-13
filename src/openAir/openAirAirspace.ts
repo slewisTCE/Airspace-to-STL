@@ -8,12 +8,14 @@ import { Arc } from "./arc";
 import { Circle } from "./circle";
 import {Shape as ThreeShape, type BufferGeometry } from "three";
 import { Distance } from "./distance";
+import { australianStates, localeStateMap, type AustralianState } from "../assets/stateMap";
 
 
 export class OpenAirAirspace {
   name: string
   airspaceClass: OpenAirAirspaceClass
   locale: string = ""
+  state: AustralianState = "UNKNOWN"
   ceiling: Altitude = {
     maxAltitude: new Distance(60000, "feet"),
     raw: "",
@@ -53,6 +55,7 @@ export class OpenAirAirspace {
     } as Altitude
     this.airspaceClass = {code: "UNKNOWN", name: "UNKNOWN"}
     this.name = 'UNKNOWN'
+    this.state = "UNKNOWN"
     this.maxProjection = 0
     this.minProjection = 0
     this.svgScaled = ""
@@ -70,7 +73,7 @@ export class OpenAirAirspace {
       const command = line.split(' ')[0]
       // Process headers
       if(command == commandMap.airspaceClass){this.airspaceClass = this.parseAirspaceClass(line)} else
-      if(command == commandMap.airspaceName){[this.name, this.locale] = this.parseAirspaceName(line)} else 
+      if(command == commandMap.airspaceName){[this.name, this.locale, this.state] = this.parseAirspaceName(line)} else 
       if(command == commandMap.airspaceCeiling){this.ceiling = new Altitude(line)} else
       if(command == commandMap.airspaceFloor){this.floor = new Altitude(line)} else
       // Process variables
@@ -163,25 +166,52 @@ export class OpenAirAirspace {
     }
   }
 
-  private parseAirspaceName(line: string): [string, string]  {
+  private parseAirspaceName(line: string): [string, string, AustralianState]  {
     const name = line.slice(3).trim()
     let locale = ''
     name.split(' ').forEach((word)=>{
-      if (!['CTA','FIR', 'EFREQUENCY', 'FREQUENCY', 'MIL', 'CERT', 'UNCR', 'CONTROL', 'ZONE']
+      if (!['CTA','FIR', 'EFREQUENCY', 'FREQUENCY', 'MIL', 'CERT', 'UNCR', 'CONTROL', 'ZONE', 'HRS-SEE', 'ERSA', 'YPPF', 'JOINT']
         .includes(word.toUpperCase()) &&  
-        !/[^a-zA-Z-]/.test(word) && 
+        !/[^a-zA-Z-/]/.test(word) && 
         word.length > 1
       ){ 
         locale += ' ' + word
       }
     })
-    return [name, locale.toUpperCase().trim()]
+    const [localeStateInformed, state] = this.parseAirspaceState(locale.toUpperCase().trim())
+    return [name, localeStateInformed, state]
+  }
+
+  private parseAirspaceState(locale: string): [string, AustralianState] {
+    const stateEntry = localeStateMap.find((entry: {state: string, locale: string}) => entry.locale === locale)
+    const lastWord = locale.split(' ').at(-1)
+    const stateSuffix = lastWord && australianStates.includes(lastWord as AustralianState)
+    const firstWords = locale.substring(0, locale.length - (lastWord?.length || 0)).trim()
+    if (stateEntry && stateSuffix){
+      if (stateEntry.state !== lastWord){
+        console.warn(`State parsing conflict for locale "${locale}": State found in map ("${stateEntry.state}") does not match state suffix ("${lastWord}"). Defaulting to state suffix.`)
+        return [firstWords, lastWord as AustralianState]
+      }
+      return [firstWords, stateEntry.state as AustralianState]
+    } else if (stateEntry && !stateSuffix){
+      return [locale.toUpperCase().trim(), stateEntry.state as AustralianState]
+    } else if (!stateEntry && stateSuffix){
+      return [firstWords, lastWord as AustralianState]
+    } else {
+      console.warn(`Could not parse state for locale "${locale}". Locale not found in state map and no state suffix detected.`)
+      return [locale.toUpperCase().trim(), "UNKNOWN" as AustralianState]
+    }
   }
 
   private parseAirspaceClass(line: string): OpenAirAirspaceClass{
     const code = line.slice(3).trim() as OpenAirClassCode
-    const name = airspaceClassMap[code].name as OpenAirClassName
-    return { name: name, code: code }
+    if (code in airspaceClassMap) {
+      const name = airspaceClassMap[code].name as OpenAirClassName
+      return { name: name, code: code }
+    } else {
+      console.warn(`Error parsing airspace class for code "${code}": Not found in airspace class map.`)
+      return { name: "UNKNOWN" as OpenAirClassName, code: "UNKNOWN" as OpenAirClassCode }
+    }
   }
 }
  
