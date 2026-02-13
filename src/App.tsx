@@ -40,7 +40,7 @@ export function App() {
   const { enqueueSnackbar } = useSnackbar();
 
   const airspaceDataRaw = import.meta.env.VITE_OPENAIR_SOURCE_FILE
-
+  console.log('Using airspace data source:', airspaceDataRaw)
   
   useEffect(() => {
     siteLog('fetch: start')
