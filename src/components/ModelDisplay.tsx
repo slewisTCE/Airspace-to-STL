@@ -1,5 +1,5 @@
 import { Paper } from "@mui/material";
-import { OrbitControls, Outlines } from "@react-three/drei";
+import { OrbitControls, Outlines, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { airspaceClassMap, Volume } from "../openAir";
 import { useEffect, useRef, useState } from "react";
@@ -146,6 +146,9 @@ export function Scene(props:
       style={{width: props.size.width, height: props.size.height}}
       onPointerMissed={() => props.handleClearSelection()}
     >
+      <GizmoHelper alignment="top-right" margin={[80, 80]}>
+        <GizmoViewport axisHeadScale={1} labelColor="white" />
+      </GizmoHelper>
       <gridHelper position={[gridCenter.x, gridCenter.y, 0]} rotation-x={Math.PI / 2} args={[gridSize, gridDivisions, 0x888888, 0x333333]} />
       <ambientLight intensity={1} color={0xffffff} />
       <hemisphereLight intensity={0.6} color={0xffffff} groundColor={0x444444} />
