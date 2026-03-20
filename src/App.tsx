@@ -112,7 +112,12 @@ export function App() {
         volume.airspace.ceiling.value = new Distance(newEnvelope.ceiling, "feet")
         volume.airspace.floor.value = new Distance(newEnvelope.floor, "feet")
 
-        return { ...volume, airspace: volume.airspace }
+        const updated = new Volume(volume.airspace)
+        updated.selected = volume.selected
+        updated.visible = volume.visible
+        updated.originalEnvelope = volume.originalEnvelope
+
+        return updated
       })
     )
   }
@@ -127,6 +132,23 @@ export function App() {
       console.error('Error removing volume:', error)
       handleAlert(`Error removing "${name}" volume: ${String(error)}`, 'error')
     }
+  }
+
+  function handleToggleVolumeVisibility(name: string) {
+    setVolumes((current) =>
+      current.map((volume) => {
+        if (volume.airspace.name !== name) {
+          return volume
+        }
+
+        const updated = new Volume(volume.airspace)
+        updated.selected = volume.selected
+        updated.visible = volume.visible === false ? true : false
+        updated.originalEnvelope = volume.originalEnvelope
+
+        return updated
+      })
+    )
   }
 
   function handleClearAllVolumes(){
@@ -158,38 +180,34 @@ export function App() {
     return volume
   }
 
-  function handleAddVolume(volume: Volume){
+  function handleAddVolume(volume: Volume) {
     const checkedVolume = checkVolumeAltitude(volume)
+    checkedVolume.visible = true
     setVolumes((current) => current.concat(checkedVolume))
     handleAlert(`Added "${checkedVolume.airspace.name}" volume`, 'success')
   }
 
-  function handleClickSelect(name: string, newSelected: boolean){
-    const newVolumes = volumes.map((_volume)=>{
-      if(_volume.airspace.name === name){
-        return {
-          selected: newSelected,
-          airspace: _volume.airspace,
-          originalEnvelope: _volume.originalEnvelope
-        }
-      }
-
-      return {
-        selected: false,
-        airspace: _volume.airspace,
-        originalEnvelope: _volume.originalEnvelope
-      }
-    })
-    setVolumes(newVolumes)
+  function handleClickSelect(name: string, newSelected: boolean) {
+    setVolumes((current) =>
+      current.map((volume) => {
+        const updated = new Volume(volume.airspace)
+        updated.selected = volume.airspace.name === name ? newSelected : false
+        updated.visible = volume.visible
+        updated.originalEnvelope = volume.originalEnvelope
+        return updated
+      })
+    )
   }
 
-  function handleClearSelection(){
+  function handleClearSelection() {
     setVolumes((current) =>
-      current.map((volume) => ({
-        selected: false,
-        airspace: volume.airspace,
-        originalEnvelope: volume.originalEnvelope
-      }))
+      current.map((volume) => {
+        const updated = new Volume(volume.airspace)
+        updated.selected = false
+        updated.visible = volume.visible
+        updated.originalEnvelope = volume.originalEnvelope
+        return updated
+      })
     )
   }
 
@@ -246,6 +264,7 @@ export function App() {
             handleClearAllVolumes={handleClearAllVolumes}
             handleEnvelopeChange={handleEnvelopeChange} 
             handleRemoveVolume={handleRemoveVolume}
+            handleToggleVolumeVisibility={handleToggleVolumeVisibility}
             handleAddVolume={handleAddVolume}
             airspaceSelect={airspaceSelect} 
             setAirspaceSelect={setAirspaceSelect}

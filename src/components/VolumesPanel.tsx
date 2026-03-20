@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
 import { Accordion, AccordionDetails, AccordionSummary, Badge, Button, Stack, Typography, Paper, Tooltip } from "@mui/material";
-import { ExpandMore } from "@mui/icons-material";
+import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Box, IconButton } from "@mui/material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { Envelope } from "../openAir/openAirTypes";
 import type { Volume } from "../openAir";
@@ -214,6 +215,7 @@ export function VolumesPanel(props: VolumePanelProps) {
                       index={index} 
                       volumes={props.volumes} 
                       handleRemoveVolume={props.handleRemoveVolume}
+                      handleToggleVolumeVisibility={props.handleToggleVolumeVisibility}
                       envelope={props.envelope}
                       handleEnvelopeChange={props.handleEnvelopeChange}
                       handleAlert={props.handleAlert} 
@@ -256,6 +258,7 @@ export function VolumePanelStack(
     handleExpandedChange: (expanded: boolean) => void,
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void, 
     handleRemoveVolume: (name: string) => () => void,
+    handleToggleVolumeVisibility: (name: string) => void,
     handleAlert: (message: string, severity: AlertSeverity) => void
   }){
     const initialFloor = props.volume.airspace.floor?.value?.feet ?? envelopeDefaults.floor
@@ -291,10 +294,17 @@ export function VolumePanelStack(
       props.handleAlert(`Removed "${props.volume.airspace.name}" volume`, 'success')
     }
 
+    function handleToggleVisibility() {
+      const nextVisible = props.volume.visible === false
+      props.handleToggleVolumeVisibility(props.volume.airspace.name)
+      props.handleAlert(
+        `${nextVisible ? 'Showing' : 'Hid'} "${props.volume.airspace.name}" volume`,
+        'success'
+      )
+    }
+
     return(
-      // <Paper elevation={3} sx={{padding: "10px", flexGrow: 1}}>
-      <>
-        {/* <Stack key={`stack${props.index}`} spacing={1} direction={"row"} > */}
+      <Box sx={{ position: "relative" }}>
         <Tooltip title="Remove Volume" placement="top">
           <Badge
             badgeContent={"X"}
@@ -311,7 +321,37 @@ export function VolumePanelStack(
             }}
             onClick={() => handleRemove()}
           />
-          </Tooltip>
+        </Tooltip>
+
+        <Tooltip
+          title={props.volume.visible === false ? "Show Volume" : "Hide Volume"}
+          placement="top"
+        >
+          <IconButton
+            onClick={handleToggleVisibility}
+            sx={{
+              position: "absolute",
+              top: 13,
+              left: 15,
+              zIndex: 2,
+              width: 22,
+              height: 22,
+              padding: 0.5,
+              backgroundColor: "rgba(0,0,0,0.65)",
+              color: "#fff",
+              "&:hover": {
+                backgroundColor: "rgba(0,0,0,0.8)"
+              }
+            }}
+          >
+            {props.volume.visible === false ? (
+              <VisibilityOff sx={{ fontSize: 16 }} />
+            ) : (
+              <Visibility sx={{ fontSize: 16 }} />
+            )}
+          </IconButton>
+        </Tooltip>
+
           <VolumeCeilingFloorPanel 
             volumeName={props.volume.airspace.name} 
             envelope={localEnvelope} 
@@ -324,6 +364,7 @@ export function VolumePanelStack(
             expanded={props.expanded}
             handleExpandedChange={props.handleExpandedChange}
           />
-      </>
+        </Box>
+      // </>
     )
   }

@@ -12,6 +12,7 @@ export type VolumeProjectedCentroid = { x: number, y: number }
 export class Volume {
   airspace: OpenAirAirspace
   selected: boolean = false
+  visible: boolean = true
   originalEnvelope: Envelope
 
   constructor(airspace: OpenAirAirspace){
