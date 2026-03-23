@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import type { VolumePanelProps } from "../types/volumePanelTypes";
-import { Accordion, AccordionDetails, AccordionSummary, Badge, Button, Stack, Typography, Paper, Tooltip } from "@mui/material";
-import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Button, Stack, Typography, Paper, Tooltip } from "@mui/material";
+import { ExpandMore, Visibility, VisibilityOff, Delete } from "@mui/icons-material";
 import { Box, IconButton } from "@mui/material";
 import { VolumeCeilingFloorPanel } from "./VolumeCeilingFloorPanel";
 import type { Envelope } from "../openAir/openAirTypes";
@@ -306,21 +306,26 @@ export function VolumePanelStack(
     return(
       <Box sx={{ position: "relative" }}>
         <Tooltip title="Remove Volume" placement="top">
-          <Badge
-            badgeContent={"X"}
-            // variant="dot"
-            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+          <IconButton
+            onClick={handleRemove}
             sx={{
-              cursor: "pointer",
-              "& .MuiBadge-badge": {
-                backgroundColor: "#b71c1c",
-                color: "#fff",
-                cursor: "pointer",
-                transform: "translate(-50%, 0%)"
+              position: "center",
+              top: 11,
+              left: -5,
+              zIndex: 2,
+              width: 22,
+              height: 22,
+              padding: 0.25,
+              borderRadius: "50%",
+              backgroundColor: "rgba(183, 28, 28, 0.65)",
+              color: "#fff",
+              "&:hover": {
+                backgroundColor: "rgba(143, 21, 21, 0.8)"
               }
             }}
-            onClick={() => handleRemove()}
-          />
+          >
+          <Delete sx={{ fontSize: 16 }} />
+          </IconButton>
         </Tooltip>
 
         <Tooltip
@@ -330,13 +335,14 @@ export function VolumePanelStack(
           <IconButton
             onClick={handleToggleVisibility}
             sx={{
-              position: "absolute",
-              top: 13,
-              left: 15,
+              position: "center",
+              top: 11,
+              left: 0,
               zIndex: 2,
               width: 22,
               height: 22,
-              padding: 0.5,
+              padding: 0.25,
+              borderRadius: "50%",
               backgroundColor: "rgba(0,0,0,0.65)",
               color: "#fff",
               "&:hover": {
@@ -352,19 +358,18 @@ export function VolumePanelStack(
           </IconButton>
         </Tooltip>
 
-          <VolumeCeilingFloorPanel 
-            volumeName={props.volume.airspace.name} 
-            envelope={localEnvelope} 
-            initialEnvelope={initialEnvelope} 
-            handleEnvelopeChange={handleLocalEnvelopeChange} 
-            floorNotam={props.volume.airspace.floor?.notam ?? false} 
-            ceilingNotam={props.volume.airspace.ceiling?.notam ?? false}
-            floorRawValue={props.volume.airspace.floor.raw}
-            ceilingRawValue={props.volume.airspace.ceiling.raw}
-            expanded={props.expanded}
-            handleExpandedChange={props.handleExpandedChange}
-          />
-        </Box>
-      // </>
+        <VolumeCeilingFloorPanel 
+          volumeName={props.volume.airspace.name} 
+          envelope={localEnvelope} 
+          initialEnvelope={initialEnvelope} 
+          handleEnvelopeChange={handleLocalEnvelopeChange} 
+          floorNotam={props.volume.airspace.floor?.notam ?? false} 
+          ceilingNotam={props.volume.airspace.ceiling?.notam ?? false}
+          floorRawValue={props.volume.airspace.floor.raw}
+          ceilingRawValue={props.volume.airspace.ceiling.raw}
+          expanded={props.expanded}
+          handleExpandedChange={props.handleExpandedChange}
+        />
+      </Box>
     )
   }
