@@ -112,12 +112,7 @@ export function App() {
         volume.airspace.ceiling.value = new Distance(newEnvelope.ceiling, "feet")
         volume.airspace.floor.value = new Distance(newEnvelope.floor, "feet")
 
-        const updated = new Volume(volume.airspace)
-        updated.selected = volume.selected
-        updated.visible = volume.visible
-        updated.originalEnvelope = volume.originalEnvelope
-
-        return updated
+        return { ...volume, airspace: volume.airspace }
       })
     )
   }
@@ -141,12 +136,8 @@ export function App() {
           return volume
         }
 
-        const updated = new Volume(volume.airspace)
-        updated.selected = volume.selected
-        updated.visible = volume.visible === false ? true : false
-        updated.originalEnvelope = volume.originalEnvelope
+        return { ...volume, visible: !volume.visible }
 
-        return updated
       })
     )
   }
