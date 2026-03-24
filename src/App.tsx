@@ -178,27 +178,35 @@ export function App() {
     handleAlert(`Added "${checkedVolume.airspace.name}" volume`, 'success')
   }
 
-  function handleClickSelect(name: string, newSelected: boolean) {
-    setVolumes((current) =>
-      current.map((volume) => {
-        const updated = new Volume(volume.airspace)
-        updated.selected = volume.airspace.name === name ? newSelected : false
-        updated.visible = volume.visible
-        updated.originalEnvelope = volume.originalEnvelope
-        return updated
-      })
-    )
+  function handleClickSelect(name: string, newSelected: boolean){
+    const newVolumes = volumes.map((_volume)=>{
+      if(_volume.airspace.name === name){
+        return {
+          selected: newSelected,
+          visible: _volume.visible,
+          airspace: _volume.airspace,
+          originalEnvelope: _volume.originalEnvelope
+        }
+      }
+
+      return {
+        selected: false,
+        visible: _volume.visible,
+        airspace: _volume.airspace,
+        originalEnvelope: _volume.originalEnvelope
+      }
+    })
+    setVolumes(newVolumes)
   }
 
-  function handleClearSelection() {
+  function handleClearSelection(){
     setVolumes((current) =>
-      current.map((volume) => {
-        const updated = new Volume(volume.airspace)
-        updated.selected = false
-        updated.visible = volume.visible
-        updated.originalEnvelope = volume.originalEnvelope
-        return updated
-      })
+      current.map((volume) => ({
+        selected: false,
+        visible: volume.visible,
+        airspace: volume.airspace,
+        originalEnvelope: volume.originalEnvelope
+      }))
     )
   }
 
