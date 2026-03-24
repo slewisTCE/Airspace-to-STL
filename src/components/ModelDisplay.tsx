@@ -173,7 +173,9 @@ export function Scene(props:
       />
       <group>
         {
-          props.volumes.map((volume, index)=>{
+          props.volumes
+            .filter((volume) => volume.visible !== false)
+            .map((volume, index) => {
 
             const location = Volume.scaleZ(volume, props.zScale, centroidOffset)
             if (volume.airspace.svg){
@@ -192,6 +194,7 @@ export function Scene(props:
                 />
               )
             }
+            return null
           })
         }
       </group>

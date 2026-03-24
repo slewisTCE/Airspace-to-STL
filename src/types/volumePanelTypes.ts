@@ -9,6 +9,7 @@ export interface VolumePanelProps {
     zScale: number,
     handleEnvelopeChange: (newEnvelope: Envelope, volumeName: string) => void
     handleRemoveVolume: (name: string) => () => void
+    handleToggleVolumeVisibility: (name: string) => void
     handleClearAllVolumes: () => void
     handleAlert: (message: string, severity: AlertSeverity) => void
     meshes: Mesh[]

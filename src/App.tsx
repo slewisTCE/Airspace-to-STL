@@ -129,6 +129,19 @@ export function App() {
     }
   }
 
+  function handleToggleVolumeVisibility(name: string) {
+    setVolumes((current) =>
+      current.map((volume) => {
+        if (volume.airspace.name !== name) {
+          return volume
+        }
+
+        return { ...volume, visible: !volume.visible }
+
+      })
+    )
+  }
+
   function handleClearAllVolumes(){
     setVolumes([])
   }
@@ -158,8 +171,9 @@ export function App() {
     return volume
   }
 
-  function handleAddVolume(volume: Volume){
+  function handleAddVolume(volume: Volume) {
     const checkedVolume = checkVolumeAltitude(volume)
+    checkedVolume.visible = true
     setVolumes((current) => current.concat(checkedVolume))
     handleAlert(`Added "${checkedVolume.airspace.name}" volume`, 'success')
   }
@@ -169,6 +183,7 @@ export function App() {
       if(_volume.airspace.name === name){
         return {
           selected: newSelected,
+          visible: _volume.visible,
           airspace: _volume.airspace,
           originalEnvelope: _volume.originalEnvelope
         }
@@ -176,6 +191,7 @@ export function App() {
 
       return {
         selected: false,
+        visible: _volume.visible,
         airspace: _volume.airspace,
         originalEnvelope: _volume.originalEnvelope
       }
@@ -187,6 +203,7 @@ export function App() {
     setVolumes((current) =>
       current.map((volume) => ({
         selected: false,
+        visible: volume.visible,
         airspace: volume.airspace,
         originalEnvelope: volume.originalEnvelope
       }))
@@ -246,6 +263,7 @@ export function App() {
             handleClearAllVolumes={handleClearAllVolumes}
             handleEnvelopeChange={handleEnvelopeChange} 
             handleRemoveVolume={handleRemoveVolume}
+            handleToggleVolumeVisibility={handleToggleVolumeVisibility}
             handleAddVolume={handleAddVolume}
             airspaceSelect={airspaceSelect} 
             setAirspaceSelect={setAirspaceSelect}

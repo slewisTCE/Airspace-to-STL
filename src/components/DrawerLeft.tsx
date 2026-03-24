@@ -56,6 +56,7 @@ export function DrawerLeft(props: DrawerLeftProps){
           zScale={props.zScale}
           handleEnvelopeChange={props.handleEnvelopeChange} 
           handleRemoveVolume={props.handleRemoveVolume} 
+          handleToggleVolumeVisibility={props.handleToggleVolumeVisibility}
           handleClearAllVolumes={props.handleClearAllVolumes}
           handleAlert={props.handleAlert} 
           meshes={props.meshes}
