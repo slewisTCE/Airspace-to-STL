@@ -39,6 +39,13 @@ Their dataset is *not authoritative* and must not be used for navigation.
 For official information, refer to:  
 https://www.airservicesaustralia.com/aip/aip.asp
 
+### Update Data Source
+
+To update the data source used by the utility:
+- Download the 'All Classes' data text file from the XcAustralia download page.
+  - [XcAustralia - Resource Download](https://xcaustralia.org/download/)
+- Place the 'All Classes' data text file in the `/public/airspaces/` directory
+- Update the `.env` variable with the new data source filename.
 
 ### Technical Specifications
 
