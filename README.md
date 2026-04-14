@@ -56,9 +56,9 @@ These instructions will get your project up and running on your local machine fo
 
 ### **Architecture**
 <div style="text-align: center;">
-  <img src="https://vite.dev/logo.svg" alt="Vite" width="200">
-  <img src="https://react.dev/images/brand/logo_dark.svg" alt="React" width="200">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/1024px-Typescript_logo_2020.svg.png" alt="Typescript" width="200">
+  <img src="https://vite.dev/logo.svg" alt="Vite" height="100">
+  <img src="https://react.dev/images/brand/logo_dark.svg" alt="React" height="100">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f5/Typescript.svg" alt="Typescript" height="100">
 </div>
 
 
