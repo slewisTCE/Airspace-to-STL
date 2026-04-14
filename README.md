@@ -177,6 +177,4 @@ For intended improvements, please see this repositries issue log.
 
 ### License
 
-This project utilises an MIT licence
-
-https://github.com/slewisTCE/Airspace-to-STL/blob/main/LICENCE
+This project is licensed under the terms of the MIT license.
