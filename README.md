@@ -6,7 +6,7 @@ This tool visualises Australian airspace boundaries defined in the OpenAir speci
 ## Key Features
 ### Airspace Loading & Parsing
 
-- **OpenAir data ingestion** – The application reads Australian airspace from an OpenAir‑style text file. You can specify the file to load via the `VITE_OPENAIR_SOURCE_FILE` variable in `.env`, allowing datasets to be swapped without recompiling. The parser understands AL (floor) and AH (ceiling) records across feet, AGL and flight levels, and uses Proj4 to project latitude/longitude pairs into a local XY coordinate system.
+- **OpenAir data ingestion** – The application reads Australian airspace from an OpenAir‑style text file. You can specify the file to load via the `VITE_OPENAIR_SOURCE_FILE` variable in `.env`, allowing datasets to be swapped without editing code. The parser understands AL (floor) and AH (ceiling) records across feet, AGL and flight levels, and uses Proj4 to project latitude/longitude pairs into a local XY coordinate system.
 - **Rich domain model** – Each airspace is represented by a set of polygons, arcs and circles defined by OpenAir commands. Classes map codes such as `AC`, `AN`, `AL` and `AH` to colour and metadata using `airspaceClassMap`. A combined centroid is computed to centre the projection, and a `Volume` class stores original floor/ceiling values and computes vertical scaling.
 
 ### 3D Visualisation
@@ -14,15 +14,11 @@ This tool visualises Australian airspace boundaries defined in the OpenAir speci
 - **Multiple volumes** – You can add several airspaces simultaneously; each retains its own floor and ceiling and can be shown or hidden individually. Global normalisation ensures that all added volumes remain correctly positioned relative to each other.
 - **3D controls** – The embedded Three.js canvas supports orbit controls, autorotation, adjustable opacity and vertical scaling. A grid helper and gizmo assist with orientation.
 
-### 2D SVG Output
-- **Clean footprints** – For each airspace, the tool generates a tidy SVG path representing its 2D footprint. A preview panel shows the combined footprint of all added volumes.
-- **Export ready** – SVG output is suitable for documentation, GIS preprocessing or 3D printing workflows. Export the footprint or combine with the STL export functions built into the 3D viewer.
-
 ### User Controls & Information Panel
 - **Dynamic volume management** – Add or remove volumes at any time, adjust individual floor and ceiling heights and apply global height exaggeration without overlapping shapes. The interface automatically recomputes bounds whenever volumes change.
-- **Information panel** – Displays the class, name and altitude limits for each selected airspace. When multiple volumes are selected, entries are separated by a dashed divider for readability.
+- **Information panel** – Displays the class, name and altitude limits for the airspace focused on in the viewport.
 - **Theme switching** – Toggle between light and dark modes; the preference is saved locally and re‑applied on load.
-- **Alerts and notifications** – Notistack provides contextual snack‑bar messages when volumes are added, modified or removed.
+- **Alerts and notifications** – Messages display when volumes are added, modified or removed.
 
 
 ### **Data Source & Disclaimer**
@@ -81,7 +77,7 @@ Airspace-to-STL/
 
 ## Getting Started
 ### Prerequisites
-- **Node.js 18+** – Install Node.js (version 18 or later)
+- **Node.js 24** – Install Node.js version 24
 - **npm**
 - **Git** – Clone the repository locally
 
@@ -100,6 +96,12 @@ npm install
 ```
 
 3. **Configure the data source** – Copy `.env` to your working directory and set `VITE_OPENAIR_SOURCE_FILE` to your desired OpenAir file path. The repository includes sample datasets under `public/airspaces`.
+
+```yml
+# example
+
+VITE_OPENAIR_SOURCE_FILE="public/airspaces/Australian Airspace 27 November 2025_v1.txt"
+```
 
 4. **Run development server**
 ```bash
@@ -147,7 +149,7 @@ The second drop down **Volumes** populates with the added airspace volumes as dr
 
 The last item found in the Control Pane is the **'Download Model'** button. This will package the volume into a ZIP file titled `airspace-combined-zX-YYYYMMDD.zip`. The contents of which are;
 - A stereolithography (STL) file of the combined airspace volumes. You can use this file in any standard 3D printing slicer software. The individual airspace volumes can be split for multi-colour printing if your hardware is capable.
-- A text file containing specific information about what airspace volumes were used in your combined mesh.
+- A text file containing specific information about whuch airspace volumes were used in your combined mesh. In addition to any specific configurations applied to the output such as Z-Scale, ceiling and floor values.
 
 ### B. Viewport Pane ###
 The viewport is a standard 3D model visualiser, to navigate use the following controls;
