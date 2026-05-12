@@ -1,7 +1,7 @@
 # DAH Volume Modeller (Airspace‑to‑STL)
 ## Interactive 3D & SVG Explorer for OpenAir‑Formatted Australian Airspace
 
-This tool visualises Australian airspace boundaries defined in the OpenAir specification. It parses the text‑based dataset, converts geographic coordinates into a projected plane using Proj4 and extrudes the resulting shapes into 3D volumes. Users can explore, combine and export these volumes through an intuitive web interface. Both 3D views (powered by Three.js) and 2D SVG footprints are provided, and the application runs completely in the browser, making it suitable for static hosting platforms such as GitHub Pages.
+This tool visualises Australian airspace boundaries defined in the OpenAir specification. It parses the text‑based dataset, converts geographic coordinates into a projected plane using Proj4 and extrudes the resulting shapes into 3D volumes. Users can explore, combine and export these volumes through an intuitive web interface. 3D views (powered by Three.js) are provided, and the application runs completely in the browser, making it suitable for static hosting platforms such as GitHub Pages.
 
 ## Key Features
 ### Airspace Loading & Parsing
@@ -149,7 +149,7 @@ The second drop down **Volumes** populates with the added airspace volumes as dr
 
 The last item found in the Control Pane is the **'Download Model'** button. This will package the volume into a ZIP file titled `airspace-combined-zX-YYYYMMDD.zip`. The contents of which are;
 - A stereolithography (STL) file of the combined airspace volumes. You can use this file in any standard 3D printing slicer software. The individual airspace volumes can be split for multi-colour printing if your hardware is capable.
-- A text file containing specific information about whuch airspace volumes were used in your combined mesh. In addition to any specific configurations applied to the output such as Z-Scale, ceiling and floor values.
+- A text file containing specific information about which airspace volumes were used in your combined mesh. In addition to any specific configurations applied to the output such as Z-Scale, ceiling and floor values.
 
 ### B. Viewport Pane ###
 The viewport is a standard 3D model visualiser, to navigate use the following controls;
