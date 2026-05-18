@@ -75,13 +75,29 @@ Airspace-to-STL/
 └── index.html            # Application entry point
 ```
 
-## Getting Started
+# Getting Started
+
+# Installation & Running
+
+## Static Web App
+
+For the most simplistic method of deployment a static build version of the web application is available here:
+
+[https://github.com/slewisTCE/Airspace-to-STL/releases/tag/Latest](https://github.com/slewisTCE/Airspace-to-STL/releases/tag/Latest)
+
+The contents of this archive can be placed in the web root directory of your webserver with appropriate permissions applied.
+
+If you are utilising AWS or Azure, you can use the following resources for assistance;
+ - [https://docs.aws.amazon.com/hands-on/latest/host-static-website/host-static-website.html](https://docs.aws.amazon.com/hands-on/latest/host-static-website/host-static-website.html)
+ - [https://v7.vite.dev/guide/static-deploy#deploying-a-static-site](https://v7.vite.dev/guide/static-deploy#deploying-a-static-site)
+
+
+## Building the Web App from Source
+
 ### Prerequisites
 - **Node.js 24** – Install Node.js version 24
 - **npm**
 - **Git** – Clone the repository locally
-
-### Installation & Running
 
 1. **Clone the repository**
 ```bash
@@ -127,7 +143,7 @@ npm run test
 
 ---
 
-## How to use
+# How to use
 When opening the utility, read and address the disclaimer.
 
 ## Exploring the utility
