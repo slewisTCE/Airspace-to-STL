@@ -89,7 +89,7 @@ The contents of this archive can be placed in the web root directory of your web
 
 If you are utilising AWS or Azure, you can use the following resources for assistance;
  - [https://docs.aws.amazon.com/hands-on/latest/host-static-website/host-static-website.html](https://docs.aws.amazon.com/hands-on/latest/host-static-website/host-static-website.html)
-- [https://v4.vitejs.dev/guide/static-deploy.html](https://v4.vitejs.dev/guide/static-deploy.html)
+ - [https://v7.vite.dev/guide/static-deploy#deploying-a-static-site](https://v7.vite.dev/guide/static-deploy#deploying-a-static-site)
 
 
 ## Building the Web App from Source
